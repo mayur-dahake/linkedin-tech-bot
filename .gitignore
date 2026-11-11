@@ -1,0 +1,35 @@
+# macOS & external volume metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments & local secrets
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Generated bot runtime artifacts
+draft_content.json
+post_card.png
+approved_text.txt
+
+# Temporary & editor files
+*.tmp
+*.log
+.vscode/
+.idea/

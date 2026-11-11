@@ -1,0 +1,142 @@
+name: 1. Generate Daily Draft for Review
+
+on:
+  schedule:
+    # Runs at 12:00 UTC (5:30 PM IST / 7:00 AM EST) every day
+    - cron: '0 12 * * *'
+  # Allows you to click "Run workflow" manually anytime
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Technology track override (auto uses series_state.json)'
+        required: false
+        type: choice
+        default: 'auto'
+        options:
+          - auto
+          - dotnet
+          - angular
+          - sql_server
+      day:
+        description: 'Day number 1-30 override (leave empty to use series_state.json)'
+        required: false
+        type: string
+      force:
+        description: 'Create a review issue even if an open draft with the same title already exists'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: daily-draft-review
+  cancel-in-progress: false
+
+jobs:
+  generate-draft:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pillow
+
+      - name: Generate Post Draft & Visual Card
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          INPUT_TRACK: ${{ inputs.track }}
+          INPUT_DAY: ${{ inputs.day }}
+        run: |
+          python - <<'PY'
+          import os
+          import subprocess
+
+          cmd = ["python", "linkedin_daily_bot.py", "generate"]
+          track = os.environ.get("INPUT_TRACK", "").strip()
+          day = os.environ.get("INPUT_DAY", "").strip()
+
+          if track and track != "auto":
+              cmd.extend(["--track", track])
+          if day:
+              day_num = int(day)
+              if not 1 <= day_num <= 30:
+                  raise ValueError(f"Day must be between 1 and 30, got {day_num}")
+              cmd.extend(["--day", str(day_num)])
+
+          subprocess.run(cmd, check=True)
+          PY
+
+      - name: Upload Post Card as Artifact
+        if: hashFiles('post_card.png') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-card
+          path: post_card.png
+          if-no-files-found: error
+
+      - name: Create Review Issue in GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE_CREATE: ${{ inputs.force || 'false' }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          draft = json.loads(Path("draft_content.json").read_text(encoding="utf-8"))
+          title = draft["title"].strip()
+          post_text = draft["post_text"].strip()
+          issue_title = f"📝 Review Draft: {title}"
+          force = os.environ.get("FORCE_CREATE", "false").lower() == "true"
+          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
+
+          existing_raw = subprocess.check_output(
+              ["gh", "issue", "list", "--state", "open", "--json", "number,title,url"],
+              text=True,
+          )
+          existing = json.loads(existing_raw)
+          matches = [item for item in existing if item.get("title") == issue_title]
+
+          if matches and not force:
+              url = matches[0]["url"]
+              msg = f"Skipped creating duplicate review issue; open draft already exists: {url}\n"
+              print(msg)
+              summary_path.write_text(f"## Draft Skipped\n{msg}", encoding="utf-8")
+              raise SystemExit(0)
+
+          # Prevent standalone '---' inside post text from breaking publish_on_approval.yml's split('---')
+          safe_post_text = re.sub(r"(?m)^---+$", "───", post_text)
+
+          issue_body = (
+              "### ⚡ Today's Proposed LinkedIn Post\n"
+              "Review the text below. You can edit this issue body directly to tweak wording.\n\n"
+              "---\n\n"
+              f"{safe_post_text}\n\n"
+              "---\n\n"
+              "### 👉 How to Approve:\n"
+              "Comment **`/publish`** on this issue to post it to LinkedIn.\n"
+              "To discard, simply close this issue.\n"
+          )
+          body_file = Path("/tmp/issue_body.md")
+          body_file.write_text(issue_body, encoding="utf-8")
+
+          created_url = subprocess.check_output(
+              ["gh", "issue", "create", "--title", issue_title, "--body-file", str(body_file)],
+              text=True,
+          ).strip()
+          summary_path.write_text(
+              f"## Review Draft Created\n- **Title:** {issue_title}\n- **Issue:** {created_url}\n",
+              encoding="utf-8",
+          )
+          PY

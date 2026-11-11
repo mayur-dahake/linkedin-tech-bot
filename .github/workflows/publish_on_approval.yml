@@ -1,0 +1,97 @@
+name: 2. Publish to LinkedIn on Approval
+
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: linkedin-publish
+  cancel-in-progress: false
+
+jobs:
+  publish-approved:
+    # Triggers only when an authorized maintainer comments '/publish' or '/approve' on an open review issue
+    if: >-
+      !github.event.issue.pull_request &&
+      github.event.issue.state == 'open' &&
+      startsWith(github.event.issue.title, '📝 Review Draft:') &&
+      (startsWith(github.event.comment.body, '/publish') || startsWith(github.event.comment.body, '/approve')) &&
+      (
+        github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      actions: read
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pillow
+
+      - name: Download Visual Card Artifact
+        uses: dawidd6/action-download-artifact@v6
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: daily_draft_review.yml
+          name: post-card
+          path: .
+
+      - name: Extract Approved Text from Issue Body
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          raw = os.environ.get("ISSUE_BODY", "")
+          parts = re.split(r"(?m)^---\s*$", raw)
+          if len(parts) >= 3:
+              content = "\n---\n".join(parts[1:-1]).strip()
+          else:
+              content = raw.strip()
+          Path("approved_text.txt").write_text(content, encoding="utf-8")
+          PY
+
+      - name: Publish to LinkedIn
+        env:
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
+          LINKEDIN_API_VERSION: ${{ vars.LINKEDIN_API_VERSION }}
+        run: |
+          python linkedin_daily_bot.py publish --text-file approved_text.txt --image post_card.png
+
+      - name: Commit Updated Series State
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add series_state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: advance series_state.json after LinkedIn publish"
+            git pull --rebase origin "$DEFAULT_BRANCH"
+            git push origin "HEAD:$DEFAULT_BRANCH"
+          fi
+
+      - name: Close Issue and Post Confirmation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "🚀 **Successfully published to LinkedIn!** Closing this review ticket."
+          gh issue close "$ISSUE_NUMBER"

@@ -1,0 +1,458 @@
+{
+  "dotnet": [
+    {
+      "day": 1,
+      "concept": "SearchValues<T> in .NET 8/9",
+      "focus": "SIMD-accelerated string searching that is 10x faster than string.Contains() or IndexOfAny()."
+    },
+    {
+      "day": 2,
+      "concept": "ValueTask vs Task Allocation Traps",
+      "focus": "Why returning Task allocates on heap for sync cached results, and how ValueTask<T> eliminates it."
+    },
+    {
+      "day": 3,
+      "concept": "ArrayPool<T>.Shared for High-Throughput APIs",
+      "focus": "Renting byte and object buffers to completely eliminate GC Gen0/Gen1 allocation spikes."
+    },
+    {
+      "day": 4,
+      "concept": "IAsyncEnumerable<T> Streaming",
+      "focus": "Streaming records directly from EF Core to HTTP response stream without buffering 50,000 items in RAM."
+    },
+    {
+      "day": 5,
+      "concept": "FrozenDictionary<K, V> in .NET 8+",
+      "focus": "Immutable read-only lookups compiled for zero-allocation, beating regular Dictionary by 40%."
+    },
+    {
+      "day": 6,
+      "concept": "System.Threading.Channels",
+      "focus": "High-performance in-memory lock-free producer/consumer queue replacing heavy BlockingCollection."
+    },
+    {
+      "day": 7,
+      "concept": "PeriodicTimer vs System.Threading.Timer",
+      "focus": "Clean, async-safe background looping with while (await timer.WaitForNextTickAsync())."
+    },
+    {
+      "day": 8,
+      "concept": "EF Core IDbCommandInterceptor",
+      "focus": "Intercepting SQL queries dynamically for automatic multi-tenancy, soft delete, or query auditing."
+    },
+    {
+      "day": 9,
+      "concept": "AsSplitQuery() vs Cartesian Explosion",
+      "focus": "How multiple .Include() calls generate exponential duplicate rows and when AsSplitQuery fixes it."
+    },
+    {
+      "day": 10,
+      "concept": "IExceptionHandler in ASP.NET Core 8",
+      "focus": "Replacing custom middleware with the standardized IExceptionHandler pipeline."
+    },
+    {
+      "day": 11,
+      "concept": "Memory<T> and ReadOnlySpan<T> Slicing",
+      "focus": "Parsing strings, substrings, and binary payloads with zero heap memory allocation."
+    },
+    {
+      "day": 12,
+      "concept": "HybridCache in .NET 9",
+      "focus": "Two-tier caching combining ultra-fast L1 in-process RAM with L2 distributed Redis seamlessly."
+    },
+    {
+      "day": 13,
+      "concept": "TimeProvider for Unit Testing",
+      "focus": "Replacing mockable IDateTime interfaces with Microsoft's official abstract TimeProvider."
+    },
+    {
+      "day": 14,
+      "concept": "Positional Pattern Matching with Discards",
+      "focus": "Replacing nested if-else statements with expressive, compiler-checked switch pattern expressions."
+    },
+    {
+      "day": 15,
+      "concept": "GeneratedRegex Source Generators",
+      "focus": "Compiling regex patterns at compile-time with [GeneratedRegex] for zero startup overhead."
+    },
+    {
+      "day": 16,
+      "concept": "C# 12/13 Primary Constructors Pitfalls",
+      "focus": "Accidental double-capture of constructor parameters in class fields and how to avoid it."
+    },
+    {
+      "day": 17,
+      "concept": "Built-in RateLimiter Middleware",
+      "focus": "Configuring FixedWindow and SlidingWindow token-bucket rate limiting without third-party NuGet packages."
+    },
+    {
+      "day": 18,
+      "concept": "Interlocked.CompareExchange for Lock-Free State",
+      "focus": "Thread-safe atomic updates in Singleton services without lock() contention."
+    },
+    {
+      "day": 19,
+      "concept": "Polly v8 Resilience Pipelines in .NET 8",
+      "focus": "New Microsoft.Extensions.Resilience API integrating retry, fallback, and circuit breakers."
+    },
+    {
+      "day": 20,
+      "concept": "EF Core Value Converters with ValueComparers",
+      "focus": "Storing JSON or complex types in SQL columns while ensuring EF Core change tracker detects mutations."
+    },
+    {
+      "day": 21,
+      "concept": "AsyncLocal<T> Context Bleeding Traps",
+      "focus": "How ambient context flows down async call chains and why thread pools can leak state."
+    },
+    {
+      "day": 22,
+      "concept": "IAsyncDisposable on Scoped Services",
+      "focus": "Safely cleaning up asynchronous network sockets and database connections on DI container disposal."
+    },
+    {
+      "day": 23,
+      "concept": "Unsafe.As<T> and MemoryMarshal",
+      "focus": "Zero-cost type reinterpretation for performance-critical hot paths without casting overhead."
+    },
+    {
+      "day": 24,
+      "concept": "StringPool from CommunityToolkit",
+      "focus": "String deduplication cache preventing 10,000 identical parsed strings from bloating memory."
+    },
+    {
+      "day": 25,
+      "concept": "EF Core TagWith() for Production Query Tracing",
+      "focus": "Injecting SQL comments (.TagWith(\"GetActiveUsers\")) so slow queries stand out in SQL Profiler."
+    },
+    {
+      "day": 26,
+      "concept": "Nullable Annotations ([NotNullWhen(true)])",
+      "focus": "Helping the C# compiler understand TryParse patterns and eliminating false null warnings."
+    },
+    {
+      "day": 27,
+      "concept": "ActivatorUtilities for Dynamic DI Instantiation",
+      "focus": "Creating instances dynamically while resolving dependencies directly from IServiceProvider."
+    },
+    {
+      "day": 28,
+      "concept": "LoggerMessage Source Generators",
+      "focus": "High-performance structured logging with [LoggerMessage] eliminating boxing and string allocations."
+    },
+    {
+      "day": 29,
+      "concept": "EF Core Compiled Queries (EF.CompileAsyncQuery)",
+      "focus": "Pre-compiling expression trees into delegate queries for 2x faster execution in hot paths."
+    },
+    {
+      "day": 30,
+      "concept": "GC.AllocateArray with Pinned Memory",
+      "focus": "Allocating pinned non-moving buffers directly to avoid GC compaction pauses in I/O servers."
+    }
+  ],
+  "angular": [
+    {
+      "day": 1,
+      "concept": "effect() onCleanup Callback",
+      "focus": "Canceling pending HTTP requests or clearing timers when signal dependencies change."
+    },
+    {
+      "day": 2,
+      "concept": "untracked() in Angular Signals",
+      "focus": "Reading a signal's current value inside an effect or computed without creating an unwanted reactive trigger."
+    },
+    {
+      "day": 3,
+      "concept": "linkedSignal() in Angular 19",
+      "focus": "Creating writable signals that automatically reset when a dependent source signal changes."
+    },
+    {
+      "day": 4,
+      "concept": "resource() & rxResource() in Angular 19",
+      "focus": "Asynchronous data fetching natively integrated with signals, eliminating manual subscribe boilerplate."
+    },
+    {
+      "day": 5,
+      "concept": "DestroyRef & takeUntilDestroyed",
+      "focus": "Cleaning up subscriptions anywhere in services or utilities without implementing OnDestroy."
+    },
+    {
+      "day": 6,
+      "concept": "@defer Control Flow with Triggers",
+      "focus": "Lazy-loading heavy subcomponents on viewport intersection or user interaction (@defer (on viewport))."
+    },
+    {
+      "day": 7,
+      "concept": "View Transitions API in Angular Router",
+      "focus": "Enabling smooth native mobile-like page transitions with withViewTransitions()."
+    },
+    {
+      "day": 8,
+      "concept": "provideExperimentalZonelessChangeDetection()",
+      "focus": "Running Angular without Zone.js for smaller bundle sizes, faster startup, and pure signal reactivity."
+    },
+    {
+      "day": 9,
+      "concept": "RouteReuseStrategy for Tab State Preservation",
+      "focus": "Keeping component instances alive in memory when navigating between tabs instead of re-rendering."
+    },
+    {
+      "day": 10,
+      "concept": "Functional Interceptors with HttpContext",
+      "focus": "Passing custom metadata flags (e.g. BYPASS_CACHE) per-request to functional HTTP interceptors."
+    },
+    {
+      "day": 11,
+      "concept": "input.required() and model() Two-Way Signals",
+      "focus": "Replacing @Input() and @Output() with clean signal-based inputs and two-way model() primitives."
+    },
+    {
+      "day": 12,
+      "concept": "NgOptimizedImage (ngSrc) Priority & Placeholders",
+      "focus": "Automatic responsive sizing, WebP conversion, and LCP boost with priority loading hints."
+    },
+    {
+      "day": 13,
+      "concept": "NgZone.runOutsideAngular",
+      "focus": "Running high-frequency canvas animations or scroll listeners without triggering change detection loops."
+    },
+    {
+      "day": 14,
+      "concept": "ChangeDetectorRef.detach() for Live Streaming",
+      "focus": "Detaching high-throughput WebSocket data grids and updating UI manually on animation frames."
+    },
+    {
+      "day": 15,
+      "concept": "Multi-Slot Content Projection with ng-content",
+      "focus": "Building flexible compound components using ng-content select=\"[header]\" with default fallback slots."
+    },
+    {
+      "day": 16,
+      "concept": "Custom Router TitleStrategy",
+      "focus": "Centralizing dynamic document title updates with breadcrumbs and i18n directly in router configuration."
+    },
+    {
+      "day": 17,
+      "concept": "InjectionToken with factory Providers",
+      "focus": "Self-providing modular services with providedIn: 'root' and factory functions without root module bloat."
+    },
+    {
+      "day": 18,
+      "concept": "canMatch Router Guard for Feature Flags",
+      "focus": "Swapping entire component routes conditionally based on feature flags before loading chunks."
+    },
+    {
+      "day": 19,
+      "concept": "KeyValuePipe with Custom Comparator (0)",
+      "focus": "Preserving exact insertion order in object key iteration by passing () => 0 to keyValue pipe."
+    },
+    {
+      "day": 20,
+      "concept": "host Property vs @HostBinding Decorators",
+      "focus": "Clean component metadata configuration: host: { '[class.active]': 'isActive()' }."
+    },
+    {
+      "day": 21,
+      "concept": "ControlValueAccessor with Signal Forms",
+      "focus": "Writing robust custom form controls that seamlessly bridge reactive forms and signals."
+    },
+    {
+      "day": 22,
+      "concept": "DOCUMENT Token for Safe SSR",
+      "focus": "Injecting DOCUMENT from @angular/common to avoid breaking server-side rendering with global window/document."
+    },
+    {
+      "day": 23,
+      "concept": "toSignal() Edge Cases: rejectErrors & initialValue",
+      "focus": "Handling observable error states and avoiding undefined flash during initial observable emission."
+    },
+    {
+      "day": 24,
+      "concept": "viewProviders vs providers",
+      "focus": "Preventing projected ng-content children from accessing parent service instances using viewProviders."
+    },
+    {
+      "day": 25,
+      "concept": "ENVIRONMENT_INITIALIZER vs APP_INITIALIZER",
+      "focus": "Modern standalone app initialization logic using provideEnvironmentInitializer()."
+    },
+    {
+      "day": 26,
+      "concept": "CDK Coercion Utilities",
+      "focus": "Using coerceBooleanProperty and coerceArray to make custom component inputs resilient to HTML attributes."
+    },
+    {
+      "day": 27,
+      "concept": "Custom Async Validators with distinctUntilChanged",
+      "focus": "Debouncing API validation checks inside custom AsyncValidatorFn to prevent server flooding."
+    },
+    {
+      "day": 28,
+      "concept": "SVG Dynamic Interpolation in Templates",
+      "focus": "Rendering inline scalable SVG icons and charts with dynamic bound attributes without third-party libs."
+    },
+    {
+      "day": 29,
+      "concept": "Angular CLI Source-Map Explorer",
+      "focus": "Visualizing webpack/esbuild bundle chunk composition to find accidentally imported barrel file bloat."
+    },
+    {
+      "day": 30,
+      "concept": "Signals-Based Custom Store Pattern",
+      "focus": "Writing a 30-line lightweight reactive store with signals, computed, and update methods without NgRx."
+    }
+  ],
+  "sql_server": [
+    {
+      "day": 1,
+      "concept": "OUTPUT Clause with INSERT / UPDATE",
+      "focus": "Returning generated IDs or previous column values directly in one atomic trip without secondary SELECT."
+    },
+    {
+      "day": 2,
+      "concept": "Filtered Indexes (WHERE IsDeleted = 0)",
+      "focus": "Indexing only active rows to shrink index size by 90% and keep query execution cached."
+    },
+    {
+      "day": 3,
+      "concept": "Keyset Pagination vs OFFSET / FETCH",
+      "focus": "Using WHERE Id > @LastId to eliminate massive page scans on multi-million row tables."
+    },
+    {
+      "day": 4,
+      "concept": "CROSS APPLY for Top-N Per Group",
+      "focus": "Correlating subqueries to retrieve the latest 3 orders for every customer in a single efficient scan."
+    },
+    {
+      "day": 5,
+      "concept": "OPTIMIZE FOR UNKNOWN Query Hint",
+      "focus": "Fixing parameter sniffing plan cache issues without disabling parameterization or recompiling."
+    },
+    {
+      "day": 6,
+      "concept": "READ COMMITTED SNAPSHOT (RCSI)",
+      "focus": "Enabling row versioning so readers never block writers and writers never block readers."
+    },
+    {
+      "day": 7,
+      "concept": "STRING_AGG with WITHIN GROUP",
+      "focus": "Native string concatenation with sorting, replacing awkward XML PATH('') hacks."
+    },
+    {
+      "day": 8,
+      "concept": "Non-Clustered Indexes with INCLUDE Columns",
+      "focus": "Creating covering indexes that eliminate expensive Key Lookups in high-frequency queries."
+    },
+    {
+      "day": 9,
+      "concept": "Window Framing: ROWS vs RANGE",
+      "focus": "Why default RANGE BETWEEN UNBOUNDED PRECEDING runs 10x slower on disk than ROWS BETWEEN."
+    },
+    {
+      "day": 10,
+      "concept": "System-Versioned Temporal Tables",
+      "focus": "Automated audit history and point-in-time querying (FOR SYSTEM_TIME AS OF) with zero triggers."
+    },
+    {
+      "day": 11,
+      "concept": "Indexed Views with WITH (NOEXPAND)",
+      "focus": "Materializing complex aggregations on disk and ensuring the SQL engine uses the materialized view."
+    },
+    {
+      "day": 12,
+      "concept": "TRY_CONVERT vs CONVERT",
+      "focus": "Preventing runtime query failure on dirty strings by returning NULL instead of terminating the batch."
+    },
+    {
+      "day": 13,
+      "concept": "The Hidden Cost of WITH (NOLOCK)",
+      "focus": "How dirty reads can read skipped pages, duplicate records, and corrupt calculated reports."
+    },
+    {
+      "day": 14,
+      "concept": "#Temp Tables vs Table Variables (@Table)",
+      "focus": "Statistics and cardinality estimates: why table variables assume 1 row and ruin execution plans."
+    },
+    {
+      "day": 15,
+      "concept": "SESSION_CONTEXT() for Multi-Tenancy",
+      "focus": "Setting session-level tenant IDs from .NET to enforce Row-Level Security (RLS) automatically."
+    },
+    {
+      "day": 16,
+      "concept": "OPENJSON with CROSS APPLY",
+      "focus": "Shredding JSON arrays stored in columns directly into relational tabular rows inside SQL Server."
+    },
+    {
+      "day": 17,
+      "concept": "Sequence Objects vs IDENTITY",
+      "focus": "Pre-allocating batch IDs in memory (NEXT VALUE FOR) across multiple tables without locking tables."
+    },
+    {
+      "day": 18,
+      "concept": "DATETIME2(3) vs DATETIME",
+      "focus": "Saving 2 bytes per row and avoiding the notorious 3-millisecond rounding bug in legacy DATETIME."
+    },
+    {
+      "day": 19,
+      "concept": "COMPRESS and DECOMPRESS Functions",
+      "focus": "Compressing large JSON documents or XML logs using gzip natively inside SQL Server."
+    },
+    {
+      "day": 20,
+      "concept": "NEWSEQUENTIALID() vs NEWID()",
+      "focus": "Preventing B-Tree index page splits and 50% fragmentation caused by random GUID clustering."
+    },
+    {
+      "day": 21,
+      "concept": "SET NOCOUNT ON in Stored Procedures",
+      "focus": "Eliminating 'X rows affected' network round-trip overhead for high-frequency microservices."
+    },
+    {
+      "day": 22,
+      "concept": "Partition Switching for Instant Archival",
+      "focus": "Moving 10 million rows to an archive table in metadata-only milliseconds with zero I/O."
+    },
+    {
+      "day": 23,
+      "concept": "MERGE Statement Concurrency Pitfalls",
+      "focus": "Why MERGE causes deadlocks under load unless explicit WITH (HOLDLOCK) hints are used."
+    },
+    {
+      "day": 24,
+      "concept": "sp_executesql Parameterization vs Dynamic SQL",
+      "focus": "Preventing plan cache bloat and SQL injection while maintaining plan reuse."
+    },
+    {
+      "day": 25,
+      "concept": "sys.dm_db_index_usage_stats for Unused Indexes",
+      "focus": "Finding bloated indexes that cost write I/O on every INSERT/UPDATE but are never used by queries."
+    },
+    {
+      "day": 26,
+      "concept": "Sparse Columns for Semi-Structured Data",
+      "focus": "Optimizing storage for wide tables where columns are NULL 90% of the time with zero byte overhead."
+    },
+    {
+      "day": 27,
+      "concept": "Row-Level Security (RLS) Filter Predicates",
+      "focus": "Enforcing data isolation at the database layer so users can never see other tenants' rows."
+    },
+    {
+      "day": 28,
+      "concept": "Extended Events (XEvents) over SQL Profiler",
+      "focus": "Capturing deadlocks and queries running >1s with under 1% CPU overhead in production."
+    },
+    {
+      "day": 29,
+      "concept": "Columnstore Indexes for Operational Analytics",
+      "focus": "10x-100x query speedups on analytical aggregation queries on top of transactional tables."
+    },
+    {
+      "day": 30,
+      "concept": "In-Memory OLTP & Natively Compiled Stored Procs",
+      "focus": "Eliminating latch/lock contention entirely for high-throughput session state or telemetry tables."
+    }
+  ]
+}
