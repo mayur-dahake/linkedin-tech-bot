@@ -37,7 +37,7 @@ Configure under **Settings -> Secrets and variables -> Actions**:
 - `LINKEDIN_AUTHOR_URN`: `urn:li:person:<id>` or `urn:li:organization:<id>`.
 
 ### Optional Repository Variables
-- `GEMINI_MODEL`: Gemini model name (defaults to `gemini-2.5-flash`).
+- `GEMINI_MODEL`: Gemini model name (defaults to `gemini-3.8-flash`, falling back to `gemini-3.5-flash-lite` and `gemini-2.5-flash`).
 - `LINKEDIN_API_VERSION`: `YYYYMM` header for LinkedIn REST APIs (defaults to `202610`).
 
 ## Local Setup & CLI Usage

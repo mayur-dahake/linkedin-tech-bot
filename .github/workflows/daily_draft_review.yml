@@ -52,6 +52,7 @@ jobs:
       - name: Generate Post Draft & Visual Card
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           INPUT_TRACK: ${{ inputs.track }}
           INPUT_DAY: ${{ inputs.day }}
         run: |

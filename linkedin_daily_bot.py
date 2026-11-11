@@ -28,7 +28,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 CURRICULUM_FILE = "thirty_days_curriculum.json"
 STATE_FILE = "series_state.json"
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
+FALLBACK_GEMINI_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash")
 DEFAULT_LINKEDIN_API_VERSION = "202610"
 MAX_LINKEDIN_POST_CHARS = 3000
 
@@ -99,10 +100,26 @@ def escape_linkedin_little_text(text: str) -> str:
     return "".join(chunks)
 
 
+def _raise_for_status_with_body(
+    resp: requests.Response,
+    label: str,
+    secret: str = "",
+) -> None:
+    if resp.ok:
+        return
+    body = resp.text
+    if secret:
+        body = body.replace(secret, "***")
+    print(f"{label} failed with HTTP {resp.status_code}: {body[:1000]}", file=sys.stderr)
+    resp.raise_for_status()
+
+
 def generate_visual_post_data(api_key: str, track: str | None = None, day: int | None = None) -> dict:
     """Calls Gemini API to generate structured visual code comparison data with anchored metric bullets."""
     active_track, day_num, track_display, item = get_current_item(track, day)
-    model = os.environ.get("GEMINI_MODEL", "").strip() or DEFAULT_GEMINI_MODEL
+    configured_model = os.environ.get("GEMINI_MODEL", "").strip()
+    models_to_try = [configured_model] if configured_model else list(FALLBACK_GEMINI_MODELS)
+    clean_key = api_key.strip().strip('"').strip("'")
 
     system_prompt = f"""
 You are an expert Fullstack Architect writing Day {day_num} of a 30-day LinkedIn series:
@@ -140,22 +157,47 @@ Return STRICT JSON with these keys:
 }}
 """
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     headers = {
         "Content-Type": "application/json",
-        "x-goog-api-key": api_key,
+        "x-goog-api-key": clean_key,
     }
     payload = {
-        "contents": [{"parts": [{"text": system_prompt}]}],
+        "contents": [{"role": "user", "parts": [{"text": system_prompt}]}],
         "generationConfig": {
             "temperature": 0.3,
             "responseMimeType": "application/json",
         },
     }
 
-    response = requests.post(url, headers=headers, json=payload, timeout=30)
-    response.raise_for_status()
+    response: requests.Response | None = None
+    for idx, model in enumerate(models_to_try):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        if response.ok:
+            break
+
+        err_text = response.text
+        if "API_KEY_INVALID" in err_text or "API key not valid" in err_text:
+            print(
+                "Error: GEMINI_API_KEY was rejected by Google (API_KEY_INVALID). "
+                "Verify the key in Google AI Studio and update the GEMINI_API_KEY GitHub Secret.",
+                file=sys.stderr,
+            )
+            _raise_for_status_with_body(response, f"Gemini API ({model})", secret=clean_key)
+
+        if idx + 1 < len(models_to_try) and response.status_code in (400, 404):
+            print(
+                f"Warning: model '{model}' returned HTTP {response.status_code} "
+                f"({err_text[:200]}); trying next model...",
+                file=sys.stderr,
+            )
+            continue
+
+        _raise_for_status_with_body(response, f"Gemini API ({model})", secret=clean_key)
+
+    assert response is not None
     raw_text = response.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+    raw_text = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_text, flags=re.IGNORECASE).strip()
     data = json.loads(raw_text)
     data["track"] = active_track
     data["day"] = day_num
@@ -291,14 +333,14 @@ def upload_image_to_linkedin(access_token: str, author_urn: str, image_path: str
     payload = {"initializeUploadRequest": {"owner": author_urn}}
 
     resp = requests.post(init_url, headers=_linkedin_headers(access_token), json=payload, timeout=30)
-    resp.raise_for_status()
+    _raise_for_status_with_body(resp, "LinkedIn initializeUpload", secret=access_token)
     data = resp.json()["value"]
     upload_url = data["uploadUrl"]
     image_urn = data["image"]
 
     with open(image_path, "rb") as f:
         upload_resp = requests.put(upload_url, headers={"Content-Type": "image/png"}, data=f, timeout=60)
-        upload_resp.raise_for_status()
+        _raise_for_status_with_body(upload_resp, "LinkedIn image PUT")
 
     print(f"Uploaded to LinkedIn. Image URN: {image_urn}")
     return image_urn
