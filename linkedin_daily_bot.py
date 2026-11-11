@@ -29,8 +29,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 CURRICULUM_FILE = "thirty_days_curriculum.json"
 STATE_FILE = "series_state.json"
-DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
-FALLBACK_GEMINI_MODELS = ("gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro")
+DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
+FALLBACK_GEMINI_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash")
 TRANSIENT_GEMINI_STATUS_CODES = (429, 500, 502, 503, 504)
 MODEL_FALLBACK_STATUS_CODES = (400, 404, 429, 500, 502, 503, 504)
 DEFAULT_LINKEDIN_API_VERSION = "202401"
