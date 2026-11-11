@@ -6,7 +6,7 @@ Automatically tracks "Day X of 30", generates visual code comparison cards,
 and publishes to LinkedIn upon approval.
 
 Enforces high-retention technical bullet pattern:
-  • **[Tech Anchor]:** [Exact metric, performance difference, or code trade-off]
+- **[Tech Anchor]:** [Exact metric, performance difference, or code trade-off]
 
 Usage:
   python linkedin_daily_bot.py generate [--track dotnet|angular|sql_server] [--day N]
@@ -21,6 +21,7 @@ import os
 import re
 import sys
 import textwrap
+import time
 from pathlib import Path
 
 import requests
@@ -28,9 +29,11 @@ from PIL import Image, ImageDraw, ImageFont
 
 CURRICULUM_FILE = "thirty_days_curriculum.json"
 STATE_FILE = "series_state.json"
-DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
-FALLBACK_GEMINI_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash")
-DEFAULT_LINKEDIN_API_VERSION = "202610"
+DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
+FALLBACK_GEMINI_MODELS = ("gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro")
+TRANSIENT_GEMINI_STATUS_CODES = (429, 500, 502, 503, 504)
+MODEL_FALLBACK_STATUS_CODES = (400, 404, 429, 500, 502, 503, 504)
+DEFAULT_LINKEDIN_API_VERSION = "202401"
 MAX_LINKEDIN_POST_CHARS = 3000
 
 _PRESERVED_LITTLE_TOKEN_RE = re.compile(
@@ -64,7 +67,11 @@ def get_current_item(track: str | None = None, day: int | None = None) -> tuple:
     active_track = track or state.get("track", "dotnet")
     active_day = day or state.get("day", 1)
 
-    with open(CURRICULUM_FILE, "r", encoding="utf-8") as f:
+    curriculum_path = Path(CURRICULUM_FILE)
+    if not curriculum_path.exists():
+        curriculum_path = Path("artifacts/file_generation/ttl=63d/output") / CURRICULUM_FILE
+
+    with open(curriculum_path, "r", encoding="utf-8") as f:
         curriculum = json.load(f)
 
     track_items = curriculum.get(active_track, curriculum["dotnet"])
@@ -114,6 +121,75 @@ def _raise_for_status_with_body(
     resp.raise_for_status()
 
 
+def _post_gemini_generate(
+    models_to_try: list[str],
+    headers: dict[str, str],
+    payload: dict,
+    clean_key: str,
+) -> requests.Response:
+    """Posts to Gemini generateContent with backoff retries and model fallbacks."""
+    retry_delays = (2.0, 5.0) if len(models_to_try) == 1 else (2.0,)
+
+    for idx, model in enumerate(models_to_try):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+        has_next_model = idx + 1 < len(models_to_try)
+
+        for attempt in range(len(retry_delays) + 1):
+            response: requests.Response | None = None
+            last_exc: requests.RequestException | None = None
+            retry_reason: str | None = None
+
+            try:
+                response = requests.post(url, headers=headers, json=payload, timeout=30)
+            except requests.RequestException as exc:
+                last_exc = exc
+                retry_reason = f"request failed ({exc})"
+            else:
+                if response.ok:
+                    return response
+
+                err_text = response.text
+                if "API_KEY_INVALID" in err_text or "API key not valid" in err_text:
+                    print(
+                        "Error: GEMINI_API_KEY was rejected by Google (API_KEY_INVALID). "
+                        "Verify the key in Google AI Studio and update the GEMINI_API_KEY GitHub Secret.",
+                        file=sys.stderr,
+                    )
+                    _raise_for_status_with_body(response, f"Gemini API ({model})", secret=clean_key)
+
+                if response.status_code in TRANSIENT_GEMINI_STATUS_CODES:
+                    retry_reason = f"returned HTTP {response.status_code}"
+                elif has_next_model and response.status_code in MODEL_FALLBACK_STATUS_CODES:
+                    print(
+                        f"Warning: model '{model}' returned HTTP {response.status_code} "
+                        f"({err_text[:200]}); trying next model...",
+                        file=sys.stderr,
+                    )
+                    break
+                else:
+                    _raise_for_status_with_body(response, f"Gemini API ({model})", secret=clean_key)
+
+            if attempt < len(retry_delays):
+                delay = retry_delays[attempt]
+                print(
+                    f"Warning: model '{model}' {retry_reason}; retrying in {delay:.0f}s...",
+                    file=sys.stderr,
+                )
+                time.sleep(delay)
+                continue
+
+            if has_next_model:
+                print(f"Warning: model '{model}' {retry_reason}; trying next model...", file=sys.stderr)
+                break
+
+            if response is not None:
+                _raise_for_status_with_body(response, f"Gemini API ({model})", secret=clean_key)
+            assert last_exc is not None
+            raise last_exc
+
+    raise RuntimeError("No Gemini models configured to handle generateContent request.")
+
+
 def generate_visual_post_data(api_key: str, track: str | None = None, day: int | None = None) -> dict:
     """Calls Gemini API to generate structured visual code comparison data with anchored metric bullets."""
     active_track, day_num, track_display, item = get_current_item(track, day)
@@ -131,18 +207,18 @@ Guidance: {item['focus']}
 Requirements:
 - Focus on why this is a HIDDEN GEM: highly useful in production, but 90% of developers don't know it or use a slower/clunkier pattern.
 - Provide a clear, concrete code comparison:
-  1. The Common / Clunky / Slower Pattern (bad_code)
+1. The Common / Clunky / Slower Pattern (bad_code)
   2. The Hidden / Performant Pattern (good_code)
 - Be specific with exact syntax (C#, TypeScript, or T-SQL), keeping each code line <= 42 characters so it fits cleanly inside the card box.
 
 MANDATORY POST COMMENTARY BULLET RULE:
 Every single bullet point under the production impact section MUST strictly follow this exact syntax:
-• **[Tech Anchor]:** [Exact metric, benchmark figure, or technical trade-off]
+- **[Tech Anchor]:** [Exact metric, benchmark figure, or technical trade-off]
 
 Examples of required bullet format:
-• **Memory Allocation:** Zero heap allocation compared to 48 bytes allocated per substring in standard string slicing.
-• **Hardware Vectorization:** Leverages SIMD instructions to evaluate 16-32 bytes concurrently in a single CPU cycle.
-• **GC Pressure:** Eliminates Gen0 collections on high-throughput microservices handling 5,000+ req/sec.
+- **Memory Allocation:** Zero heap allocation compared to 48 bytes allocated per substring in standard string slicing.
+- **Hardware Vectorization:** Leverages SIMD instructions to evaluate 16-32 bytes concurrently in a single CPU cycle.
+- **GC Pressure:** Eliminates Gen0 collections on high-throughput microservices handling 5,000+ req/sec.
 
 Return STRICT JSON with these keys:
 {{
@@ -169,33 +245,7 @@ Return STRICT JSON with these keys:
         },
     }
 
-    response: requests.Response | None = None
-    for idx, model in enumerate(models_to_try):
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
-        if response.ok:
-            break
-
-        err_text = response.text
-        if "API_KEY_INVALID" in err_text or "API key not valid" in err_text:
-            print(
-                "Error: GEMINI_API_KEY was rejected by Google (API_KEY_INVALID). "
-                "Verify the key in Google AI Studio and update the GEMINI_API_KEY GitHub Secret.",
-                file=sys.stderr,
-            )
-            _raise_for_status_with_body(response, f"Gemini API ({model})", secret=clean_key)
-
-        if idx + 1 < len(models_to_try) and response.status_code in (400, 404):
-            print(
-                f"Warning: model '{model}' returned HTTP {response.status_code} "
-                f"({err_text[:200]}); trying next model...",
-                file=sys.stderr,
-            )
-            continue
-
-        _raise_for_status_with_body(response, f"Gemini API ({model})", secret=clean_key)
-
-    assert response is not None
+    response = _post_gemini_generate(models_to_try, headers, payload, clean_key)
     raw_text = response.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
     raw_text = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_text, flags=re.IGNORECASE).strip()
     data = json.loads(raw_text)
