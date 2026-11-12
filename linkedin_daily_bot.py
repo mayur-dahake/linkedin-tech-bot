@@ -820,12 +820,13 @@ def _extract_title_and_tags(post_text: str, track: str) -> tuple[str, list[str]]
 
 
 def post_to_devto(api_key: str, title: str, body_markdown: str, track: str, image_url: str | None = None) -> str:
-    """Publishes Markdown article to Dev.to."""
+    """Publishes Markdown article to Dev.to with full uncropped visual card."""
     _, tags = _extract_title_and_tags(body_markdown, track)
+    full_body = f"![{title}]({image_url})\n\n{body_markdown}" if image_url else body_markdown
     article: dict = {
         "title": title,
         "published": True,
-        "body_markdown": body_markdown,
+        "body_markdown": full_body,
         "tags": tags,
     }
     if image_url:
