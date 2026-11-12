@@ -646,7 +646,7 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
 
     # 6. Frosted Glass Syntax-Highlighted Code Block
     y_code_box = y_cards + card_h + 34
-    y_code_bottom = height - 155
+    y_code_bottom = height - 80
     img = _draw_glass_rect(
         img,
         [margin, y_code_box, width - margin, y_code_bottom],
@@ -667,9 +667,9 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
     draw.line([(margin + 1, y_code_box + 50), (width - margin - 1, y_code_box + 50)], fill=(255, 255, 255, 25), width=1)
 
     good_clean = _strip_unsupported_emojis(data.get("good_code", "// optimized pattern"), preserve_newlines=True)
-    code_lines = _wrap_code_lines(good_clean, max_chars=52, max_lines=10)
-    avail_h = (y_code_bottom - 18) - (y_code_box + 66)
-    line_h = min(36, max(26, avail_h // max(len(code_lines), 1)))
+    code_lines = _wrap_code_lines(good_clean, max_chars=52, max_lines=12)
+    avail_h = (y_code_bottom - 20) - (y_code_box + 66)
+    line_h = min(38, max(26, avail_h // max(len(code_lines), 1)))
     _draw_syntax_highlighted_lines(
         draw,
         code_lines,
@@ -679,19 +679,6 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
         line_h,
         font_code,
     )
-
-    # 7. Minimal Editorial Footer
-    fx, fy = margin, height - 96
-    s, gap = 12, 4
-    draw.rounded_rectangle([fx, fy, fx + s, fy + s], radius=3, fill=pal["pill_bg"])
-    draw.rounded_rectangle([fx + s + gap, fy, fx + 2 * s + gap, fy + s], radius=3, fill=(56, 189, 248))
-    draw.rounded_rectangle([fx, fy + s + gap, fx + s, fy + 2 * s + gap], radius=3, fill=(192, 132, 252))
-    draw.rounded_rectangle([fx + s + gap, fy + s + gap, fx + 2 * s + gap, fy + 2 * s + gap], radius=3, fill=(52, 211, 153))
-    draw.text((fx + 42, fy + 1), "Madelixa", fill=(248, 250, 252), font=font_brand)
-
-    right_lbl = f"Day {day_num:02d} / 30  \u2192"
-    rw = draw.textlength(right_lbl, font=font_right) if hasattr(draw, "textlength") else len(right_lbl) * 12
-    draw.text((width - margin - rw, fy + 1), right_lbl, fill=(226, 232, 240), font=font_right)
 
     img.save(output_path, "PNG")
     print(f"Generated 4:5 editorial card: {output_path}")
