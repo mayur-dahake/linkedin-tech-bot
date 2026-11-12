@@ -363,6 +363,7 @@ Return STRICT RAW JSON ONLY (no markdown fences) with these keys:
   ],
   "bad_code": "3 to 5 lines of realistic suboptimal code",
   "good_code": "4 to 6 lines of realistic optimized code",
+  "x_text": "Punchy 1-line hook + Watch out caveat + 2 hashtags (STRICTLY under 240 chars total for X/Twitter)",
   "post_text": "Complete ready-to-post LinkedIn text (STRICTLY under 150 words) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[1 punchy hook line from a real dev perspective]\\n\\nBefore:\\n```csharp\\n[2-4 lines]\\n```\\n\\nAfter:\\n```csharp\\n[2-4 lines]\\n```\\n\\nWhy it matters:\\n• **First Anchor:** Short profiler/runtime insight without brackets\\n• **Second Anchor:** Short profiler/runtime insight without brackets\\n• **Third Anchor:** Short profiler/runtime insight without brackets\\n\\nWatch out: [1 short sentence on a real production gotcha]\\n\\n[1 short peer question]\\n\\n{hashtags}"
 }}
 """
@@ -648,7 +649,7 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
 
     # 6. Frosted Glass Syntax-Highlighted Code Block
     y_code_box = y_cards + card_h + 34
-    y_code_bottom = height - 80
+    y_code_bottom = height - 155
     img = _draw_glass_rect(
         img,
         [margin, y_code_box, width - margin, y_code_bottom],
@@ -669,9 +670,9 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
     draw.line([(margin + 1, y_code_box + 50), (width - margin - 1, y_code_box + 50)], fill=(255, 255, 255, 25), width=1)
 
     good_clean = _strip_unsupported_emojis(data.get("good_code", "// optimized pattern"), preserve_newlines=True)
-    code_lines = _wrap_code_lines(good_clean, max_chars=52, max_lines=12)
-    avail_h = (y_code_bottom - 20) - (y_code_box + 66)
-    line_h = min(38, max(26, avail_h // max(len(code_lines), 1)))
+    code_lines = _wrap_code_lines(good_clean, max_chars=52, max_lines=10)
+    avail_h = (y_code_bottom - 18) - (y_code_box + 66)
+    line_h = min(36, max(26, avail_h // max(len(code_lines), 1)))
     _draw_syntax_highlighted_lines(
         draw,
         code_lines,
@@ -681,6 +682,19 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
         line_h,
         font_code,
     )
+
+    # 7. Minimal Editorial Footer
+    fx, fy = margin, height - 96
+    s, gap = 12, 4
+    draw.rounded_rectangle([fx, fy, fx + s, fy + s], radius=3, fill=pal["pill_bg"])
+    draw.rounded_rectangle([fx + s + gap, fy, fx + 2 * s + gap, fy + s], radius=3, fill=(56, 189, 248))
+    draw.rounded_rectangle([fx, fy + s + gap, fx + s, fy + 2 * s + gap], radius=3, fill=(192, 132, 252))
+    draw.rounded_rectangle([fx + s + gap, fy + s + gap, fx + 2 * s + gap, fy + 2 * s + gap], radius=3, fill=(52, 211, 153))
+    draw.text((fx + 42, fy + 1), "@maayurdahake", fill=(248, 250, 252), font=font_brand)
+
+    right_lbl = f"Day {day_num:02d} / 30  \u2192"
+    rw = draw.textlength(right_lbl, font=font_right) if hasattr(draw, "textlength") else len(right_lbl) * 12
+    draw.text((width - margin - rw, fy + 1), right_lbl, fill=(226, 232, 240), font=font_right)
 
     img.save(output_path, "PNG")
     print(f"Generated 4:5 editorial card: {output_path}")
@@ -765,6 +779,102 @@ def post_to_linkedin(
     return ""
 
 
+def _extract_title_and_tags(post_text: str, track: str) -> tuple[str, list[str]]:
+    first_line = next((ln.strip() for ln in post_text.splitlines() if ln.strip()), "Engineering Note")
+    title = re.sub(r"^Day\s+\d+/\d+\s*[—-]\s*", "", first_line).strip()[:120]
+    tag_map = {
+        "dotnet": ["dotnet", "csharp", "performance", "programming"],
+        "angular": ["angular", "typescript", "webdev", "frontend"],
+        "sql_server": ["sqlserver", "sql", "database", "performance"],
+    }
+    return title, tag_map.get(track, ["programming", "softwareengineering"])
+
+
+def post_to_devto(api_key: str, title: str, body_markdown: str, track: str, image_url: str | None = None) -> str:
+    """Publishes Markdown article to Dev.to."""
+    _, tags = _extract_title_and_tags(body_markdown, track)
+    article: dict = {
+        "title": title,
+        "published": True,
+        "body_markdown": body_markdown,
+        "tags": tags,
+    }
+    if image_url:
+        article["main_image"] = image_url
+    resp = requests.post(
+        "https://dev.to/api/articles",
+        headers={"api-key": api_key, "Content-Type": "application/json"},
+        json={"article": article},
+        timeout=30,
+    )
+    _raise_for_status_with_body(resp, "Dev.to API", secret=api_key)
+    url = resp.json().get("url", "Published")
+    print(f"Successfully published to Dev.to! URL: {url}")
+    return url
+
+
+def post_to_hashnode(token: str, pub_id: str, title: str, body_markdown: str) -> str:
+    """Publishes Markdown post to Hashnode via GraphQL API."""
+    query = """
+    mutation PublishPost($input: PublishPostInput!) {
+      publishPost(input: $input) {
+        post { id url }
+      }
+    }
+    """
+    resp = requests.post(
+        "https://gql.hashnode.com/",
+        headers={"Authorization": token, "Content-Type": "application/json"},
+        json={"query": query, "variables": {"input": {"title": title, "publicationId": pub_id, "contentMarkdown": body_markdown, "tags": []}}},
+        timeout=30,
+    )
+    _raise_for_status_with_body(resp, "Hashnode API", secret=token)
+    payload = resp.json()
+    if payload.get("errors"):
+        raise RuntimeError(f"Hashnode GraphQL error: {payload['errors']}")
+    url = payload.get("data", {}).get("publishPost", {}).get("post", {}).get("url", "Published")
+    print(f"Successfully published to Hashnode! URL: {url}")
+    return url
+
+
+def _build_x_fallback(post_text: str) -> str:
+    lines = [ln.strip() for ln in post_text.splitlines() if ln.strip() and not ln.strip().startswith("```")]
+    hook = lines[1] if len(lines) > 1 else (lines[0] if lines else "New engineering tip")
+    tags = " ".join(re.findall(r"#[A-Za-z][A-Za-z0-9_]*", post_text)[:2])
+    tweet = f"{hook}\n\n{tags}".strip()
+    return tweet[:275] if len(tweet) <= 275 else tweet[:272] + "..."
+
+
+def post_to_x(x_text: str, image_path: str | None = None) -> str:
+    """Publishes short hook + visual card to X/Twitter using tweepy."""
+    import tweepy
+
+    api_key = os.environ.get("X_API_KEY", "").strip()
+    api_secret = os.environ.get("X_API_SECRET", "").strip()
+    access_token = os.environ.get("X_ACCESS_TOKEN", "").strip()
+    access_secret = os.environ.get("X_ACCESS_SECRET", "").strip()
+    if not all([api_key, api_secret, access_token, access_secret]):
+        return ""
+
+    media_ids = None
+    if image_path and os.path.exists(image_path):
+        auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_secret)
+        api_v1 = tweepy.API(auth)
+        media = api_v1.media_upload(filename=image_path)
+        media_ids = [media.media_id]
+
+    client = tweepy.Client(
+        consumer_key=api_key,
+        consumer_secret=api_secret,
+        access_token=access_token,
+        access_token_secret=access_secret,
+    )
+    res = client.create_tweet(text=x_text[:280], media_ids=media_ids)
+    tweet_id = res.data.get("id", "Success")
+    print(f"Successfully published to X/Twitter! ID: {tweet_id}")
+    return str(tweet_id)
+
+
 # ---------------------------------------------------------------------------
 # CLI Command Handlers
 # ---------------------------------------------------------------------------
@@ -825,6 +935,33 @@ def handle_publish(
             print(f"Warning: Image upload failed ({e}). Posting text only.", file=sys.stderr)
 
     post_to_linkedin(linkedin_token, linkedin_urn, post_text, image_urn)
+
+    # Optional cross-posting (skips cleanly if secrets are not configured)
+    state = load_state()
+    active_track = current_data.get("track", state.get("track", "dotnet"))
+    title, _ = _extract_title_and_tags(post_text, active_track)
+    image_url = os.environ.get("PUBLIC_IMAGE_URL", "").strip() or None
+
+    devto_key = os.environ.get("DEVTO_API_KEY", "").strip()
+    if devto_key:
+        try:
+            post_to_devto(devto_key, current_data.get("title") or title, post_text, active_track, image_url)
+        except Exception as e:
+            print(f"Warning: Dev.to publish failed ({e})", file=sys.stderr)
+
+    hn_token = os.environ.get("HASHNODE_TOKEN", "").strip()
+    hn_pub = os.environ.get("HASHNODE_PUBLICATION_ID", "").strip()
+    if hn_token and hn_pub:
+        try:
+            post_to_hashnode(hn_token, hn_pub, current_data.get("title") or title, post_text)
+        except Exception as e:
+            print(f"Warning: Hashnode publish failed ({e})", file=sys.stderr)
+
+    x_text = current_data.get("x_text") or _build_x_fallback(post_text)
+    try:
+        post_to_x(x_text, image_path)
+    except Exception as e:
+        print(f"Warning: X/Twitter publish failed ({e})", file=sys.stderr)
 
     # Record published topic to prevent duplicates in future dynamic cycles
     published_title = current_data.get("title")
