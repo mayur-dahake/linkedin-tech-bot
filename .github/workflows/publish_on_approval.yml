@@ -38,7 +38,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install requests pillow tweepy
+        run: pip install requests pillow
 
       - name: Download Visual Card Artifact
         uses: dawidd6/action-download-artifact@v6
@@ -91,18 +91,12 @@ jobs:
           Path("approved_text.txt").write_text(content, encoding="utf-8")
           PY
 
-      - name: Publish to LinkedIn, Dev.to, Hashnode & X
+      - name: Publish to LinkedIn & Dev.to
         env:
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
           LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
           LINKEDIN_API_VERSION: ${{ vars.LINKEDIN_API_VERSION }}
           DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
-          HASHNODE_TOKEN: ${{ secrets.HASHNODE_TOKEN }}
-          HASHNODE_PUBLICATION_ID: ${{ secrets.HASHNODE_PUBLICATION_ID }}
-          X_API_KEY: ${{ secrets.X_API_KEY }}
-          X_API_SECRET: ${{ secrets.X_API_SECRET }}
-          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
         run: |
           python linkedin_daily_bot.py publish --text-file approved_text.txt --image post_card.png
 

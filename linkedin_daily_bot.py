@@ -401,7 +401,6 @@ Return STRICT RAW JSON ONLY (no markdown fences) with these keys:
   ],
   "bad_code": "3 to 5 lines of realistic suboptimal code",
   "good_code": "4 to 6 lines of realistic optimized code",
-  "x_text": "Punchy 1-line hook + Watch out caveat + 2 hashtags (STRICTLY under 240 chars total for X/Twitter)",
   "post_text": "Complete ready-to-post LinkedIn text (STRICTLY under 150 words) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[1 punchy hook line from a real dev perspective]\\n\\nBefore:\\n```csharp\\n[2-4 lines]\\n```\\n\\nAfter:\\n```csharp\\n[2-4 lines]\\n```\\n\\nWhy it matters:\\n• **First Anchor:** Short profiler/runtime insight without brackets\\n• **Second Anchor:** Short profiler/runtime insight without brackets\\n• **Third Anchor:** Short profiler/runtime insight without brackets\\n\\nWatch out: [1 short sentence on a real production gotcha]\\n\\n[1 short peer question]\\n\\n{hashtags}"
 }}
 """
@@ -851,68 +850,6 @@ def post_to_devto(api_key: str, title: str, body_markdown: str, track: str, imag
     return url
 
 
-def post_to_hashnode(token: str, pub_id: str, title: str, body_markdown: str) -> str:
-    """Publishes Markdown post to Hashnode via GraphQL API."""
-    query = """
-    mutation PublishPost($input: PublishPostInput!) {
-      publishPost(input: $input) {
-        post { id url }
-      }
-    }
-    """
-    resp = requests.post(
-        "https://gql.hashnode.com/",
-        headers={"Authorization": token, "Content-Type": "application/json"},
-        json={"query": query, "variables": {"input": {"title": title, "publicationId": pub_id, "contentMarkdown": body_markdown, "tags": []}}},
-        timeout=30,
-    )
-    _raise_for_status_with_body(resp, "Hashnode API", secret=token)
-    payload = resp.json()
-    if payload.get("errors"):
-        raise RuntimeError(f"Hashnode GraphQL error: {payload['errors']}")
-    url = payload.get("data", {}).get("publishPost", {}).get("post", {}).get("url", "Published")
-    print(f"Successfully published to Hashnode! URL: {url}")
-    return url
-
-
-def _build_x_fallback(post_text: str) -> str:
-    lines = [ln.strip() for ln in post_text.splitlines() if ln.strip() and not ln.strip().startswith("```")]
-    hook = lines[1] if len(lines) > 1 else (lines[0] if lines else "New engineering tip")
-    tags = " ".join(re.findall(r"#[A-Za-z][A-Za-z0-9_]*", post_text)[:2])
-    tweet = f"{hook}\n\n{tags}".strip()
-    return tweet[:275] if len(tweet) <= 275 else tweet[:272] + "..."
-
-
-def post_to_x(x_text: str, image_path: str | None = None) -> str:
-    """Publishes short hook + visual card to X/Twitter using tweepy."""
-    import tweepy
-
-    api_key = os.environ.get("X_API_KEY", "").strip()
-    api_secret = os.environ.get("X_API_SECRET", "").strip()
-    access_token = os.environ.get("X_ACCESS_TOKEN", "").strip()
-    access_secret = os.environ.get("X_ACCESS_SECRET", "").strip()
-    if not all([api_key, api_secret, access_token, access_secret]):
-        return ""
-
-    media_ids = None
-    if image_path and os.path.exists(image_path):
-        auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_secret)
-        api_v1 = tweepy.API(auth)
-        media = api_v1.media_upload(filename=image_path)
-        media_ids = [media.media_id]
-
-    client = tweepy.Client(
-        consumer_key=api_key,
-        consumer_secret=api_secret,
-        access_token=access_token,
-        access_token_secret=access_secret,
-    )
-    res = client.create_tweet(text=x_text[:280], media_ids=media_ids)
-    tweet_id = res.data.get("id", "Success")
-    print(f"Successfully published to X/Twitter! ID: {tweet_id}")
-    return str(tweet_id)
-
-
 # ---------------------------------------------------------------------------
 # CLI Command Handlers
 # ---------------------------------------------------------------------------
@@ -987,19 +924,6 @@ def handle_publish(
         except Exception as e:
             print(f"Warning: Dev.to publish failed ({e})", file=sys.stderr)
 
-    hn_token = os.environ.get("HASHNODE_TOKEN", "").strip()
-    hn_pub = os.environ.get("HASHNODE_PUBLICATION_ID", "").strip()
-    if hn_token and hn_pub:
-        try:
-            post_to_hashnode(hn_token, hn_pub, current_data.get("title") or title, post_text)
-        except Exception as e:
-            print(f"Warning: Hashnode publish failed ({e})", file=sys.stderr)
-
-    x_text = current_data.get("x_text") or _build_x_fallback(post_text)
-    try:
-        post_to_x(x_text, image_path)
-    except Exception as e:
-        print(f"Warning: X/Twitter publish failed ({e})", file=sys.stderr)
 
     # Record published topic to prevent duplicates in future dynamic cycles
     published_title = current_data.get("title")
