@@ -127,8 +127,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          gh issue comment "$ISSUE_NUMBER" --body "🚀 **Successfully published text & visual card to LinkedIn!** Closing this review ticket."
-          gh issue close "$ISSUE_NUMBER"
+          for attempt in 1 2 3; do
+            gh issue comment "$ISSUE_NUMBER" --body "🚀 **Successfully published text & visual card!** Closing this review ticket." && break
+            sleep 5
+          done
+          for attempt in 1 2 3; do
+            gh issue close "$ISSUE_NUMBER" && break
+            sleep 5
+          done
 
       - name: Comment Alert on Publish Failure
         if: failure()
