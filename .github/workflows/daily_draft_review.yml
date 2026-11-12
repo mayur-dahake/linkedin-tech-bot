@@ -26,6 +26,11 @@ on:
         required: false
         type: boolean
         default: false
+      carousel:
+        description: 'Also generate a 4-slide PDF carousel artifact'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: daily-draft-review
@@ -92,6 +97,7 @@ jobs:
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           INPUT_TRACK: ${{ inputs.track }}
           INPUT_DAY: ${{ inputs.day }}
+          INPUT_CAROUSEL: ${{ inputs.carousel }}
         run: |
           python - <<'PY'
           import os
@@ -100,6 +106,7 @@ jobs:
           cmd = ["python", "linkedin_daily_bot.py", "generate"]
           track = os.environ.get("INPUT_TRACK", "").strip()
           day = os.environ.get("INPUT_DAY", "").strip()
+          carousel = os.environ.get("INPUT_CAROUSEL", "false").lower() == "true"
 
           if track and track != "auto":
               cmd.extend(["--track", track])
@@ -108,6 +115,8 @@ jobs:
               if not 1 <= day_num <= 30:
                   raise ValueError(f"Day must be between 1 and 30, got {day_num}")
               cmd.extend(["--day", str(day_num)])
+          if carousel:
+              cmd.append("--carousel")
 
           subprocess.run(cmd, check=True)
           PY
@@ -121,6 +130,13 @@ jobs:
             post_card.png
             draft_content.json
           if-no-files-found: error
+
+      - name: Upload Carousel PDF Artifact
+        if: steps.guard.outputs.skip != 'true' && hashFiles('post_carousel.pdf') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-carousel
+          path: post_carousel.pdf
 
       - name: Push Preview Image & Draft JSON to 'previews' Branch
         if: steps.guard.outputs.skip != 'true' && hashFiles('post_card.png') != ''

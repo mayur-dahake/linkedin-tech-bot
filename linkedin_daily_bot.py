@@ -755,6 +755,145 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
     return output_path
 
 
+def _draw_carousel_footer(
+    img: Image.Image,
+    pal: dict,
+    margin: int,
+    slide_num: int,
+    total_slides: int,
+    font_brand: ImageFont.ImageFont,
+    font_right: ImageFont.ImageFont,
+) -> None:
+    width, height = img.size
+    draw = ImageDraw.Draw(img)
+    fx, fy = margin, height - 96
+    s, gap = 12, 4
+    draw.rounded_rectangle([fx, fy, fx + s, fy + s], radius=3, fill=pal["pill_bg"])
+    draw.rounded_rectangle([fx + s + gap, fy, fx + 2 * s + gap, fy + s], radius=3, fill=(56, 189, 248))
+    draw.rounded_rectangle([fx, fy + s + gap, fx + s, fy + 2 * s + gap], radius=3, fill=(192, 132, 252))
+    draw.rounded_rectangle([fx + s + gap, fy + s + gap, fx + 2 * s + gap, fy + 2 * s + gap], radius=3, fill=(52, 211, 153))
+    draw.text((fx + 42, fy + 1), "@maayurdahake", fill=(248, 250, 252), font=font_brand)
+    right_lbl = f"{slide_num} / {total_slides}  \u2192"
+    rw = draw.textlength(right_lbl, font=font_right) if hasattr(draw, "textlength") else len(right_lbl) * 12
+    draw.text((width - margin - rw, fy + 1), right_lbl, fill=(226, 232, 240), font=font_right)
+
+
+def create_carousel_pdf(data: dict, output_path: str = "post_carousel.pdf") -> str:
+    """Renders a 4-slide 4:5 LinkedIn PDF carousel (Hook -> Before -> After -> Takeaways)."""
+    width, height = 1080, 1350
+    margin = 80
+    track = data.get("track", "dotnet")
+    pal = _TRACK_PALETTES.get(track, _TRACK_PALETTES["dotnet"])
+    day_num = int(data.get("day", 1))
+
+    font_kicker = _load_font(20, bold=False)
+    font_pill = _load_font(24, bold=True)
+    font_badge = _load_font(16, bold=True)
+    font_h1 = _load_font(66, bold=True)
+    font_sub = _load_font(28, bold=False)
+    font_stat = _load_font(32, bold=True)
+    font_stat_lbl = _load_font(20, bold=False)
+    font_code = _load_font(22, mono=True)
+    font_fname = _load_font(17, mono=True)
+    font_brand = _load_font(24, bold=True)
+    font_right = _load_font(22, bold=False)
+
+    slides: list[Image.Image] = []
+
+    # Slide 1: Hook + 3 Metric Cards
+    s1 = _make_mesh_bg(width, height, pal["base"], pal["glow1"], pal["glow2"])
+    d1 = ImageDraw.Draw(s1)
+    kicker = _strip_unsupported_emojis(data.get("series_badge", f"30 DAYS OF HIDDEN GEMS  •  DAY {day_num:02d}"))
+    d1.text((margin, 90), kicker, fill=pal["kicker"], font=font_kicker)
+    pill_tag = _strip_unsupported_emojis(data.get("pill_tag") or data.get("title", "Hidden Concept"))
+    pill_w = int(min((d1.textlength(pill_tag, font=font_pill) if hasattr(d1, "textlength") else len(pill_tag) * 14) + 48, width - 2 * margin))
+    s1 = _draw_glass_rect(s1, [margin, 148, margin + pill_w, 204], (*pal["pill_bg"], 75), (*pal["kicker"], 150), radius=14)
+    d1 = ImageDraw.Draw(s1)
+    d1.text((margin + 24, 162), pill_tag, fill=(248, 250, 252), font=font_pill)
+
+    yh = 250
+    for ln in textwrap.wrap(_strip_unsupported_emojis(data.get("headline_line1", data.get("title", ""))), width=22)[:2]:
+        d1.text((margin, yh), ln, fill=(248, 250, 252), font=font_h1)
+        yh += 78
+    for ln in textwrap.wrap(_strip_unsupported_emojis(data.get("headline_accent", "")), width=22)[:2]:
+        d1.text((margin, yh), ln, fill=pal["accent"], font=font_h1)
+        yh += 78
+    ysub = yh + 26
+    for ln in textwrap.wrap(_strip_unsupported_emojis(data.get("subtitle", "")), width=50)[:3]:
+        d1.text((margin, ysub), ln, fill=(203, 213, 225), font=font_sub)
+        ysub += 40
+
+    y_card = max(ysub + 50, 740)
+    for idx, item in enumerate((data.get("card_highlights") or [])[:3]):
+        cy = y_card + idx * 142
+        s1 = _draw_glass_rect(s1, [margin, cy, width - margin, cy + 118], (255, 255, 255, 18), (255, 255, 255, 48), radius=18)
+        d1 = ImageDraw.Draw(s1)
+        d1.text((margin + 28, cy + 20), _strip_unsupported_emojis(str(item.get("stat", "")))[:16], fill=pal["accent"], font=font_stat)
+        d1.text((margin + 28, cy + 68), _strip_unsupported_emojis(str(item.get("label", "")))[:55], fill=(226, 232, 240), font=font_stat_lbl)
+    _draw_carousel_footer(s1, pal, margin, 1, 4, font_brand, font_right)
+    slides.append(s1)
+
+    # Slide 2 (BEFORE) & Slide 3 (AFTER)
+    default_fnames = {"dotnet": "Program.cs", "angular": "component.ts", "sql_server": "query.sql"}
+    code_fname = _strip_unsupported_emojis(data.get("code_filename") or default_fnames.get(track, "snippet.cs"))
+    for idx, (label, dot_col, border_col, code_key, heading) in enumerate((
+        ("BEFORE", (239, 68, 68), (239, 68, 68, 110), "bad_code", "The common bottleneck"),
+        ("AFTER", (16, 185, 129), (16, 185, 129, 120), "good_code", "The production fix"),
+    ), start=2):
+        sc = _make_mesh_bg(width, height, pal["base"], pal["glow1"], pal["glow2"])
+        dc = ImageDraw.Draw(sc)
+        dc.text((margin, 90), f"{label}  •  DAY {day_num:02d}", fill=dot_col, font=font_kicker)
+        dc.text((margin, 136), heading, fill=(248, 250, 252), font=_load_font(48, bold=True))
+        sc = _draw_glass_rect(sc, [margin, 236, width - margin, height - 150], (10, 12, 26, 210), border_col, radius=22)
+        dc = ImageDraw.Draw(sc)
+        dc.ellipse([margin + 26, 260, margin + 40, 274], fill=dot_col)
+        dc.text((margin + 52, 256), label, fill=dot_col, font=font_badge)
+        if label == "AFTER":
+            fn_w = dc.textlength(code_fname, font=font_fname) if hasattr(dc, "textlength") else len(code_fname) * 10
+            dc.text((width - margin - 26 - fn_w, 256), code_fname, fill=(148, 163, 184), font=font_fname)
+        dc.line([(margin + 1, 294), (width - margin - 1, 294)], fill=(255, 255, 255, 25), width=1)
+        code_clean = _strip_unsupported_emojis(data.get(code_key, ""), preserve_newlines=True)
+        lines = _wrap_code_lines(code_clean, max_chars=46, max_lines=16)
+        _draw_syntax_highlighted_lines(dc, lines, margin + 26, margin + 74, 326, 48, font_code)
+        _draw_carousel_footer(sc, pal, margin, idx, 4, font_brand, font_right)
+        slides.append(sc)
+
+    # Slide 4: Key Takeaways & Watch Out
+    s4 = _make_mesh_bg(width, height, pal["base"], pal["glow1"], pal["glow2"])
+    d4 = ImageDraw.Draw(s4)
+    d4.text((margin, 90), f"KEY TAKEAWAYS  •  DAY {day_num:02d} / 30", fill=pal["kicker"], font=font_kicker)
+    d4.text((margin, 136), _strip_unsupported_emojis(data.get("title", "Production Notes"))[:32], fill=(248, 250, 252), font=_load_font(46, bold=True))
+
+    post_lines = [ln.strip() for ln in str(data.get("post_text", "")).splitlines() if ln.strip()]
+    bullets = [ln.lstrip("•▸ ").replace("**", "") for ln in post_lines if ln.startswith(("•", "▸"))][:3]
+    watch_out = next((ln.replace("**", "") for ln in post_lines if ln.lower().startswith("watch out:")), "")
+
+    yb = 250
+    for b in bullets:
+        s4 = _draw_glass_rect(s4, [margin, yb, width - margin, yb + 190], (255, 255, 255, 18), (255, 255, 255, 48), radius=18)
+        d4 = ImageDraw.Draw(s4)
+        ly = yb + 28
+        for ln in textwrap.wrap(_strip_unsupported_emojis(b), width=46)[:4]:
+            d4.text((margin + 28, ly), ln, fill=(241, 245, 249), font=font_sub)
+            ly += 38
+        yb += 215
+
+    if watch_out:
+        s4 = _draw_glass_rect(s4, [margin, yb + 10, width - margin, yb + 210], (239, 68, 68, 28), (239, 68, 68, 110), radius=18)
+        d4 = ImageDraw.Draw(s4)
+        ly = yb + 36
+        for ln in textwrap.wrap(_strip_unsupported_emojis(watch_out), width=46)[:4]:
+            d4.text((margin + 28, ly), ln, fill=(254, 226, 226), font=font_sub)
+            ly += 38
+
+    _draw_carousel_footer(s4, pal, margin, 4, 4, font_brand, font_right)
+    slides.append(s4)
+
+    slides[0].save(output_path, "PDF", resolution=100.0, save_all=True, append_images=slides[1:])
+    print(f"Generated 4-slide PDF carousel: {output_path}")
+    return output_path
+
+
 def _linkedin_headers(access_token: str) -> dict[str, str]:
     api_version = os.environ.get("LINKEDIN_API_VERSION", "").strip() or DEFAULT_LINKEDIN_API_VERSION
     return {
@@ -923,7 +1062,60 @@ def post_to_devto(
 # ---------------------------------------------------------------------------
 # CLI Command Handlers
 # ---------------------------------------------------------------------------
-def handle_generate(track: str | None = None, day: int | None = None, dynamic: bool = False) -> None:
+INDEX_FILE = "SERIES_INDEX.md"
+
+
+def update_series_index(
+    track: str,
+    day_num: int,
+    title: str,
+    devto_url: str | None = None,
+    cycle: int = 1,
+) -> None:
+    """Maintains SERIES_INDEX.md grouped by technology track."""
+    import datetime
+
+    sections = [("dotnet", ".NET & C#"), ("angular", "Angular"), ("sql_server", "SQL Server")]
+    entries: dict[str, dict[str, tuple[int, str, str, str]]] = {k: {} for k, _ in sections}
+
+    if os.path.exists(INDEX_FILE):
+        cur_track = None
+        for line in Path(INDEX_FILE).read_text(encoding="utf-8").splitlines():
+            for k, label in sections:
+                if line.strip() == f"## {label}":
+                    cur_track = k
+            if cur_track and line.startswith("| ") and not line.startswith("| Day"):
+                cols = [c.strip() for c in line.strip("| ").split("|")]
+                if len(cols) >= 4:
+                    day_key = cols[0]
+                    entries[cur_track][day_key] = (int(re.sub(r"\D", "", day_key) or 0), cols[1], cols[2], cols[3])
+
+    day_label = f"C{cycle}-D{day_num:02d}" if cycle > 1 else f"Day {day_num:02d}"
+    link_cell = f"[Read on Dev.to]({devto_url})" if devto_url and devto_url.startswith("http") else "LinkedIn"
+    today_str = datetime.date.today().isoformat()
+    entries.setdefault(track, {})[day_label] = (day_num + (cycle - 1) * 100, title.replace("|", "-"), link_cell, today_str)
+
+    out_lines = ["# 30 Days, 30 Hidden Concepts — Series Index", ""]
+    for k, label in sections:
+        out_lines.extend([f"## {label}", "", "| Day | Topic | Article | Published |", "| :--- | :--- | :--- | :--- |"])
+        rows = sorted(entries[k].items(), key=lambda kv: kv[1][0])
+        if rows:
+            for d_lbl, (_, t_txt, a_txt, dt_txt) in rows:
+                out_lines.append(f"| {d_lbl} | {t_txt} | {a_txt} | {dt_txt} |")
+        else:
+            out_lines.append("| — | Upcoming | — | — |")
+        out_lines.append("")
+
+    Path(INDEX_FILE).write_text("\n".join(out_lines), encoding="utf-8")
+    print(f"Updated {INDEX_FILE} for {track} ({day_label}).")
+
+
+def handle_generate(
+    track: str | None = None,
+    day: int | None = None,
+    dynamic: bool = False,
+    carousel: bool = False,
+) -> None:
     gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not gemini_key:
         print("Error: GEMINI_API_KEY is required for generation.", file=sys.stderr)
@@ -938,6 +1130,8 @@ def handle_generate(track: str | None = None, day: int | None = None, dynamic: b
 
     image_path = "post_card.png"
     create_visual_card(data, image_path)
+    if carousel:
+        create_carousel_pdf(data, "post_carousel.pdf")
 
     print("\n--- 30-Day Series Draft Ready ---")
     print(f"Badge: {data.get('series_badge')}")
@@ -985,15 +1179,17 @@ def handle_publish(
     state = load_state()
     active_track = current_data.get("track", state.get("track", "dotnet"))
     title, _ = _extract_title_and_tags(post_text, active_track)
+    resolved_title = current_data.get("title") or title
     image_url = os.environ.get("PUBLIC_IMAGE_URL", "").strip() or None
+    devto_url = None
 
     devto_key = os.environ.get("DEVTO_API_KEY", "").strip()
     if devto_key:
         try:
             devto_body = str(current_data.get("devto_markdown") or post_text)
-            post_to_devto(
+            devto_url = post_to_devto(
                 devto_key,
-                current_data.get("title") or title,
+                resolved_title,
                 devto_body,
                 active_track,
                 image_url,
@@ -1003,8 +1199,11 @@ def handle_publish(
         except Exception as e:
             print(f"Warning: Dev.to publish failed ({e})", file=sys.stderr)
 
+    # Record published topic to prevent duplicates & update SERIES_INDEX.md
+    current_day = int(current_data.get("day", state.get("day", 1)))
+    current_cycle = int(state.get("cycle", 1))
+    update_series_index(active_track, current_day, resolved_title, devto_url, cycle=current_cycle)
 
-    # Record published topic to prevent duplicates in future dynamic cycles
     published_title = current_data.get("title")
     if published_title:
         history = load_history()
@@ -1013,8 +1212,6 @@ def handle_publish(
             save_history(history)
 
     # Increment day (and cycle after completing all 3 tracks) upon successful publish
-    state = load_state()
-    current_day = current_data.get("day", state.get("day", 1))
     next_day = current_day + 1
     if next_day > 30:
         tracks = ["dotnet", "angular", "sql_server"]
@@ -1023,7 +1220,7 @@ def handle_publish(
         state["track"] = tracks[next_idx]
         state["day"] = 1
         if next_idx == 0:
-            state["cycle"] = int(state.get("cycle", 1)) + 1
+            state["cycle"] = current_cycle + 1
     else:
         state["day"] = next_day
     save_state(state)
@@ -1038,6 +1235,7 @@ def main() -> None:
     gen_parser.add_argument("--track", choices=["dotnet", "angular", "sql_server"], help="Specific technology track")
     gen_parser.add_argument("--day", type=int, help="Day number (1-30)")
     gen_parser.add_argument("--dynamic", action="store_true", help="Use live Google Search grounding for trending market topics")
+    gen_parser.add_argument("--carousel", action="store_true", help="Also generate a 4-slide PDF carousel (post_carousel.pdf)")
 
     pub_parser = subparsers.add_parser("publish", help="Publish approved draft to LinkedIn")
     pub_parser.add_argument("--text", help="Custom text or override to publish")
@@ -1047,7 +1245,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "generate":
-        handle_generate(args.track, args.day, dynamic=args.dynamic)
+        handle_generate(args.track, args.day, dynamic=args.dynamic, carousel=args.carousel)
     elif args.command == "publish":
         handle_publish(args.text, args.text_file, args.image)
 

@@ -16,14 +16,14 @@
 - [x] **60-Day LinkedIn Token Expiry Warning**
   - Reads `LINKEDIN_TOKEN_UPDATED_AT` (`YYYY-MM-DD` repository variable) and injects an alert banner into the daily review issue starting at Day 50 (`<= 10` days remaining).
 - [x] **Dedicated Dev.to Long-Form Copy & Series Grouping**
-  - Keeps LinkedIn commentary minimal (<90 words, no inline code), while `_compose_devto_markdown()` automatically injects copyable `### Before` and `### After` fenced code blocks, the uncropped 4:5 card, and official Dev.to `series` grouping (`"30 Days of Hidden .NET & C# Gems"`, etc.).
+  - Keeps LinkedIn commentary minimal (<90 words, no inline code), while generating `devto_markdown` (~180–220 words with copyable `### Before` / `### After` fenced code blocks), uncropped 4:5 card, and official Dev.to `series` grouping.
 - [x] **Card Overflow & Code Sanity Guardrail**
   - Dynamically scales code font size (`19px` → `17px` → `15px`) and wrapping width (`52` → `58` → `64` chars) in `create_visual_card()` so longer snippets never clip inside the `BEFORE` and `AFTER` glass panels.
 
 ---
 
-## Phase 3: Growth & Rich Formats (Next)
-- [ ] **Optional Carousel Mode (`--carousel`)**
-  - Render 3–4 linked `4:5` slides (Hook → Before/After → Gotcha → Takeaway) and export a LinkedIn-ready PDF document for deeper SQL/Angular topics.
-- [ ] **Automated Series Index (`SERIES_INDEX.md`)**
-  - Auto-update a browsable index linking every published day by track (`dotnet`, `angular`, `sql_server`) with its Dev.to URL.
+## Phase 3: Growth & Rich Formats (Completed)
+- [x] **Optional Carousel Mode (`--carousel`)**
+  - Renders 4 linked `4:5` slides (Hook + Metrics → Before → After → Takeaways) and exports `post_carousel.pdf` via Pillow, with a `carousel` boolean input in `daily_draft_review.yml` that uploads the PDF artifact.
+- [x] **Automated Series Index (`SERIES_INDEX.md`)**
+  - Automatically maintains `SERIES_INDEX.md` grouped by track (`dotnet`, `angular`, `sql_server`) with each published post's Dev.to article link and date, committed back to `main` on `/publish`.
