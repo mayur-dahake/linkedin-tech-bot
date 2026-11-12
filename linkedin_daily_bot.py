@@ -172,8 +172,10 @@ def get_current_item(track: str | None = None, day: int | None = None) -> tuple:
 
 
 def _clean_post_for_linkedin(text: str) -> str:
-    """Strip GitHub-only Markdown emphasis (**bold**) before Little Text escaping."""
-    return re.sub(r"\*\*([^*\n]+?)\*\*", r"\1", text).strip()
+    """Strip GitHub-only Markdown emphasis (**bold**) and ```lang fences before LinkedIn posting."""
+    cleaned = re.sub(r"(?m)^```[A-Za-z0-9_-]*\s*$", "", text)
+    cleaned = re.sub(r"\*\*([^*\n]+?)\*\*", r"\1", cleaned)
+    return re.sub(r"\n{3,}", "\n\n", cleaned).strip()
 
 
 def escape_linkedin_little_text(text: str) -> str:
@@ -335,8 +337,10 @@ Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template):
 - Do NOT put emojis inside any card fields (headline, pill_tag, card_highlights, good_code, subtitle, code_filename).
 
 MANDATORY POST COMMENTARY BULLET RULE:
-Every bullet point under the takeaway section MUST strictly follow this exact syntax:
-• **[Tech Anchor]:** [Exact mechanism, memory/I/O difference, or real trade-off]
+Every bullet point under the takeaway section MUST strictly follow this exact syntax (NEVER output literal square brackets [ or ] around the anchor or text):
+• **Tech Anchor:** Exact mechanism, memory/I/O difference, or real trade-off
+
+Code blocks in `post_text`: Wrap both Before and After snippets in Markdown triple-backtick fences (```csharp, ```ts, or ```sql) so they render as proper code blocks in GitHub review issues.
 
 Use double newlines (`\\n\\n`) between every paragraph and section in `post_text` so it breathes nicely on LinkedIn.
 
@@ -357,7 +361,7 @@ Return STRICT RAW JSON ONLY (no markdown fences) with these keys:
   ],
   "bad_code": "3 to 5 lines of realistic suboptimal code",
   "good_code": "4 to 6 lines of realistic optimized code",
-  "post_text": "Complete ready-to-post LinkedIn text (under 2200 chars) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[2 short, conversational lines from a real dev perspective explaining the problem you hit in code]\\n\\nBefore:\\n[clean formatted code]\\n\\nAfter:\\n[clean formatted code]\\n\\nWhy this matters in production:\\n• **[Tech Anchor 1]:** [Exact mechanism or trade-off]\\n• **[Tech Anchor 2]:** [Exact mechanism or trade-off]\\n• **[Tech Anchor 3]:** [Exact mechanism or trade-off]\\n\\n[1 natural, peer-to-peer question for other devs]\\n\\n{hashtags}"
+  "post_text": "Complete ready-to-post LinkedIn text (under 2200 chars) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[2 short, conversational lines from a real dev perspective explaining the problem you hit in code]\\n\\nBefore:\\n```csharp\\n[clean formatted code]\\n```\\n\\nAfter:\\n```csharp\\n[clean formatted code]\\n```\\n\\nWhy this matters in production:\\n• **First Anchor:** Write real explanation here without brackets\\n• **Second Anchor:** Write real explanation here without brackets\\n• **Third Anchor:** Write real explanation here without brackets\\n\\n[1 natural, peer-to-peer question for other devs]\\n\\n{hashtags}"
 }}
 """
 
