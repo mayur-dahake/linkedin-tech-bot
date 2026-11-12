@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
-      contents: read
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -83,10 +83,42 @@ jobs:
           path: post_card.png
           if-no-files-found: error
 
-      - name: Create Review Issue in GitHub
+      - name: Commit and Push Preview Image to Repository
+        if: hashFiles('post_card.png') != ''
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          python - <<'PY'
+          import json
+          import shutil
+          from pathlib import Path
+
+          draft = json.loads(Path("draft_content.json").read_text(encoding="utf-8"))
+          day = int(draft.get("day", 1))
+          track = str(draft.get("track", "dotnet")).strip() or "dotnet"
+
+          previews_dir = Path("previews")
+          previews_dir.mkdir(parents=True, exist_ok=True)
+          shutil.copy2("post_card.png", previews_dir / f"day_{track}_{day}.png")
+          shutil.copy2("post_card.png", previews_dir / "latest.png")
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add previews/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update preview card image [skip ci]"
+            git pull --rebase origin "$DEFAULT_BRANCH"
+            git push origin "HEAD:$DEFAULT_BRANCH"
+          else
+            echo "No preview image changes to commit"
+          fi
+
+      - name: Create Review Issue with Image Preview & Text
         env:
           GH_TOKEN: ${{ github.token }}
           FORCE_CREATE: ${{ inputs.force || 'false' }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           python - <<'PY'
           import json
@@ -98,7 +130,9 @@ jobs:
           draft = json.loads(Path("draft_content.json").read_text(encoding="utf-8"))
           title = draft["title"].strip()
           post_text = draft["post_text"].strip()
-          issue_title = f"📝 Review Draft: {title}"
+          day = int(draft.get("day", 1))
+          track = str(draft.get("track", "dotnet")).strip() or "dotnet"
+          issue_title = f"📝 Review Draft: Day {day} - {title}"
           force = os.environ.get("FORCE_CREATE", "false").lower() == "true"
           summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
 
@@ -116,17 +150,24 @@ jobs:
               summary_path.write_text(f"## Draft Skipped\n{msg}", encoding="utf-8")
               raise SystemExit(0)
 
+          repo = os.environ["GITHUB_REPOSITORY"]
+          branch = os.environ.get("DEFAULT_BRANCH") or "main"
+          image_url = f"https://github.com/{repo}/blob/{branch}/previews/day_{track}_{day}.png?raw=true"
+          alt_title = re.sub(r"[\[\]]", "", title)
+
           # Prevent standalone '---' inside post text from breaking publish_on_approval.yml's split('---')
           safe_post_text = re.sub(r"(?m)^---+$", "───", post_text)
 
           issue_body = (
-              "### ⚡ Today's Proposed LinkedIn Post\n"
-              "Review the text below. You can edit this issue body directly to tweak wording.\n\n"
+              "### 🖼️ Visual Card Preview\n"
+              f"![{alt_title}]({image_url})\n\n"
+              "### 📝 Post Commentary\n"
+              "Review the text below. You can edit this issue body directly to tweak wording before publishing.\n\n"
               "---\n\n"
               f"{safe_post_text}\n\n"
               "---\n\n"
               "### 👉 How to Approve:\n"
-              "Comment **`/publish`** on this issue to post it to LinkedIn.\n"
+              "Comment **`/publish`** on this issue to post both this image and text to LinkedIn.\n"
               "To discard, simply close this issue.\n"
           )
           body_file = Path("/tmp/issue_body.md")

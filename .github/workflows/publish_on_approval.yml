@@ -49,7 +49,7 @@ jobs:
           name: post-card
           path: .
 
-      - name: Extract Approved Text from Issue Body
+      - name: Extract Approved Text & Visual Card Path
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
@@ -60,20 +60,38 @@ jobs:
 
           raw = os.environ.get("ISSUE_BODY", "")
           parts = re.split(r"(?m)^---\s*$", raw)
-          if len(parts) >= 3:
+          if len(parts) >= 4 and "Post Commentary" in parts[1]:
+              content = "\n---\n".join(parts[2:-1]).strip()
+          elif len(parts) >= 3:
               content = "\n---\n".join(parts[1:-1]).strip()
           else:
               content = raw.strip()
           Path("approved_text.txt").write_text(content, encoding="utf-8")
+
+          image_path = ""
+          match = re.search(r"previews/(day_[A-Za-z0-9_]+_\d+\.png)", raw)
+          if match:
+              candidate = Path("previews") / match.group(1)
+              if candidate.is_file():
+                  image_path = str(candidate)
+
+          if not image_path and Path("previews/latest.png").is_file():
+              image_path = "previews/latest.png"
+          elif not image_path:
+              image_path = "post_card.png"
+
+          print(f"Resolved visual card path: {image_path}")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"IMAGE_PATH={image_path}\n")
           PY
 
-      - name: Publish to LinkedIn
+      - name: Publish Text + Image to LinkedIn
         env:
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
           LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
           LINKEDIN_API_VERSION: ${{ vars.LINKEDIN_API_VERSION }}
         run: |
-          python linkedin_daily_bot.py publish --text-file approved_text.txt --image post_card.png
+          python linkedin_daily_bot.py publish --text-file approved_text.txt --image "${IMAGE_PATH:-post_card.png}"
 
       - name: Commit Updated Series State
         env:
@@ -83,9 +101,11 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add series_state.json
           if ! git diff --cached --quiet; then
-            git commit -m "chore: advance series_state.json after LinkedIn publish"
+            git commit -m "chore: advance series_state.json after LinkedIn publish [skip ci]"
             git pull --rebase origin "$DEFAULT_BRANCH"
             git push origin "HEAD:$DEFAULT_BRANCH"
+          else
+            echo "No state change to commit"
           fi
 
       - name: Close Issue and Post Confirmation
@@ -93,5 +113,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          gh issue comment "$ISSUE_NUMBER" --body "🚀 **Successfully published to LinkedIn!** Closing this review ticket."
+          gh issue comment "$ISSUE_NUMBER" --body "🚀 **Successfully published text & visual card to LinkedIn!** Closing this review ticket."
           gh issue close "$ISSUE_NUMBER"
