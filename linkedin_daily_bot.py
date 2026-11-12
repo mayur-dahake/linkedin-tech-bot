@@ -171,10 +171,48 @@ def get_current_item(track: str | None = None, day: int | None = None) -> tuple:
     return active_track, item["day"], track_display, item, active_cycle
 
 
+_UNICODE_BOLD_MAP = str.maketrans(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    "𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭"
+    "𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇"
+    "𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵",
+)
+
+
+def _to_unicode_bold(text: str) -> str:
+    return text.translate(_UNICODE_BOLD_MAP)
+
+
+def _format_code_block_for_linkedin(match: re.Match) -> str:
+    lang_raw = (match.group(1) or "").strip().lower()
+    lang_labels = {
+        "csharp": "C#",
+        "cs": "C#",
+        "ts": "TypeScript",
+        "typescript": "TypeScript",
+        "sql": "T-SQL",
+        "tsql": "T-SQL",
+    }
+    label = lang_labels.get(lang_raw, lang_raw.upper() if lang_raw else "Code")
+    lines = [f"│ {ln}" for ln in match.group(2).strip("\n").splitlines()]
+    return "\n".join([f"┌─ {_to_unicode_bold(label)}", *lines, "└─"])
+
+
 def _clean_post_for_linkedin(text: str) -> str:
-    """Strip GitHub-only Markdown emphasis (**bold**) and ```lang fences before LinkedIn posting."""
-    cleaned = re.sub(r"(?m)^```[A-Za-z0-9_-]*\s*$", "", text)
-    cleaned = re.sub(r"\*\*([^*\n]+?)\*\*", r"\1", cleaned)
+    """Convert GitHub Markdown into crisp LinkedIn-ready Unicode bold & framed code blocks."""
+    cleaned = re.sub(
+        r"(?ms)^```([A-Za-z0-9_-]*)[ \t]*\n(.*?)\n```[ \t]*$",
+        _format_code_block_for_linkedin,
+        text,
+    )
+    cleaned = re.sub(r"\*\*([^*\n]+?)\*\*", lambda m: _to_unicode_bold(m.group(1)), cleaned)
+    cleaned = re.sub(r"(?m)^(Day\s+\d+/\d+\s*[—-].+)$", lambda m: _to_unicode_bold(m.group(1)), cleaned)
+    cleaned = re.sub(
+        r"(?m)^(Before:|After:|Why it matters:|Watch out:)",
+        lambda m: _to_unicode_bold(m.group(1)),
+        cleaned,
+    )
+    cleaned = re.sub(r"(?m)^•\s+", "▸ ", cleaned)
     return re.sub(r"\n{3,}", "\n\n", cleaned).strip()
 
 
