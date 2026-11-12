@@ -343,14 +343,14 @@ You are a Senior Fullstack Engineer (.NET, Angular, SQL Server) writing Day {day
 {topic_block}
 
 Voice & Tone Rules (CRITICAL - sound like a real practitioner, NOT an AI):
-- Respect the reader's attention span: keep `post_text` under 150 words (~1,000 chars) so it reads in 15 seconds on mobile.
+- Keep `post_text` minimal and scannable (STRICTLY under 90 words): DO NOT put code blocks in `post_text` because the visual card already shows both Before and After code.
 - Write like a senior dev sharing a quick field note from a real code review or profiler session.
 - Ground claims in real runtime/DB mechanics (e.g., heap allocations, Gen0 GC, logical reads, Index Seek vs Key Lookup, change detection cycles).
 - NEVER use AI clichés or marketing hype: NO "completely missing out", "drastically cut down", "delivers up to 10x", "skyrocket", "unlock", "game-changer", "leverage", "leverages", "leveraged", "utilize", "delve", "elevate", or "in today's fast-paced world".
 - Include one concise, honest `Watch out:` line naming a real production edge case or caveat.
 - Code accuracy: Verify exact C#/Angular/T-SQL API signatures (e.g. `SearchValues<T>` requires `input.AsSpan().ContainsAny(...)`, not `string.ContainsAny(...)`), and avoid `\r`, `\n`, `\t` escape literals inside sample strings—use visible chars like `','`, `';'`, `'/'`, `'?'` instead.
 
-Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template):
+Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template showing BOTH Before and After):
 - headline_line1: Short bold white hook (3-5 words, e.g. "Stop allocating arrays")
 - headline_accent: Short colored continuation (4-6 words max so it never clips, e.g. "for repeated char lookups.")
 - pill_tag: Short feature/API pill (e.g. "SearchValues<char>")
@@ -362,14 +362,13 @@ Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template):
     {{"stat": "SIMD", "label": "Vectorized CPU instructions"}},
     {{"stat": "Span", "label": "Works directly on slices"}}
   ]
-- good_code: 4 to 7 lines of production-accurate optimized code (include a short // or -- comment on line 1, keep each line <= 50 chars naturally).
-- Do NOT put emojis inside any card fields (headline, pill_tag, card_highlights, good_code, subtitle, code_filename).
+- bad_code: 3 to 4 lines of realistic suboptimal code (keep each line <= 48 chars).
+- good_code: 4 to 5 lines of production-accurate optimized code (keep each line <= 48 chars).
+- Do NOT put emojis inside any card fields (headline, pill_tag, card_highlights, bad_code, good_code, subtitle, code_filename).
 
 MANDATORY POST COMMENTARY BULLET RULE:
 Every bullet point under the takeaway section MUST strictly follow this exact syntax (NEVER output literal square brackets [ or ] around the anchor or text):
 • **Tech Anchor:** One short sentence with a real profiler/runtime metric or trade-off
-
-Code blocks in `post_text`: Wrap both Before and After snippets in Markdown triple-backtick fences (```csharp, ```ts, or ```sql) so they render as proper code blocks in GitHub review issues.
 
 Use double newlines (`\\n\\n`) between every paragraph and section in `post_text` so it breathes nicely on LinkedIn.
 
@@ -388,9 +387,9 @@ Return STRICT RAW JSON ONLY (no markdown fences) with these keys:
     {{"stat": "Short stat", "label": "4-6 word description"}},
     {{"stat": "Short stat", "label": "4-6 word description"}}
   ],
-  "bad_code": "3 to 5 lines of realistic suboptimal code",
-  "good_code": "4 to 6 lines of realistic optimized code",
-  "post_text": "Complete ready-to-post LinkedIn text (STRICTLY under 150 words) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[1 punchy hook line from a real dev perspective]\\n\\nBefore:\\n```csharp\\n[2-4 lines]\\n```\\n\\nAfter:\\n```csharp\\n[2-4 lines]\\n```\\n\\nWhy it matters:\\n• **First Anchor:** Short profiler/runtime insight without brackets\\n• **Second Anchor:** Short profiler/runtime insight without brackets\\n• **Third Anchor:** Short profiler/runtime insight without brackets\\n\\nWatch out: [1 short sentence on a real production gotcha]\\n\\n[1 short peer question]\\n\\n{hashtags}"
+  "bad_code": "3 to 4 lines of realistic suboptimal code",
+  "good_code": "4 to 5 lines of realistic optimized code",
+  "post_text": "Minimal ready-to-post LinkedIn text (STRICTLY under 90 words, NO code blocks) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[1 punchy hook line from a real dev perspective]\\n\\n• **First Anchor:** Short profiler/runtime insight without brackets\\n• **Second Anchor:** Short profiler/runtime insight without brackets\\n• **Third Anchor:** Short profiler/runtime insight without brackets\\n\\nWatch out: [1 short sentence on a real production gotcha]\\n\\n[1 short peer question]\\n\\n{hashtags}"
 }}
 """
 
@@ -599,7 +598,7 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
 
     # 1. Top Eyebrow Kicker
     kicker = _strip_unsupported_emojis(data.get("series_badge", f"30 DAYS OF HIDDEN GEMS  •  DAY {day_num:02d}"))
-    draw.text((margin, 78), kicker, fill=pal["kicker"], font=font_kicker)
+    draw.text((margin, 64), kicker, fill=pal["kicker"], font=font_kicker)
 
     # 2. Pill Tag + Version Badge
     pill_tag = _strip_unsupported_emojis(data.get("pill_tag") or data.get("title", "Hidden Concept"))
@@ -610,50 +609,50 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
 
     img = _draw_glass_rect(
         img,
-        [margin, 128, margin + pill_total_w, 180],
+        [margin, 108, margin + pill_total_w, 156],
         fill_rgba=(*pal["pill_bg"], 75),
         outline_rgba=(*pal["kicker"], 150),
         radius=14,
     )
     draw = ImageDraw.Draw(img)
-    draw.text((margin + 22, 141), pill_tag, fill=(248, 250, 252), font=font_pill)
+    draw.text((margin + 22, 119), pill_tag, fill=(248, 250, 252), font=font_pill)
     if pill_badge:
         bx0 = int(margin + 22 + tag_w + 16)
         bx1 = min(int(bx0 + badge_w), margin + pill_total_w - 14)
-        draw.rounded_rectangle([bx0, 139, bx1, 169], radius=10, fill=pal["pill_bg"])
-        draw.text((bx0 + 13, 145), pill_badge, fill=(255, 255, 255), font=font_badge)
+        draw.rounded_rectangle([bx0, 117, bx1, 147], radius=10, fill=pal["pill_bg"])
+        draw.text((bx0 + 13, 123), pill_badge, fill=(255, 255, 255), font=font_badge)
 
     # 3. Two-Tone Editorial Headline
     h1_top = _strip_unsupported_emojis(data.get("headline_line1") or data.get("title", "Production Pattern"))
     h1_accent = _strip_unsupported_emojis(data.get("headline_accent") or "")
-    y_h = 212
+    y_h = 182
     for ln in textwrap.wrap(h1_top, width=25)[:2]:
         draw.text((margin, y_h), ln, fill=(248, 250, 252), font=font_h1)
-        y_h += 70
+        y_h += 66
     if h1_accent:
         for ln in textwrap.wrap(h1_accent, width=26)[:2]:
             draw.text((margin, y_h), ln, fill=pal["accent"], font=font_h1)
-            y_h += 70
+            y_h += 66
 
-    # 4. Crisp Subtitle with generous breathing room
+    # 4. Crisp Subtitle
     sub = _strip_unsupported_emojis(data.get("subtitle", ""))
-    y_sub = y_h + 18
+    y_sub = y_h + 12
     if sub:
         for ln in textwrap.wrap(sub, width=58)[:2]:
             draw.text((margin, y_sub), ln, fill=(203, 213, 225), font=font_sub)
-            y_sub += 36
+            y_sub += 34
 
-    # 5. Three Glassmorphic Stat / Takeaway Cards (Gradient-Glass signature)
+    # 5. Three Glassmorphic Stat / Takeaway Cards
     highlights = data.get("card_highlights") or [
         {"stat": "Zero Alloc", "label": "No heap pressure in hot paths"},
         {"stat": "Cleaner", "label": "Idiomatic modern syntax"},
         {"stat": "Tested", "label": "Production-ready pattern"},
     ]
     highlights = highlights[:3]
-    y_cards = max(y_sub + 34, 520)
+    y_cards = max(y_sub + 22, 446)
     card_gap = 20
     card_w = (width - 2 * margin - card_gap * 2) // 3
-    card_h = 148
+    card_h = 122
 
     for idx, item in enumerate(highlights):
         cx0 = margin + idx * (card_w + card_gap)
@@ -662,52 +661,62 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
             [cx0, y_cards, cx0 + card_w, y_cards + card_h],
             fill_rgba=(255, 255, 255, 18),
             outline_rgba=(255, 255, 255, 48),
-            radius=18,
+            radius=16,
         )
         draw = ImageDraw.Draw(img)
         stat_txt = _strip_unsupported_emojis(str(item.get("stat", "")))[:14]
         lbl_txt = _strip_unsupported_emojis(str(item.get("label", "")))
-        draw.text((cx0 + 22, y_cards + 24), stat_txt, fill=(248, 250, 252), font=font_stat)
-        ly = y_cards + 72
+        draw.text((cx0 + 20, y_cards + 18), stat_txt, fill=(248, 250, 252), font=font_stat)
+        ly = y_cards + 62
         for ln in textwrap.wrap(lbl_txt, width=22)[:2]:
-            draw.text((cx0 + 22, ly), ln, fill=(203, 213, 225), font=font_stat_lbl)
-            ly += 24
+            draw.text((cx0 + 20, ly), ln, fill=(203, 213, 225), font=font_stat_lbl)
+            ly += 22
 
-    # 6. Frosted Glass Syntax-Highlighted Code Block
-    y_code_box = y_cards + card_h + 34
-    y_code_bottom = height - 155
-    img = _draw_glass_rect(
-        img,
-        [margin, y_code_box, width - margin, y_code_bottom],
-        fill_rgba=(10, 12, 26, 200),
-        outline_rgba=(*pal["kicker"], 85),
-        radius=20,
-    )
-    draw = ImageDraw.Draw(img)
-
-    # Subtle macOS-style dots + filename header inside code card
-    dot_y = y_code_box + 26
-    for i, c in enumerate(((239, 68, 68), (245, 158, 11), (16, 185, 129))):
-        draw.ellipse([margin + 24 + i * 20, dot_y - 6, margin + 36 + i * 20, dot_y + 6], fill=c)
+    # 6. Stacked BEFORE & AFTER Frosted Code Windows
     default_fnames = {"dotnet": "Program.cs", "angular": "component.ts", "sql_server": "query.sql"}
     code_fname = _strip_unsupported_emojis(data.get("code_filename") or default_fnames.get(track, "snippet.cs"))
-    fn_w = draw.textlength(code_fname, font=font_fname) if hasattr(draw, "textlength") else len(code_fname) * 9
-    draw.text((width - margin - 24 - fn_w, y_code_box + 17), code_fname, fill=(148, 163, 184), font=font_fname)
-    draw.line([(margin + 1, y_code_box + 50), (width - margin - 1, y_code_box + 50)], fill=(255, 255, 255, 25), width=1)
-
+    bad_clean = _strip_unsupported_emojis(data.get("bad_code", "// legacy approach"), preserve_newlines=True)
     good_clean = _strip_unsupported_emojis(data.get("good_code", "// optimized pattern"), preserve_newlines=True)
-    code_lines = _wrap_code_lines(good_clean, max_chars=52, max_lines=10)
-    avail_h = (y_code_bottom - 18) - (y_code_box + 66)
-    line_h = min(36, max(26, avail_h // max(len(code_lines), 1)))
-    _draw_syntax_highlighted_lines(
-        draw,
-        code_lines,
-        margin + 24,
-        margin + 68,
-        y_code_box + 70,
-        line_h,
-        font_code,
-    )
+    bad_lines = _wrap_code_lines(bad_clean, max_chars=52, max_lines=5)
+    good_lines = _wrap_code_lines(good_clean, max_chars=52, max_lines=6)
+
+    y_code_top = y_cards + card_h + 24
+    y_code_bottom = height - 135
+    box_gap = 18
+    total_code_h = y_code_bottom - y_code_top - box_gap
+    before_h = max(180, int(total_code_h * 0.44))
+    y_before_end = y_code_top + before_h
+    y_after_top = y_before_end + box_gap
+
+    for panel_y0, panel_y1, badge_lbl, dot_col, border_col, lines, show_fname in (
+        (y_code_top, y_before_end, "BEFORE", (239, 68, 68), (239, 68, 68, 95), bad_lines, False),
+        (y_after_top, y_code_bottom, "AFTER", (16, 185, 129), (16, 185, 129, 110), good_lines, True),
+    ):
+        img = _draw_glass_rect(
+            img,
+            [margin, panel_y0, width - margin, panel_y1],
+            fill_rgba=(10, 12, 26, 205),
+            outline_rgba=border_col,
+            radius=18,
+        )
+        draw = ImageDraw.Draw(img)
+        draw.ellipse([margin + 22, panel_y0 + 18, margin + 34, panel_y0 + 30], fill=dot_col)
+        draw.text((margin + 44, panel_y0 + 15), badge_lbl, fill=dot_col, font=font_badge)
+        if show_fname:
+            fn_w = draw.textlength(code_fname, font=font_fname) if hasattr(draw, "textlength") else len(code_fname) * 9
+            draw.text((width - margin - 22 - fn_w, panel_y0 + 15), code_fname, fill=(148, 163, 184), font=font_fname)
+        draw.line([(margin + 1, panel_y0 + 44), (width - margin - 1, panel_y0 + 44)], fill=(255, 255, 255, 25), width=1)
+        avail_h = (panel_y1 - 12) - (panel_y0 + 56)
+        line_h = min(33, max(24, avail_h // max(len(lines), 1)))
+        _draw_syntax_highlighted_lines(
+            draw,
+            lines,
+            margin + 22,
+            margin + 64,
+            panel_y0 + 58,
+            line_h,
+            font_code,
+        )
 
     # 7. Minimal Editorial Footer
     fx, fy = margin, height - 96

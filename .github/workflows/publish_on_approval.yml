@@ -71,9 +71,10 @@ jobs:
               print(f"Fetched {target} from origin/previews")
           PY
 
-      - name: Extract Approved Text
+      - name: Extract Approved Text & Preview Image URL
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
+          REPO: ${{ github.repository }}
         run: |
           python - <<'PY'
           import os
@@ -89,6 +90,13 @@ jobs:
           else:
               content = raw.strip()
           Path("approved_text.txt").write_text(content, encoding="utf-8")
+
+          match = re.search(r"previews/(day_[A-Za-z0-9_]+_\d+\.png)", raw)
+          img_name = match.group(1) if match else "latest.png"
+          repo = os.environ["REPO"]
+          raw_url = f"https://raw.githubusercontent.com/{repo}/previews/previews/{img_name}"
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"PUBLIC_IMAGE_URL={raw_url}\n")
           PY
 
       - name: Publish to LinkedIn & Dev.to
