@@ -37,7 +37,7 @@ CURRICULUM_FILE = "thirty_days_curriculum.json"
 STATE_FILE = "series_state.json"
 HISTORY_FILE = "post_history.json"
 DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
-FALLBACK_GEMINI_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash")
+FALLBACK_GEMINI_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite")
 TRANSIENT_GEMINI_STATUS_CODES = (429, 500, 502, 503, 504)
 MODEL_FALLBACK_STATUS_CODES = (400, 404, 429, 500, 502, 503, 504)
 DEFAULT_LINKEDIN_API_VERSION = "202610"
@@ -264,6 +264,16 @@ def _post_gemini_generate(
                     )
                     _raise_for_status_with_body(response, f"Gemini API ({model})", secret=clean_key)
 
+                if (
+                    response.status_code == 429
+                    and has_next_model
+                    and ("per day" in err_text.lower() or "free_tier_requests" in err_text)
+                ):
+                    print(
+                        f"Warning: model '{model}' daily quota exhausted (429); trying next model...",
+                        file=sys.stderr,
+                    )
+                    break
                 if response.status_code in TRANSIENT_GEMINI_STATUS_CODES:
                     retry_reason = f"returned HTTP {response.status_code}"
                 elif has_next_model and response.status_code in MODEL_FALLBACK_STATUS_CODES:
