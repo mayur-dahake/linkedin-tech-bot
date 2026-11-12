@@ -5,11 +5,16 @@ Covers 30 Days of Hidden Concepts for .NET, Angular, and SQL Server.
 Automatically tracks "Day X of 30", generates 4:5 editorial gradient-glass
 visual cards, and publishes to LinkedIn upon approval.
 
+Hybrid Curriculum + Live Market Radar:
+- Cycle 1 (Days 1-90): Structured hidden gems from thirty_days_curriculum.json
+- Cycle 2+ (or --dynamic): Live Google Search Grounding for recent releases
+  and market trends, deduplicated against post_history.json.
+
 Enforces high-retention technical bullet pattern:
 - **[Tech Anchor]:** [Exact metric, performance difference, or code trade-off]
 
 Usage:
-  python linkedin_daily_bot.py generate [--track dotnet|angular|sql_server] [--day N]
+  python linkedin_daily_bot.py generate [--track dotnet|angular|sql_server] [--day N] [--dynamic]
   python linkedin_daily_bot.py publish [--text "..." | --text-file FILE] [--image "..."]
 """
 
@@ -30,6 +35,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 CURRICULUM_FILE = "thirty_days_curriculum.json"
 STATE_FILE = "series_state.json"
+HISTORY_FILE = "post_history.json"
 DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
 FALLBACK_GEMINI_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash")
 TRANSIENT_GEMINI_STATUS_CODES = (429, 500, 502, 503, 504)
@@ -108,10 +114,12 @@ def load_state() -> dict:
     if os.path.exists(STATE_FILE):
         try:
             with open(STATE_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                data.setdefault("cycle", 1)
+                return data
         except Exception:
             pass
-    return {"track": "dotnet", "day": 1}
+    return {"track": "dotnet", "day": 1, "cycle": 1}
 
 
 def save_state(state: dict) -> None:
@@ -122,10 +130,30 @@ def save_state(state: dict) -> None:
     os.replace(tmp_path, STATE_FILE)
 
 
+def load_history() -> list[str]:
+    if os.path.exists(HISTORY_FILE):
+        try:
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                items = json.load(f)
+                return items if isinstance(items, list) else []
+        except Exception:
+            pass
+    return []
+
+
+def save_history(items: list[str]) -> None:
+    tmp_path = f"{HISTORY_FILE}.tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(items[-120:], f, indent=2)
+        f.write("\n")
+    os.replace(tmp_path, HISTORY_FILE)
+
+
 def get_current_item(track: str | None = None, day: int | None = None) -> tuple:
     state = load_state()
     active_track = track or state.get("track", "dotnet")
     active_day = day or state.get("day", 1)
+    active_cycle = int(state.get("cycle", 1))
 
     with open(CURRICULUM_FILE, "r", encoding="utf-8") as f:
         curriculum = json.load(f)
@@ -140,7 +168,7 @@ def get_current_item(track: str | None = None, day: int | None = None) -> tuple:
         "sql_server": "SQL Server",
     }
     track_display = track_names.get(active_track, ".NET & C#")
-    return active_track, item["day"], track_display, item
+    return active_track, item["day"], track_display, item, active_cycle
 
 
 def _clean_post_for_linkedin(text: str) -> str:
@@ -246,9 +274,15 @@ def _post_gemini_generate(
     raise RuntimeError("No Gemini models configured to handle generateContent request.")
 
 
-def generate_visual_post_data(api_key: str, track: str | None = None, day: int | None = None) -> dict:
-    """Calls Gemini API to generate structured editorial card data and practitioner LinkedIn post copy."""
-    active_track, day_num, track_display, item = get_current_item(track, day)
+def generate_visual_post_data(
+    api_key: str,
+    track: str | None = None,
+    day: int | None = None,
+    dynamic: bool = False,
+) -> dict:
+    """Calls Gemini API to generate editorial card data and practitioner LinkedIn post copy."""
+    active_track, day_num, track_display, item, active_cycle = get_current_item(track, day)
+    use_dynamic = dynamic or active_cycle >= 2
     configured_model = os.environ.get("GEMINI_MODEL", "").strip()
     models_to_try = [configured_model] if configured_model else list(FALLBACK_GEMINI_MODELS)
     clean_key = api_key.strip().strip('"').strip("'")
@@ -257,12 +291,27 @@ def generate_visual_post_data(api_key: str, track: str | None = None, day: int |
         "#SoftwareEngineering #Performance #CleanCode #WebDevelopment",
     )
 
+    if use_dynamic:
+        history = load_history()
+        recent_list = ", ".join(history[-30:]) if history else "None yet"
+        topic_block = (
+            f"Mode: LIVE MARKET RADAR (Cycle {active_cycle}).\n"
+            f"Use Google Search to find a genuinely recent, high-impact {track_display} release feature, "
+            f"runtime/framework improvement, or modern production pattern that developers are adopting right now.\n"
+            f"DO NOT repeat any of these previously covered topics: {recent_list}."
+        )
+        badge_line = f"MARKET RADAR  •  {track_display.upper()}  •  DAY {day_num:02d}"
+        title_hint = f"Concise 3-6 word topic title in {track_display}"
+    else:
+        topic_block = f"Today's Concept: {item['concept']}\nTechnical Focus: {item['focus']}"
+        badge_line = f"30 DAYS OF HIDDEN {track_display.upper()} GEMS  •  DAY {day_num:02d}"
+        title_hint = item["concept"]
+
     system_prompt = f"""
 You are a Senior Fullstack Engineer (.NET, Angular, SQL Server) writing Day {day_num} of your personal LinkedIn engineering series:
 "Day {day_num}/30: {track_display} Hidden Concepts".
 
-Today's Concept: {item['concept']}
-Technical Focus: {item['focus']}
+{topic_block}
 
 Voice & Tone Rules (CRITICAL - sound like a real practitioner, NOT an AI):
 - Write like a senior dev sharing a practical tip from a real code review or production profiling session.
@@ -282,8 +331,8 @@ Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template):
     {{"stat": "SIMD", "label": "Vectorized CPU instructions"}},
     {{"stat": "Span", "label": "Works directly on slices"}}
   ]
-- good_code: 4 to 6 lines of production-accurate optimized code (include a short // or -- comment on line 1, keep each line <= 46 chars naturally).
-- Do NOT put emojis inside any card fields (headline, pill_tag, card_highlights, good_code, subtitle).
+- good_code: 4 to 7 lines of production-accurate optimized code (include a short // or -- comment on line 1, keep each line <= 50 chars naturally).
+- Do NOT put emojis inside any card fields (headline, pill_tag, card_highlights, good_code, subtitle, code_filename).
 
 MANDATORY POST COMMENTARY BULLET RULE:
 Every bullet point under the takeaway section MUST strictly follow this exact syntax:
@@ -291,10 +340,10 @@ Every bullet point under the takeaway section MUST strictly follow this exact sy
 
 Use double newlines (`\\n\\n`) between every paragraph and section in `post_text` so it breathes nicely on LinkedIn.
 
-Return STRICT JSON with these keys:
+Return STRICT RAW JSON ONLY (no markdown fences) with these keys:
 {{
-  "series_badge": "30 DAYS OF HIDDEN {track_display.upper()} GEMS  •  DAY {day_num:02d}",
-  "title": "{item['concept']}",
+  "series_badge": "{badge_line}",
+  "title": "{title_hint}",
   "headline_line1": "3-5 word white headline",
   "headline_accent": "4-6 word accent headline continuation",
   "subtitle": "Crisp 8-12 word engineering summary",
@@ -308,7 +357,7 @@ Return STRICT JSON with these keys:
   ],
   "bad_code": "3 to 5 lines of realistic suboptimal code",
   "good_code": "4 to 6 lines of realistic optimized code",
-  "post_text": "Complete ready-to-post LinkedIn text (under 2200 chars) structured as:\\n\\nDay {day_num}/30 — {item['concept']} ({track_display})\\n\\n[2 short, conversational lines from a real dev perspective explaining the problem you hit in code]\\n\\nBefore:\\n[clean formatted code]\\n\\nAfter:\\n[clean formatted code]\\n\\nWhy this matters in production:\\n• **[Tech Anchor 1]:** [Exact mechanism or trade-off]\\n• **[Tech Anchor 2]:** [Exact mechanism or trade-off]\\n• **[Tech Anchor 3]:** [Exact mechanism or trade-off]\\n\\n[1 natural, peer-to-peer question for other devs]\\n\\n{hashtags}"
+  "post_text": "Complete ready-to-post LinkedIn text (under 2200 chars) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[2 short, conversational lines from a real dev perspective explaining the problem you hit in code]\\n\\nBefore:\\n[clean formatted code]\\n\\nAfter:\\n[clean formatted code]\\n\\nWhy this matters in production:\\n• **[Tech Anchor 1]:** [Exact mechanism or trade-off]\\n• **[Tech Anchor 2]:** [Exact mechanism or trade-off]\\n• **[Tech Anchor 3]:** [Exact mechanism or trade-off]\\n\\n[1 natural, peer-to-peer question for other devs]\\n\\n{hashtags}"
 }}
 """
 
@@ -316,13 +365,20 @@ Return STRICT JSON with these keys:
         "Content-Type": "application/json",
         "x-goog-api-key": clean_key,
     }
-    payload = {
-        "contents": [{"role": "user", "parts": [{"text": system_prompt}]}],
-        "generationConfig": {
-            "temperature": 0.3,
-            "responseMimeType": "application/json",
-        },
-    }
+    if use_dynamic:
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": system_prompt}]}],
+            "tools": [{"google_search": {}}],
+            "generationConfig": {"temperature": 0.3},
+        }
+    else:
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": system_prompt}]}],
+            "generationConfig": {
+                "temperature": 0.3,
+                "responseMimeType": "application/json",
+            },
+        }
 
     response = _post_gemini_generate(models_to_try, headers, payload, clean_key)
     raw_text = response.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
@@ -330,6 +386,7 @@ Return STRICT JSON with these keys:
     data = json.loads(raw_text)
     data["track"] = active_track
     data["day"] = day_num
+    data["dynamic"] = use_dynamic
     return data
 
 
@@ -718,14 +775,14 @@ def post_to_linkedin(
 # ---------------------------------------------------------------------------
 # CLI Command Handlers
 # ---------------------------------------------------------------------------
-def handle_generate(track: str | None = None, day: int | None = None) -> None:
+def handle_generate(track: str | None = None, day: int | None = None, dynamic: bool = False) -> None:
     gemini_key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not gemini_key:
         print("Error: GEMINI_API_KEY is required for generation.", file=sys.stderr)
         sys.exit(1)
 
     print("Generating 30-day series post draft...")
-    data = generate_visual_post_data(gemini_key, track, day)
+    data = generate_visual_post_data(gemini_key, track, day, dynamic=dynamic)
 
     with open("draft_content.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
@@ -737,6 +794,7 @@ def handle_generate(track: str | None = None, day: int | None = None) -> None:
     print("\n--- 30-Day Series Draft Ready ---")
     print(f"Badge: {data.get('series_badge')}")
     print(f"Title: {data.get('title')}")
+    print(f"Mode:  {'Live Market Radar' if data.get('dynamic') else 'Structured Curriculum'}")
     print(f"Image: {image_path}")
 
 
@@ -775,19 +833,30 @@ def handle_publish(
 
     post_to_linkedin(linkedin_token, linkedin_urn, post_text, image_urn)
 
-    # Increment day in series_state.json upon successful publish
+    # Record published topic to prevent duplicates in future dynamic cycles
+    published_title = current_data.get("title")
+    if published_title:
+        history = load_history()
+        if published_title not in history:
+            history.append(published_title)
+            save_history(history)
+
+    # Increment day (and cycle after completing all 3 tracks) upon successful publish
     state = load_state()
     current_day = current_data.get("day", state.get("day", 1))
     next_day = current_day + 1
     if next_day > 30:
         tracks = ["dotnet", "angular", "sql_server"]
         curr_idx = tracks.index(state.get("track", "dotnet")) if state.get("track", "dotnet") in tracks else 0
-        state["track"] = tracks[(curr_idx + 1) % len(tracks)]
+        next_idx = (curr_idx + 1) % len(tracks)
+        state["track"] = tracks[next_idx]
         state["day"] = 1
+        if next_idx == 0:
+            state["cycle"] = int(state.get("cycle", 1)) + 1
     else:
         state["day"] = next_day
     save_state(state)
-    print(f"Updated series state: Next is Track '{state['track']}', Day {state['day']}.")
+    print(f"Updated series state: Next is Cycle {state.get('cycle', 1)}, Track '{state['track']}', Day {state['day']}.")
 
 
 def main() -> None:
@@ -797,6 +866,7 @@ def main() -> None:
     gen_parser = subparsers.add_parser("generate", help="Generate post draft & visual card")
     gen_parser.add_argument("--track", choices=["dotnet", "angular", "sql_server"], help="Specific technology track")
     gen_parser.add_argument("--day", type=int, help="Day number (1-30)")
+    gen_parser.add_argument("--dynamic", action="store_true", help="Use live Google Search grounding for trending market topics")
 
     pub_parser = subparsers.add_parser("publish", help="Publish approved draft to LinkedIn")
     pub_parser.add_argument("--text", help="Custom text or override to publish")
@@ -806,7 +876,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "generate":
-        handle_generate(args.track, args.day)
+        handle_generate(args.track, args.day, dynamic=args.dynamic)
     elif args.command == "publish":
         handle_publish(args.text, args.text_file, args.image)
 
