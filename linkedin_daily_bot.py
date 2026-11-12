@@ -37,7 +37,7 @@ CURRICULUM_FILE = "thirty_days_curriculum.json"
 STATE_FILE = "series_state.json"
 HISTORY_FILE = "post_history.json"
 DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
-FALLBACK_GEMINI_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash")
+FALLBACK_GEMINI_MODELS = ("gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash")
 TRANSIENT_GEMINI_STATUS_CODES = (429, 500, 502, 503, 504)
 MODEL_FALLBACK_STATUS_CODES = (400, 404, 429, 500, 502, 503, 504)
 DEFAULT_LINKEDIN_API_VERSION = "202610"
@@ -241,7 +241,7 @@ def _post_gemini_generate(
     clean_key: str,
 ) -> requests.Response:
     """Posts to Gemini generateContent with backoff retries and model fallbacks."""
-    retry_delays = (2.0, 5.0) if len(models_to_try) == 1 else (2.0,)
+    retry_delays = (3.0, 6.0)
 
     for idx, model in enumerate(models_to_try):
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -253,7 +253,7 @@ def _post_gemini_generate(
             retry_reason: str | None = None
 
             try:
-                response = requests.post(url, headers=headers, json=payload, timeout=30)
+                response = requests.post(url, headers=headers, json=payload, timeout=60)
             except requests.RequestException as exc:
                 last_exc = exc
                 retry_reason = f"request failed ({exc})"
