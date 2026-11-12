@@ -183,24 +183,18 @@ def _to_unicode_bold(text: str) -> str:
     return text.translate(_UNICODE_BOLD_MAP)
 
 
-def _format_code_block_for_linkedin(match: re.Match) -> str:
-    return "\n".join(f"▎ {ln}" for ln in match.group(2).strip("\n").splitlines())
-
-
 def _clean_post_for_linkedin(text: str) -> str:
-    """Convert GitHub Markdown into crisp LinkedIn-ready Unicode bold & framed code blocks."""
+    """Strip inline code blocks and convert Markdown into crisp LinkedIn-ready Unicode bold."""
     cleaned = re.sub(
-        r"(?ms)^```([A-Za-z0-9_-]*)[ \t]*\n(.*?)\n```[ \t]*$",
-        _format_code_block_for_linkedin,
+        r"(?ms)^(?:Before|After):[ \t]*\n```[A-Za-z0-9_-]*[ \t]*\n.*?\n```[ \t]*\n?",
+        "",
         text,
     )
+    cleaned = re.sub(r"(?ms)^```[A-Za-z0-9_-]*[ \t]*\n.*?\n```[ \t]*\n?", "", cleaned)
+    cleaned = re.sub(r"(?m)^Why it matters:[ \t]*\n?", "", cleaned)
     cleaned = re.sub(r"\*\*([^*\n]+?)\*\*", lambda m: _to_unicode_bold(m.group(1)), cleaned)
     cleaned = re.sub(r"(?m)^(Day\s+\d+/\d+\s*[—-].+)$", lambda m: _to_unicode_bold(m.group(1)), cleaned)
-    cleaned = re.sub(
-        r"(?m)^(Before:|After:|Why it matters:|Watch out:)",
-        lambda m: _to_unicode_bold(m.group(1)),
-        cleaned,
-    )
+    cleaned = re.sub(r"(?m)^(Watch out:)", lambda m: _to_unicode_bold(m.group(1)), cleaned)
     cleaned = re.sub(r"(?m)^•\s+", "▸ ", cleaned)
     return re.sub(r"\n{3,}", "\n\n", cleaned).strip()
 
