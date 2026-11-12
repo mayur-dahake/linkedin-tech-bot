@@ -316,10 +316,11 @@ You are a Senior Fullstack Engineer (.NET, Angular, SQL Server) writing Day {day
 {topic_block}
 
 Voice & Tone Rules (CRITICAL - sound like a real practitioner, NOT an AI):
-- Write like a senior dev sharing a practical tip from a real code review or production profiling session.
-- Keep sentences short, direct, and grounded in how the runtime/compiler/engine actually behaves.
+- Respect the reader's attention span: keep `post_text` under 150 words (~1,000 chars) so it reads in 15 seconds on mobile.
+- Write like a senior dev sharing a quick field note from a real code review or profiler session.
+- Ground claims in real runtime/DB mechanics (e.g., heap allocations, Gen0 GC, logical reads, Index Seek vs Key Lookup, change detection cycles).
 - NEVER use AI clichés or marketing hype: NO "completely missing out", "drastically cut down", "delivers up to 10x", "skyrocket", "unlock", "game-changer", "leverage", "utilize", "delve", "elevate", or "in today's fast-paced world".
-- Do NOT invent fake metrics like "50k+ req/sec" unless it's a real architectural behavior. Focus on real mechanics (allocations, GC pressure, execution plans, change detection cycles).
+- Include one concise, honest `Watch out:` line naming a real production edge case or caveat.
 
 Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template):
 - headline_line1: Short bold white hook (3-5 words, e.g. "Stop allocating arrays")
@@ -338,7 +339,7 @@ Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template):
 
 MANDATORY POST COMMENTARY BULLET RULE:
 Every bullet point under the takeaway section MUST strictly follow this exact syntax (NEVER output literal square brackets [ or ] around the anchor or text):
-• **Tech Anchor:** Exact mechanism, memory/I/O difference, or real trade-off
+• **Tech Anchor:** One short sentence with a real profiler/runtime metric or trade-off
 
 Code blocks in `post_text`: Wrap both Before and After snippets in Markdown triple-backtick fences (```csharp, ```ts, or ```sql) so they render as proper code blocks in GitHub review issues.
 
@@ -361,7 +362,7 @@ Return STRICT RAW JSON ONLY (no markdown fences) with these keys:
   ],
   "bad_code": "3 to 5 lines of realistic suboptimal code",
   "good_code": "4 to 6 lines of realistic optimized code",
-  "post_text": "Complete ready-to-post LinkedIn text (under 2200 chars) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[2 short, conversational lines from a real dev perspective explaining the problem you hit in code]\\n\\nBefore:\\n```csharp\\n[clean formatted code]\\n```\\n\\nAfter:\\n```csharp\\n[clean formatted code]\\n```\\n\\nWhy this matters in production:\\n• **First Anchor:** Write real explanation here without brackets\\n• **Second Anchor:** Write real explanation here without brackets\\n• **Third Anchor:** Write real explanation here without brackets\\n\\n[1 natural, peer-to-peer question for other devs]\\n\\n{hashtags}"
+  "post_text": "Complete ready-to-post LinkedIn text (STRICTLY under 150 words) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[1 punchy hook line from a real dev perspective]\\n\\nBefore:\\n```csharp\\n[2-4 lines]\\n```\\n\\nAfter:\\n```csharp\\n[2-4 lines]\\n```\\n\\nWhy it matters:\\n• **First Anchor:** Short profiler/runtime insight without brackets\\n• **Second Anchor:** Short profiler/runtime insight without brackets\\n• **Third Anchor:** Short profiler/runtime insight without brackets\\n\\nWatch out: [1 short sentence on a real production gotcha]\\n\\n[1 short peer question]\\n\\n{hashtags}"
 }}
 """
 

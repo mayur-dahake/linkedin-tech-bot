@@ -1,16 +1,16 @@
-name: 2. Publish to LinkedIn on Approval
+name: 2. Publish or Regenerate on Issue Comment
 
 on:
   issue_comment:
     types: [created]
 
 concurrency:
-  group: linkedin-publish
+  group: linkedin-issue-action
   cancel-in-progress: false
 
 jobs:
   publish-approved:
-    # Triggers only when an authorized maintainer comments '/publish' or '/approve' on an open review issue
+    # Triggers when an authorized maintainer comments '/publish' or '/approve' on an open review issue
     if: >-
       !github.event.issue.pull_request &&
       github.event.issue.state == 'open' &&
@@ -49,7 +49,29 @@ jobs:
           name: post-card
           path: .
 
-      - name: Extract Approved Text & Visual Card Path
+      - name: Fetch Visual Card from 'previews' Branch (Fallback)
+        if: hashFiles('post_card.png') == ''
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          python - <<'PY'
+          import os, re, subprocess
+          from pathlib import Path
+
+          raw = os.environ.get("ISSUE_BODY", "")
+          match = re.search(r"previews/(day_[A-Za-z0-9_]+_\d+\.png)", raw)
+          target = f"previews/{match.group(1)}" if match else "previews/latest.png"
+
+          subprocess.run(["git", "fetch", "origin", "previews"], check=False)
+          res = subprocess.run(["git", "show", f"origin/previews:{target}"], capture_output=True)
+          if res.returncode != 0:
+              res = subprocess.run(["git", "show", "origin/previews:previews/latest.png"], capture_output=True)
+          if res.returncode == 0 and res.stdout:
+              Path("post_card.png").write_bytes(res.stdout)
+              print(f"Fetched {target} from origin/previews")
+          PY
+
+      - name: Extract Approved Text
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
@@ -67,22 +89,6 @@ jobs:
           else:
               content = raw.strip()
           Path("approved_text.txt").write_text(content, encoding="utf-8")
-
-          image_path = ""
-          match = re.search(r"previews/(day_[A-Za-z0-9_]+_\d+\.png)", raw)
-          if match:
-              candidate = Path("previews") / match.group(1)
-              if candidate.is_file():
-                  image_path = str(candidate)
-
-          if not image_path and Path("previews/latest.png").is_file():
-              image_path = "previews/latest.png"
-          elif not image_path:
-              image_path = "post_card.png"
-
-          print(f"Resolved visual card path: {image_path}")
-          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
-              env_file.write(f"IMAGE_PATH={image_path}\n")
           PY
 
       - name: Publish Text + Image to LinkedIn
@@ -91,7 +97,7 @@ jobs:
           LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
           LINKEDIN_API_VERSION: ${{ vars.LINKEDIN_API_VERSION }}
         run: |
-          python linkedin_daily_bot.py publish --text-file approved_text.txt --image "${IMAGE_PATH:-post_card.png}"
+          python linkedin_daily_bot.py publish --text-file approved_text.txt --image post_card.png
 
       - name: Commit Updated Series State & History
         env:
@@ -116,3 +122,137 @@ jobs:
         run: |
           gh issue comment "$ISSUE_NUMBER" --body "🚀 **Successfully published text & visual card to LinkedIn!** Closing this review ticket."
           gh issue close "$ISSUE_NUMBER"
+
+      - name: Comment Alert on Publish Failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "❌ **Publish failed!** Check the [workflow logs]($RUN_URL). If you see a \`401 Unauthorized\` error, your 60-day \`LINKEDIN_ACCESS_TOKEN\` has expired and needs to be refreshed in GitHub Secrets."
+
+  regenerate-draft:
+    # Triggers when an authorized maintainer comments '/regenerate' on an open review issue
+    if: >-
+      !github.event.issue.pull_request &&
+      github.event.issue.state == 'open' &&
+      startsWith(github.event.issue.title, '📝 Review Draft:') &&
+      startsWith(github.event.comment.body, '/regenerate') &&
+      (
+        github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR'
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pillow
+
+      - name: Regenerate Post Draft & Visual Card
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: |
+          python linkedin_daily_bot.py generate
+
+      - name: Upload Regenerated Post Card Artifact
+        if: hashFiles('post_card.png') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-card
+          path: post_card.png
+
+      - name: Push Updated Preview Image to 'previews' Branch
+        if: hashFiles('post_card.png') != ''
+        run: |
+          python - <<'PY'
+          import json, shutil
+          from pathlib import Path
+
+          draft = json.loads(Path("draft_content.json").read_text(encoding="utf-8"))
+          day = int(draft.get("day", 1))
+          track = str(draft.get("track", "dotnet")).strip() or "dotnet"
+
+          out = Path("/tmp/previews_push")
+          out.mkdir(parents=True, exist_ok=True)
+          shutil.copy2("post_card.png", out / f"day_{track}_{day}.png")
+          shutil.copy2("post_card.png", out / "latest.png")
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin previews >/dev/null 2>&1; then
+            git fetch origin previews
+            git worktree add /tmp/previews_wt origin/previews
+            cd /tmp/previews_wt
+            git checkout -B previews
+          else
+            git worktree add --orphan -b previews /tmp/previews_wt
+            cd /tmp/previews_wt
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          mkdir -p previews
+          cp /tmp/previews_push/*.png previews/
+          git add previews/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: regenerate preview card image [skip ci]"
+            git push origin previews
+          fi
+
+      - name: Update Review Issue with Regenerated Draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          python - <<'PY'
+          import json, os, re, subprocess
+          from pathlib import Path
+
+          draft = json.loads(Path("draft_content.json").read_text(encoding="utf-8"))
+          title = draft["title"].strip()
+          post_text = draft["post_text"].strip()
+          day = int(draft.get("day", 1))
+          track = str(draft.get("track", "dotnet")).strip() or "dotnet"
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          run_id = os.environ["GITHUB_RUN_ID"]
+          image_url = f"https://github.com/{repo}/blob/previews/previews/day_{track}_{day}.png?raw=true&v={run_id}"
+          alt_title = re.sub(r"[\[\]]", "", title)
+          safe_post_text = re.sub(r"(?m)^---+$", "───", post_text)
+
+          issue_body = (
+              "### 🖼️ Visual Card Preview\n"
+              f"![{alt_title}]({image_url})\n\n"
+              "### 📝 Post Commentary\n"
+              "Review the text below. You can edit this issue body directly to tweak wording before publishing.\n\n"
+              "---\n\n"
+              f"{safe_post_text}\n\n"
+              "---\n\n"
+              "### 👉 Commands:\n"
+              "- Comment **`/publish`** to post this image and text to LinkedIn.\n"
+              "- Comment **`/regenerate`** to generate a fresh draft and card.\n"
+              "- Close this issue to skip today.\n"
+          )
+          body_file = Path("/tmp/regen_body.md")
+          body_file.write_text(issue_body, encoding="utf-8")
+
+          num = os.environ["ISSUE_NUMBER"]
+          subprocess.run(["gh", "issue", "edit", num, "--body-file", str(body_file)], check=True)
+          subprocess.run(["gh", "issue", "comment", num, "--body", "🔄 **Regenerated draft and visual card above!**"], check=True)
+          PY

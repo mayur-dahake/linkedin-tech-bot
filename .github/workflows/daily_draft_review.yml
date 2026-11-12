@@ -4,7 +4,7 @@ on:
   schedule:
     # Runs at 12:00 UTC (5:30 PM IST / 7:00 AM EST) every day
     - cron: '0 12 * * *'
-  # Allows you to click "Run workflow" manually anytime
+  # Allows manual runs from the Actions tab anytime
   workflow_dispatch:
     inputs:
       track:
@@ -21,11 +21,6 @@ on:
         description: 'Day number 1-30 override (leave empty to use series_state.json)'
         required: false
         type: string
-      force:
-        description: 'Create a review issue even if an open draft with the same title already exists'
-        required: false
-        type: boolean
-        default: false
 
 concurrency:
   group: daily-draft-review
@@ -83,10 +78,8 @@ jobs:
           path: post_card.png
           if-no-files-found: error
 
-      - name: Commit and Push Preview Image to Repository
+      - name: Push Preview Image to Dedicated 'previews' Branch
         if: hashFiles('post_card.png') != ''
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           python - <<'PY'
           import json
@@ -97,28 +90,39 @@ jobs:
           day = int(draft.get("day", 1))
           track = str(draft.get("track", "dotnet")).strip() or "dotnet"
 
-          previews_dir = Path("previews")
-          previews_dir.mkdir(parents=True, exist_ok=True)
-          shutil.copy2("post_card.png", previews_dir / f"day_{track}_{day}.png")
-          shutil.copy2("post_card.png", previews_dir / "latest.png")
+          out = Path("/tmp/previews_push")
+          out.mkdir(parents=True, exist_ok=True)
+          shutil.copy2("post_card.png", out / f"day_{track}_{day}.png")
+          shutil.copy2("post_card.png", out / "latest.png")
           PY
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin previews >/dev/null 2>&1; then
+            git fetch origin previews
+            git worktree add /tmp/previews_wt origin/previews
+            cd /tmp/previews_wt
+            git checkout -B previews
+          else
+            git worktree add --orphan -b previews /tmp/previews_wt
+            cd /tmp/previews_wt
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          mkdir -p previews
+          cp /tmp/previews_push/*.png previews/
           git add previews/
           if ! git diff --cached --quiet; then
             git commit -m "chore: update preview card image [skip ci]"
-            git pull --rebase origin "$DEFAULT_BRANCH"
-            git push origin "HEAD:$DEFAULT_BRANCH"
+            git push origin previews
           else
             echo "No preview image changes to commit"
           fi
 
-      - name: Create Review Issue with Image Preview & Text
+      - name: Close Stale Open Draft Issues & Create New Review Issue
         env:
           GH_TOKEN: ${{ github.token }}
-          FORCE_CREATE: ${{ inputs.force || 'false' }}
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           python - <<'PY'
           import json
@@ -127,35 +131,30 @@ jobs:
           import subprocess
           from pathlib import Path
 
+          # 1. Close any older open review drafts so stale issues never pile up
+          existing_raw = subprocess.check_output(
+              ["gh", "issue", "list", "--state", "open", "--json", "number,title"],
+              text=True,
+          )
+          for item in json.loads(existing_raw):
+              if str(item.get("title", "")).startswith("📝 Review Draft:"):
+                  num = str(item["number"])
+                  subprocess.run(
+                      ["gh", "issue", "close", num, "--comment", "Superseded by today's new draft."],
+                      check=False,
+                  )
+
+          # 2. Create today's fresh review issue pointing to the 'previews' branch
           draft = json.loads(Path("draft_content.json").read_text(encoding="utf-8"))
           title = draft["title"].strip()
           post_text = draft["post_text"].strip()
           day = int(draft.get("day", 1))
           track = str(draft.get("track", "dotnet")).strip() or "dotnet"
           issue_title = f"📝 Review Draft: Day {day} - {title}"
-          force = os.environ.get("FORCE_CREATE", "false").lower() == "true"
-          summary_path = Path(os.environ["GITHUB_STEP_SUMMARY"])
-
-          existing_raw = subprocess.check_output(
-              ["gh", "issue", "list", "--state", "open", "--json", "number,title,url"],
-              text=True,
-          )
-          existing = json.loads(existing_raw)
-          matches = [item for item in existing if item.get("title") == issue_title]
-
-          if matches and not force:
-              url = matches[0]["url"]
-              msg = f"Skipped creating duplicate review issue; open draft already exists: {url}\n"
-              print(msg)
-              summary_path.write_text(f"## Draft Skipped\n{msg}", encoding="utf-8")
-              raise SystemExit(0)
 
           repo = os.environ["GITHUB_REPOSITORY"]
-          branch = os.environ.get("DEFAULT_BRANCH") or "main"
-          image_url = f"https://github.com/{repo}/blob/{branch}/previews/day_{track}_{day}.png?raw=true"
+          image_url = f"https://github.com/{repo}/blob/previews/previews/day_{track}_{day}.png?raw=true"
           alt_title = re.sub(r"[\[\]]", "", title)
-
-          # Prevent standalone '---' inside post text from breaking publish_on_approval.yml's split('---')
           safe_post_text = re.sub(r"(?m)^---+$", "───", post_text)
 
           issue_body = (
@@ -166,9 +165,10 @@ jobs:
               "---\n\n"
               f"{safe_post_text}\n\n"
               "---\n\n"
-              "### 👉 How to Approve:\n"
-              "Comment **`/publish`** on this issue to post both this image and text to LinkedIn.\n"
-              "To discard, simply close this issue.\n"
+              "### 👉 Commands:\n"
+              "- Comment **`/publish`** to post this image and text to LinkedIn.\n"
+              "- Comment **`/regenerate`** to generate a fresh draft and card.\n"
+              "- Close this issue to skip today.\n"
           )
           body_file = Path("/tmp/issue_body.md")
           body_file.write_text(issue_body, encoding="utf-8")
@@ -177,8 +177,15 @@ jobs:
               ["gh", "issue", "create", "--title", issue_title, "--body-file", str(body_file)],
               text=True,
           ).strip()
-          summary_path.write_text(
+
+          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
               f"## Review Draft Created\n- **Title:** {issue_title}\n- **Issue:** {created_url}\n",
               encoding="utf-8",
           )
           PY
+
+      - name: Notify Failure in Summary
+        if: failure()
+        run: |
+          echo "## Draft Generation Failed" >> "$GITHUB_STEP_SUMMARY"
+          echo "Check your GEMINI_API_KEY secret or API quota." >> "$GITHUB_STEP_SUMMARY"
