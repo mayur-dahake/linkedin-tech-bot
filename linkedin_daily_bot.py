@@ -393,7 +393,8 @@ Return STRICT RAW JSON ONLY (no markdown fences) with these keys:
   ],
   "bad_code": "3 to 4 lines of realistic suboptimal code",
   "good_code": "4 to 5 lines of realistic optimized code",
-  "post_text": "Minimal ready-to-post LinkedIn text (STRICTLY under 90 words, NO code blocks) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[1 punchy hook line from a real dev perspective]\\n\\n• **First Anchor:** Short profiler/runtime insight without brackets\\n• **Second Anchor:** Short profiler/runtime insight without brackets\\n• **Third Anchor:** Short profiler/runtime insight without brackets\\n\\nWatch out: [1 short sentence on a real production gotcha]\\n\\n[1 short peer question]\\n\\n{hashtags}"
+  "post_text": "Minimal ready-to-post LinkedIn text (STRICTLY under 90 words, NO code blocks) structured as:\\n\\nDay {day_num}/30 — [Concept Title] ({track_display})\\n\\n[1 punchy hook line from a real dev perspective]\\n\\n• **First Anchor:** Short profiler/runtime insight without brackets\\n• **Second Anchor:** Short profiler/runtime insight without brackets\\n• **Third Anchor:** Short profiler/runtime insight without brackets\\n\\nWatch out: [1 short sentence on a real production gotcha]\\n\\n[1 short peer question]\\n\\n{hashtags}",
+  "devto_markdown": "Rich ~180-220 word Dev.to Markdown article tailored for engineers: brief production context, ### Before and ### After fenced code blocks, ### Why it matters bullets, Watch out gotcha, and peer question (NO cover image markdown—that is prepended automatically)."
 }}
 """
 
@@ -989,10 +990,11 @@ def handle_publish(
     devto_key = os.environ.get("DEVTO_API_KEY", "").strip()
     if devto_key:
         try:
+            devto_body = str(current_data.get("devto_markdown") or post_text)
             post_to_devto(
                 devto_key,
                 current_data.get("title") or title,
-                post_text,
+                devto_body,
                 active_track,
                 image_url,
                 bad_code=str(current_data.get("bad_code", "")),
