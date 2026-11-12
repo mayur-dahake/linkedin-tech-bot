@@ -1,0 +1,30 @@
+{
+  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 02",
+  "title": "ValueTask vs Task Allocation Traps",
+  "headline_line1": "Stop allocating tasks",
+  "headline_accent": "on synchronous cache hits.",
+  "subtitle": "Eliminate Gen0 heap pressure by returning ValueTask from hot paths.",
+  "pill_tag": "ValueTask<T>",
+  "pill_badge": "NET 6+",
+  "code_filename": "UserRepository.cs",
+  "card_highlights": [
+    {
+      "stat": "0 B",
+      "label": "Heap alloc on sync cache hit"
+    },
+    {
+      "stat": "Gen0",
+      "label": "Reduced garbage collection pressure"
+    },
+    {
+      "stat": "IValueTaskSource",
+      "label": "Zero-alloc async path pooling"
+    }
+  ],
+  "bad_code": "public async Task<User> GetAsync(int id) {\n    if (cache.TryGetValue(id, out var u))\n        return u;\n    return await db.FetchAsync(id);\n}",
+  "good_code": "public ValueTask<User> GetAsync(int id) {\n    if (cache.TryGetValue(id, out var u))\n        return new(u);\n    return FetchDbAsync(id);\n}\nprivate async ValueTask<User> FetchDbAsync(int id) {\n    return await db.FetchAsync(id);\n}",
+  "post_text": "Day 2/30 \u2014 ValueTask vs Task Allocation Traps (.NET & C#)\n\nSpotted a hot path in a profiler session generating massive Gen0 garbage collection spikes because synchronous cache hits still allocated state machines on the heap.\n\n\u2022 **Task Allocations:** Returning a standard Task always allocates an object reference on the heap, even when the data is already in memory.\n\u2022 **ValueTask Struct:** Returning ValueTask avoids heap allocations on synchronous completion by wrapping a union of T and Task.\n\u2022 **IValueTaskSource:** Async continuations pool the backing source to prevent Gen0 overhead.\n\nWatch out: Never await a ValueTask multiple times or consume it concurrently.\n\nHave you audited your caching layers for hidden Task allocations lately?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+  "track": "dotnet",
+  "day": 2,
+  "dynamic": false
+}
