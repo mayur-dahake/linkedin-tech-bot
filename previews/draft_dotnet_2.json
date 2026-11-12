@@ -2,28 +2,29 @@
   "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 02",
   "title": "ValueTask vs Task Allocation Traps",
   "headline_line1": "Stop allocating tasks",
-  "headline_accent": "on synchronous cache hits.",
-  "subtitle": "Eliminate Gen0 heap pressure by returning ValueTask from hot paths.",
+  "headline_accent": "for synchronous cached hits.",
+  "subtitle": "Eliminate Gen0 heap pressure by switching from Task to ValueTask.",
   "pill_tag": "ValueTask<T>",
-  "pill_badge": "NET 6+",
+  "pill_badge": "NET 8+",
   "code_filename": "UserRepository.cs",
   "card_highlights": [
     {
       "stat": "0 B",
-      "label": "Heap alloc on sync cache hit"
+      "label": "Heap allocation on cache hit"
     },
     {
       "stat": "Gen0",
-      "label": "Reduced garbage collection pressure"
+      "label": "GC pressure eliminated"
     },
     {
-      "stat": "IValueTaskSource",
-      "label": "Zero-alloc async path pooling"
+      "stat": "IValueTask",
+      "label": "Prevents redundant state machines"
     }
   ],
-  "bad_code": "public async Task<User> GetAsync(int id) {\n    if (cache.TryGetValue(id, out var u))\n        return u;\n    return await db.FetchAsync(id);\n}",
-  "good_code": "public ValueTask<User> GetAsync(int id) {\n    if (cache.TryGetValue(id, out var u))\n        return new(u);\n    return FetchDbAsync(id);\n}\nprivate async ValueTask<User> FetchDbAsync(int id) {\n    return await db.FetchAsync(id);\n}",
-  "post_text": "Day 2/30 \u2014 ValueTask vs Task Allocation Traps (.NET & C#)\n\nSpotted a hot path in a profiler session generating massive Gen0 garbage collection spikes because synchronous cache hits still allocated state machines on the heap.\n\n\u2022 **Task Allocations:** Returning a standard Task always allocates an object reference on the heap, even when the data is already in memory.\n\u2022 **ValueTask Struct:** Returning ValueTask avoids heap allocations on synchronous completion by wrapping a union of T and Task.\n\u2022 **IValueTaskSource:** Async continuations pool the backing source to prevent Gen0 overhead.\n\nWatch out: Never await a ValueTask multiple times or consume it concurrently.\n\nHave you audited your caching layers for hidden Task allocations lately?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+  "bad_code": "public async Task<User> GetAsync(int id) {\n    if (_cache.TryGetValue(id, out var u))\n        return u;\n    return await _db.QueryAsync(id);\n}",
+  "good_code": "public async ValueTask<User> GetAsync(int id) {\n    if (_cache.TryGetValue(id, out var u))\n        return u;\n    return await _db.QueryAsync(id);\n}",
+  "post_text": "Day 2/30 \u2014 ValueTask vs Task Allocation Traps (.NET & C#)\n\nSpotted a hot path in a code review generating thousands of dead Task objects per second during cache hits.\n\n\u2022 **Heap Allocations:** Returning a Task allocates a reference type on the heap even when the result is already available synchronously.\n\u2022 **GC Pressure:** High throughput APIs hit Gen0 collections hard from redundant state machine allocations.\n\u2022 **ValueTask:** Struct-based wrapper eliminates the allocation overhead when results resolve instantly.\n\nWatch out: Never await a ValueTask multiple times or consume it concurrently.\n\nWhere have you spotted unnecessary allocations in your hot paths?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+  "devto_markdown": "### The Allocation Trap in Async Hot Paths\n\nWhile reviewing a high-throughput microservice profiler session, I noticed constant Gen0 garbage collection spikes. Tracing the allocations revealed an unexpected culprit: `Task<T>`. \n\nWhen a method is marked `async` and returns a `Task<T>`, the C# compiler generates a state machine. Even if your code hits a memory cache and returns a result immediately (synchronously), the runtime still allocates a `Task<T>` object on the heap to satisfy the method signature.\n\n### Before\n```csharp\npublic async Task<User> GetAsync(int id) {\n    if (_cache.TryGetValue(id, out var u))\n        return u;\n    return await _db.QueryAsync(id);\n}\n```\n\n### After\n```csharp\npublic async ValueTask<User> GetAsync(int id) {\n    if (_cache.TryGetValue(id, out var u))\n        return u;\n    return await _db.QueryAsync(id);\n}\n```\n\n### Why It Matters\n- **Zero Heap Allocations:** `ValueTask<T>` is a stack-allocated struct that wraps either a result or a standard `Task`, avoiding heap overhead on synchronous completions.\n- **Reduced GC Cycles:** Eliminating millions of short-lived `Task` objects drastically reduces Gen0 garbage collector pauses under load.\n- **Seamless Integration:** It integrates directly into standard `await` workflows without changing downstream calling code.\n\n### Watch Out\nA `ValueTask` wraps a pooled or unpooled state and can only be consumed once. Awaiting it multiple times or attempting concurrent reads will corrupt internal state and cause unpredictable runtime failures.\n\nHave you audited your async signatures for hidden task allocations lately?",
   "track": "dotnet",
   "day": 2,
   "dynamic": false
