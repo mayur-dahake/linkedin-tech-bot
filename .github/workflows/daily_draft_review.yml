@@ -4,7 +4,7 @@ on:
   schedule:
     # Runs at 10:30 UTC (4:00 PM IST) every day
     - cron: '30 10 * * *'
-  # Allows manual runs from the Actions tab anytime
+  # Allows manual runs or backup cron-job.org triggers anytime
   workflow_dispatch:
     inputs:
       track:
@@ -21,6 +21,11 @@ on:
         description: 'Day number 1-30 override (leave empty to use series_state.json)'
         required: false
         type: string
+      force:
+        description: 'Force regenerate even if an open draft for today already exists'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: daily-draft-review
@@ -36,15 +41,52 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check for Existing Open Draft (Same-Day Duplicate Guard)
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TRACK: ${{ inputs.track }}
+          INPUT_DAY: ${{ inputs.day }}
+          INPUT_FORCE: ${{ inputs.force }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          force = os.environ.get("INPUT_FORCE", "false").lower() == "true"
+          state = json.loads(Path("series_state.json").read_text(encoding="utf-8"))
+          day = os.environ.get("INPUT_DAY", "").strip() or str(state.get("day", 1))
+          prefix = f"📝 Review Draft: Day {day} -"
+
+          existing_raw = subprocess.check_output(
+              ["gh", "issue", "list", "--state", "open", "--json", "number,title"],
+              text=True,
+          )
+          has_same_day = any(
+              str(item.get("title", "")).startswith(prefix)
+              for item in json.loads(existing_raw)
+          )
+          skip = "true" if (has_same_day and not force) else "false"
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"skip={skip}\n")
+          if skip == "true":
+              print(f"Open draft for Day {day} already exists and force=false; skipping duplicate generation.")
+          PY
+
       - name: Set up Python
+        if: steps.guard.outputs.skip != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
       - name: Install dependencies
+        if: steps.guard.outputs.skip != 'true'
         run: pip install requests pillow
 
       - name: Generate Post Draft & Visual Card
+        if: steps.guard.outputs.skip != 'true'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
@@ -70,16 +112,18 @@ jobs:
           subprocess.run(cmd, check=True)
           PY
 
-      - name: Upload Post Card as Artifact
-        if: hashFiles('post_card.png') != ''
+      - name: Upload Post Card & Draft JSON as Artifact
+        if: steps.guard.outputs.skip != 'true' && hashFiles('post_card.png') != ''
         uses: actions/upload-artifact@v4
         with:
           name: post-card
-          path: post_card.png
+          path: |
+            post_card.png
+            draft_content.json
           if-no-files-found: error
 
-      - name: Push Preview Image to Dedicated 'previews' Branch
-        if: hashFiles('post_card.png') != ''
+      - name: Push Preview Image & Draft JSON to 'previews' Branch
+        if: steps.guard.outputs.skip != 'true' && hashFiles('post_card.png') != ''
         run: |
           python - <<'PY'
           import json
@@ -94,6 +138,8 @@ jobs:
           out.mkdir(parents=True, exist_ok=True)
           shutil.copy2("post_card.png", out / f"day_{track}_{day}.png")
           shutil.copy2("post_card.png", out / "latest.png")
+          shutil.copy2("draft_content.json", out / f"draft_{track}_{day}.json")
+          shutil.copy2("draft_content.json", out / "draft_latest.json")
           PY
 
           git config user.name "github-actions[bot]"
@@ -111,21 +157,24 @@ jobs:
           fi
 
           mkdir -p previews
-          cp /tmp/previews_push/*.png previews/
+          cp /tmp/previews_push/* previews/
           git add previews/
           if ! git diff --cached --quiet; then
-            git commit -m "chore: update preview card image [skip ci]"
+            git commit -m "chore: update preview card image and draft json [skip ci]"
             git push origin previews
           else
-            echo "No preview image changes to commit"
+            echo "No preview changes to commit"
           fi
 
       - name: Close Stale Open Draft Issues & Create New Review Issue
+        if: steps.guard.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO_OWNER: ${{ github.repository_owner }}
+          LINKEDIN_TOKEN_UPDATED_AT: ${{ vars.LINKEDIN_TOKEN_UPDATED_AT }}
         run: |
           python - <<'PY'
+          import datetime
           import json
           import os
           import re
@@ -145,7 +194,24 @@ jobs:
                       check=False,
                   )
 
-          # 2. Create today's fresh review issue pointing to the 'previews' branch
+          # 2. Optional 60-day LinkedIn token expiry check (warns starting at day 50)
+          token_banner = ""
+          updated_raw = os.environ.get("LINKEDIN_TOKEN_UPDATED_AT", "").strip()
+          if updated_raw:
+              try:
+                  updated_dt = datetime.date.fromisoformat(updated_raw[:10])
+                  age_days = (datetime.date.today() - updated_dt).days
+                  remaining = 60 - age_days
+                  if remaining <= 10:
+                      token_banner = (
+                          f"> ⚠️ **LinkedIn Token Expiry Alert:** Your 60-day `LINKEDIN_ACCESS_TOKEN` "
+                          f"is **{age_days} days old** ({max(remaining, 0)} days remaining). "
+                          f"Refresh it in GitHub Secrets and update `LINKEDIN_TOKEN_UPDATED_AT`.\n\n"
+                      )
+              except ValueError:
+                  pass
+
+          # 3. Create today's fresh review issue pointing to the 'previews' branch
           draft = json.loads(Path("draft_content.json").read_text(encoding="utf-8"))
           title = draft["title"].strip()
           post_text = draft["post_text"].strip()
@@ -159,6 +225,7 @@ jobs:
           safe_post_text = re.sub(r"(?m)^---+$", "───", post_text)
 
           issue_body = (
+              f"{token_banner}"
               "### 🖼️ Visual Card Preview\n"
               f"![{alt_title}]({image_url})\n\n"
               "### 📝 Post Commentary\n"
@@ -167,7 +234,7 @@ jobs:
               f"{safe_post_text}\n\n"
               "---\n\n"
               "### 👉 Commands:\n"
-              "- Comment **`/publish`** to post this image and text to LinkedIn.\n"
+              "- Comment **`/publish`** to post this image and text to LinkedIn & Dev.to.\n"
               "- Comment **`/regenerate`** to generate a fresh draft and card.\n"
               "- Close this issue to skip today.\n"
           )

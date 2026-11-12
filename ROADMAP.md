@@ -10,24 +10,20 @@
 
 ---
 
-## Phase 2: Reliability & Content Quality
-- [ ] **Guaranteed 4:00 PM IST Cron Fallback**
-  - Add a free [cron-job.org](https://cron-job.org/) `workflow_dispatch` trigger alongside GitHub's `schedule`.
-  - Add a same-day duplicate guard in `daily_draft_review.yml` so double-triggers never open duplicate issues.
-- [ ] **60-Day LinkedIn Token Expiry Warning**
-  - Store `LINKEDIN_TOKEN_UPDATED_AT` as a GitHub repository variable.
-  - Inject a countdown reminder banner into the daily review issue starting at Day 50 to prevent surprise `401 Unauthorized` errors.
-- [ ] **Dedicated Dev.to Long-Form Copy (`devto_markdown`)**
-  - Generate a separate `devto_markdown` field (~200 words with copyable `Before`/`After` Markdown code blocks) while keeping LinkedIn commentary ultra-minimal (<90 words).
-- [ ] **Card Overflow & Code Sanity Guardrail**
-  - Validate `bad_code` and `good_code` line counts and character widths in `linkedin_daily_bot.py` before rendering, auto-shrinking font size or re-prompting Gemini if lines would clip.
+## Phase 2: Reliability & Content Quality (Completed)
+- [x] **Guaranteed 4:00 PM IST Cron Fallback & Duplicate Guard**
+  - Added same-day duplicate guard (`force` input override) in `daily_draft_review.yml` so pairing GitHub's `schedule` with an external [cron-job.org](https://cron-job.org/) `workflow_dispatch` trigger never opens duplicate issues.
+- [x] **60-Day LinkedIn Token Expiry Warning**
+  - Reads `LINKEDIN_TOKEN_UPDATED_AT` (`YYYY-MM-DD` repository variable) and injects an alert banner into the daily review issue starting at Day 50 (`<= 10` days remaining).
+- [x] **Dedicated Dev.to Long-Form Copy & Series Grouping**
+  - Keeps LinkedIn commentary minimal (<90 words, no inline code), while `_compose_devto_markdown()` automatically injects copyable `### Before` and `### After` fenced code blocks, the uncropped 4:5 card, and official Dev.to `series` grouping (`"30 Days of Hidden .NET & C# Gems"`, etc.).
+- [x] **Card Overflow & Code Sanity Guardrail**
+  - Dynamically scales code font size (`19px` → `17px` → `15px`) and wrapping width (`52` → `58` → `64` chars) in `create_visual_card()` so longer snippets never clip inside the `BEFORE` and `AFTER` glass panels.
 
 ---
 
-## Phase 3: Growth & Rich Formats
+## Phase 3: Growth & Rich Formats (Next)
 - [ ] **Optional Carousel Mode (`--carousel`)**
   - Render 3–4 linked `4:5` slides (Hook → Before/After → Gotcha → Takeaway) and export a LinkedIn-ready PDF document for deeper SQL/Angular topics.
 - [ ] **Automated Series Index (`SERIES_INDEX.md`)**
   - Auto-update a browsable index linking every published day by track (`dotnet`, `angular`, `sql_server`) with its Dev.to URL.
-- [ ] **Dev.to Series Tagging**
-  - Group articles into official Dev.to series (`"30 Days of Hidden .NET Gems"`, etc.) so readers can navigate between days directly on Dev.to.

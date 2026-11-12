@@ -666,13 +666,27 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
             draw.text((cx0 + 20, ly), ln, fill=(203, 213, 225), font=font_stat_lbl)
             ly += 22
 
-    # 6. Stacked BEFORE & AFTER Frosted Code Windows
+    # 6. Stacked BEFORE & AFTER Frosted Code Windows (with Overflow & Width Guardrail)
     default_fnames = {"dotnet": "Program.cs", "angular": "component.ts", "sql_server": "query.sql"}
     code_fname = _strip_unsupported_emojis(data.get("code_filename") or default_fnames.get(track, "snippet.cs"))
     bad_clean = _strip_unsupported_emojis(data.get("bad_code", "// legacy approach"), preserve_newlines=True)
     good_clean = _strip_unsupported_emojis(data.get("good_code", "// optimized pattern"), preserve_newlines=True)
-    bad_lines = _wrap_code_lines(bad_clean, max_chars=52, max_lines=5)
-    good_lines = _wrap_code_lines(good_clean, max_chars=52, max_lines=6)
+
+    max_raw_len = max(
+        [len(ln) for ln in (*bad_clean.splitlines(), *good_clean.splitlines())] or [0]
+    )
+    if max_raw_len > 58:
+        font_code = _load_font(15, mono=True)
+        wrap_chars = 64
+    elif max_raw_len > 50:
+        font_code = _load_font(17, mono=True)
+        wrap_chars = 58
+    else:
+        font_code = _load_font(19, mono=True)
+        wrap_chars = 52
+
+    bad_lines = _wrap_code_lines(bad_clean, max_chars=wrap_chars, max_lines=5)
+    good_lines = _wrap_code_lines(good_clean, max_chars=wrap_chars, max_lines=6)
 
     y_code_top = y_cards + card_h + 24
     y_code_bottom = height - 135
@@ -701,7 +715,7 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
             draw.text((width - margin - 22 - fn_w, panel_y0 + 15), code_fname, fill=(148, 163, 184), font=font_fname)
         draw.line([(margin + 1, panel_y0 + 44), (width - margin - 1, panel_y0 + 44)], fill=(255, 255, 255, 25), width=1)
         avail_h = (panel_y1 - 12) - (panel_y0 + 56)
-        line_h = min(33, max(24, avail_h // max(len(lines), 1)))
+        line_h = min(33, max(22, avail_h // max(len(lines), 1)))
         _draw_syntax_highlighted_lines(
             draw,
             lines,
@@ -819,15 +833,67 @@ def _extract_title_and_tags(post_text: str, track: str) -> tuple[str, list[str]]
     return title, tag_map.get(track, ["programming", "softwareengineering"])
 
 
-def post_to_devto(api_key: str, title: str, body_markdown: str, track: str, image_url: str | None = None) -> str:
-    """Publishes Markdown article to Dev.to with full uncropped visual card."""
+def _compose_devto_markdown(
+    body_markdown: str,
+    track: str,
+    image_url: str | None = None,
+    title: str = "Engineering Note",
+    bad_code: str = "",
+    good_code: str = "",
+) -> str:
+    """Builds rich Dev.to Markdown with uncropped card and copyable Before/After code fences."""
+    lang_map = {"dotnet": "csharp", "angular": "ts", "sql_server": "sql"}
+    lang = lang_map.get(track, "csharp")
+
+    text = body_markdown.strip()
+    if "```" not in text and (bad_code.strip() or good_code.strip()):
+        blocks = []
+        if bad_code.strip():
+            blocks.append(f"### Before\n```{lang}\n{bad_code.strip()}\n```")
+        if good_code.strip():
+            blocks.append(f"### After\n```{lang}\n{good_code.strip()}\n```")
+        code_section = "\n\n".join(blocks)
+        bullet_pos = text.find("\n• ")
+        if bullet_pos != -1:
+            text = f"{text[:bullet_pos].rstrip()}\n\n{code_section}\n\n### Why it matters\n{text[bullet_pos + 1:]}"
+        else:
+            text = f"{text}\n\n{code_section}"
+
+    if image_url:
+        return f"![{title}]({image_url})\n\n{text}"
+    return text
+
+
+def post_to_devto(
+    api_key: str,
+    title: str,
+    body_markdown: str,
+    track: str,
+    image_url: str | None = None,
+    bad_code: str = "",
+    good_code: str = "",
+) -> str:
+    """Publishes Markdown article to Dev.to with full uncropped visual card, code blocks & series."""
     _, tags = _extract_title_and_tags(body_markdown, track)
-    full_body = f"![{title}]({image_url})\n\n{body_markdown}" if image_url else body_markdown
+    series_map = {
+        "dotnet": "30 Days of Hidden .NET & C# Gems",
+        "angular": "30 Days of Hidden Angular Gems",
+        "sql_server": "30 Days of Hidden SQL Server Gems",
+    }
+    full_body = _compose_devto_markdown(
+        body_markdown,
+        track,
+        image_url=image_url,
+        title=title,
+        bad_code=bad_code,
+        good_code=good_code,
+    )
     article: dict = {
         "title": title,
         "published": True,
         "body_markdown": full_body,
         "tags": tags,
+        "series": series_map.get(track, "30 Days of Hidden Engineering Gems"),
     }
     if image_url:
         article["main_image"] = image_url
@@ -913,7 +979,15 @@ def handle_publish(
     devto_key = os.environ.get("DEVTO_API_KEY", "").strip()
     if devto_key:
         try:
-            post_to_devto(devto_key, current_data.get("title") or title, post_text, active_track, image_url)
+            post_to_devto(
+                devto_key,
+                current_data.get("title") or title,
+                post_text,
+                active_track,
+                image_url,
+                bad_code=str(current_data.get("bad_code", "")),
+                good_code=str(current_data.get("good_code", "")),
+            )
         except Exception as e:
             print(f"Warning: Dev.to publish failed ({e})", file=sys.stderr)
 

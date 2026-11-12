@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: pip install requests pillow
 
-      - name: Download Visual Card Artifact
+      - name: Download Visual Card & Draft JSON Artifact
         uses: dawidd6/action-download-artifact@v6
         continue-on-error: true
         with:
@@ -49,8 +49,8 @@ jobs:
           name: post-card
           path: .
 
-      - name: Fetch Visual Card from 'previews' Branch (Fallback)
-        if: hashFiles('post_card.png') == ''
+      - name: Fetch Visual Card & Draft JSON from 'previews' Branch (Fallback)
+        if: hashFiles('post_card.png') == '' || hashFiles('draft_content.json') == ''
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
@@ -59,16 +59,28 @@ jobs:
           from pathlib import Path
 
           raw = os.environ.get("ISSUE_BODY", "")
-          match = re.search(r"previews/(day_[A-Za-z0-9_]+_\d+\.png)", raw)
-          target = f"previews/{match.group(1)}" if match else "previews/latest.png"
+          match = re.search(r"previews/day_([A-Za-z0-9_]+_\d+)\.png", raw)
+          suffix = match.group(1) if match else ""
+          img_target = f"previews/day_{suffix}.png" if suffix else "previews/latest.png"
+          json_target = f"previews/draft_{suffix}.json" if suffix else "previews/draft_latest.json"
 
           subprocess.run(["git", "fetch", "origin", "previews"], check=False)
-          res = subprocess.run(["git", "show", f"origin/previews:{target}"], capture_output=True)
-          if res.returncode != 0:
-              res = subprocess.run(["git", "show", "origin/previews:previews/latest.png"], capture_output=True)
-          if res.returncode == 0 and res.stdout:
-              Path("post_card.png").write_bytes(res.stdout)
-              print(f"Fetched {target} from origin/previews")
+
+          if not Path("post_card.png").exists():
+              res = subprocess.run(["git", "show", f"origin/previews:{img_target}"], capture_output=True)
+              if res.returncode != 0:
+                  res = subprocess.run(["git", "show", "origin/previews:previews/latest.png"], capture_output=True)
+              if res.returncode == 0 and res.stdout:
+                  Path("post_card.png").write_bytes(res.stdout)
+                  print(f"Fetched {img_target} from origin/previews")
+
+          if not Path("draft_content.json").exists():
+              res = subprocess.run(["git", "show", f"origin/previews:{json_target}"], capture_output=True)
+              if res.returncode != 0:
+                  res = subprocess.run(["git", "show", "origin/previews:previews/draft_latest.json"], capture_output=True)
+              if res.returncode == 0 and res.stdout:
+                  Path("draft_content.json").write_bytes(res.stdout)
+                  print(f"Fetched {json_target} from origin/previews")
           PY
 
       - name: Extract Approved Text & Preview Image URL
@@ -184,14 +196,16 @@ jobs:
         run: |
           python linkedin_daily_bot.py generate
 
-      - name: Upload Regenerated Post Card Artifact
+      - name: Upload Regenerated Post Card & Draft JSON Artifact
         if: hashFiles('post_card.png') != ''
         uses: actions/upload-artifact@v4
         with:
           name: post-card
-          path: post_card.png
+          path: |
+            post_card.png
+            draft_content.json
 
-      - name: Push Updated Preview Image to 'previews' Branch
+      - name: Push Updated Preview Image & Draft JSON to 'previews' Branch
         if: hashFiles('post_card.png') != ''
         run: |
           python - <<'PY'
@@ -206,10 +220,12 @@ jobs:
           out.mkdir(parents=True, exist_ok=True)
           shutil.copy2("post_card.png", out / f"day_{track}_{day}.png")
           shutil.copy2("post_card.png", out / "latest.png")
+          shutil.copy2("draft_content.json", out / f"draft_{track}_{day}.json")
+          shutil.copy2("draft_content.json", out / "draft_latest.json")
           PY
 
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.com"
 
           if git ls-remote --exit-code --heads origin previews >/dev/null 2>&1; then
             git fetch origin previews
@@ -223,10 +239,10 @@ jobs:
           fi
 
           mkdir -p previews
-          cp /tmp/previews_push/*.png previews/
+          cp /tmp/previews_push/* previews/
           git add previews/
           if ! git diff --cached --quiet; then
-            git commit -m "chore: regenerate preview card image [skip ci]"
+            git commit -m "chore: regenerate preview card image and draft json [skip ci]"
             git push origin previews
           fi
 
@@ -260,7 +276,7 @@ jobs:
               f"{safe_post_text}\n\n"
               "---\n\n"
               "### 👉 Commands:\n"
-              "- Comment **`/publish`** to post this image and text to LinkedIn.\n"
+              "- Comment **`/publish`** to post this image and text to LinkedIn & Dev.to.\n"
               "- Comment **`/regenerate`** to generate a fresh draft and card.\n"
               "- Close this issue to skip today.\n"
           )
