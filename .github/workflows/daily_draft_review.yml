@@ -2,8 +2,8 @@ name: 1. Generate Daily Draft for Review
 
 on:
   schedule:
-    # Runs at 12:00 UTC (5:30 PM IST / 7:00 AM EST) every day
-    - cron: '0 12 * * *'
+    # Runs at 10:30 UTC (4:00 PM IST) every day
+    - cron: '30 10 * * *'
   # Allows manual runs from the Actions tab anytime
   workflow_dispatch:
     inputs:
