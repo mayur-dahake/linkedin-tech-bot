@@ -184,18 +184,7 @@ def _to_unicode_bold(text: str) -> str:
 
 
 def _format_code_block_for_linkedin(match: re.Match) -> str:
-    lang_raw = (match.group(1) or "").strip().lower()
-    lang_labels = {
-        "csharp": "C#",
-        "cs": "C#",
-        "ts": "TypeScript",
-        "typescript": "TypeScript",
-        "sql": "T-SQL",
-        "tsql": "T-SQL",
-    }
-    label = lang_labels.get(lang_raw, lang_raw.upper() if lang_raw else "Code")
-    lines = [f"│ {ln}" for ln in match.group(2).strip("\n").splitlines()]
-    return "\n".join([f"┌─ {_to_unicode_bold(label)}", *lines, "└─"])
+    return "\n".join(f"▎ {ln}" for ln in match.group(2).strip("\n").splitlines())
 
 
 def _clean_post_for_linkedin(text: str) -> str:
