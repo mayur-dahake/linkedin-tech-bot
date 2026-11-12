@@ -319,8 +319,9 @@ Voice & Tone Rules (CRITICAL - sound like a real practitioner, NOT an AI):
 - Respect the reader's attention span: keep `post_text` under 150 words (~1,000 chars) so it reads in 15 seconds on mobile.
 - Write like a senior dev sharing a quick field note from a real code review or profiler session.
 - Ground claims in real runtime/DB mechanics (e.g., heap allocations, Gen0 GC, logical reads, Index Seek vs Key Lookup, change detection cycles).
-- NEVER use AI clichés or marketing hype: NO "completely missing out", "drastically cut down", "delivers up to 10x", "skyrocket", "unlock", "game-changer", "leverage", "utilize", "delve", "elevate", or "in today's fast-paced world".
+- NEVER use AI clichés or marketing hype: NO "completely missing out", "drastically cut down", "delivers up to 10x", "skyrocket", "unlock", "game-changer", "leverage", "leverages", "leveraged", "utilize", "delve", "elevate", or "in today's fast-paced world".
 - Include one concise, honest `Watch out:` line naming a real production edge case or caveat.
+- Code accuracy: Verify exact C#/Angular/T-SQL API signatures (e.g. `SearchValues<T>` requires `input.AsSpan().ContainsAny(...)`, not `string.ContainsAny(...)`), and avoid `\r`, `\n`, `\t` escape literals inside sample strings—use visible chars like `','`, `';'`, `'/'`, `'?'` instead.
 
 Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template):
 - headline_line1: Short bold white hook (3-5 words, e.g. "Stop allocating arrays")
