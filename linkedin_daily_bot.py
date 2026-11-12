@@ -2,8 +2,8 @@
 LinkedIn 30-Day Series Bot: Hidden & Underused Concepts
 =======================================================
 Covers 30 Days of Hidden Concepts for .NET, Angular, and SQL Server.
-Automatically tracks "Day X of 30", generates visual code comparison cards,
-and publishes to LinkedIn upon approval.
+Automatically tracks "Day X of 30", generates 4:5 editorial gradient-glass
+visual cards, and publishes to LinkedIn upon approval.
 
 Enforces high-retention technical bullet pattern:
 - **[Tech Anchor]:** [Exact metric, performance difference, or code trade-off]
@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import sys
@@ -42,6 +43,65 @@ _PRESERVED_LITTLE_TOKEN_RE = re.compile(
     r"|(?:(?<=^)|(?<=\s))#[A-Za-z][A-Za-z0-9_]*"
 )
 _LITTLE_RESERVED_CHARS_RE = re.compile(r"([\\|{}@\[\]()<>#*_~])")
+_CARD_UNSUPPORTED_EMOJI_RE = re.compile(r"[\u2600-\u27BF\uFE00-\uFE0F\U00010000-\U0010FFFF]")
+TRACK_HASHTAGS = {
+    "dotnet": "#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+    "angular": "#Angular #TypeScript #Frontend #WebDevelopment #SoftwareEngineering",
+    "sql_server": "#SQLServer #TSQL #DatabasePerformance #DataEngineering #SoftwareEngineering",
+}
+
+# Per-track editorial gradient palettes (base, glow1, glow2, accent_text, pill_bg)
+_TRACK_PALETTES = {
+    "dotnet": {
+        "base": (13, 12, 29),
+        "glow1": (67, 56, 202),
+        "glow2": (49, 27, 92),
+        "accent": (196, 181, 253),   # Lavender
+        "kicker": (165, 180, 252),
+        "pill_bg": (99, 102, 241),
+    },
+    "angular": {
+        "base": (18, 11, 30),
+        "glow1": (157, 23, 77),
+        "glow2": (55, 48, 163),
+        "accent": (253, 164, 175),   # Soft Rose
+        "kicker": (244, 114, 182),
+        "pill_bg": (219, 39, 119),
+    },
+    "sql_server": {
+        "base": (9, 17, 30),
+        "glow1": (14, 116, 144),
+        "glow2": (49, 46, 129),
+        "accent": (125, 211, 252),   # Sky Blue
+        "kicker": (56, 189, 248),
+        "pill_bg": (2, 132, 199),
+    },
+}
+
+# Syntax highlighting token sets for C#, TypeScript/Angular, and T-SQL
+_KEYWORDS = {
+    "private", "public", "protected", "internal", "static", "readonly", "const",
+    "var", "let", "new", "return", "async", "await", "if", "else", "for", "foreach",
+    "while", "switch", "case", "break", "class", "record", "struct", "interface",
+    "void", "int", "string", "bool", "char", "byte", "using", "namespace", "export",
+    "import", "from", "function", "true", "false", "null", "undefined", "this",
+    "SELECT", "FROM", "WHERE", "INSERT", "INTO", "VALUES", "UPDATE", "SET", "DELETE",
+    "CREATE", "INDEX", "ON", "INCLUDE", "WITH", "AS", "AND", "OR", "NOT", "IN",
+    "ORDER", "BY", "OFFSET", "ROWS", "FETCH", "NEXT", "ONLY", "TOP", "JOIN", "INNER",
+    "LEFT", "CROSS", "APPLY", "OUTPUT", "INSERTED", "DELETED", "BEGIN", "END", "EXEC",
+    "select", "from", "where", "insert", "into", "values", "update", "set", "delete",
+    "create", "index", "on", "include", "with", "as", "and", "or", "not", "in",
+    "order", "by", "offset", "rows", "fetch", "next", "only", "top", "join", "cross",
+    "apply", "output", "inserted", "deleted",
+}
+
+_TOKEN_RE = re.compile(
+    r"(//[^\n]*|--[^\n]*)"                        # Comments
+    r"|(\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*')"  # Strings / chars
+    r"|(@?[A-Za-z_][A-Za-z0-9_]*)"                # Identifiers / keywords / types
+    r"|(\b\d+(?:\.\d+)?\b)"                       # Numbers
+    r"|([^\sA-Za-z0-9_\"']+|\s+)"                 # Punctuation / whitespace
+)
 
 
 def load_state() -> dict:
@@ -67,11 +127,7 @@ def get_current_item(track: str | None = None, day: int | None = None) -> tuple:
     active_track = track or state.get("track", "dotnet")
     active_day = day or state.get("day", 1)
 
-    curriculum_path = Path(CURRICULUM_FILE)
-    if not curriculum_path.exists():
-        curriculum_path = Path("artifacts/file_generation/ttl=63d/output") / CURRICULUM_FILE
-
-    with open(curriculum_path, "r", encoding="utf-8") as f:
+    with open(CURRICULUM_FILE, "r", encoding="utf-8") as f:
         curriculum = json.load(f)
 
     track_items = curriculum.get(active_track, curriculum["dotnet"])
@@ -191,45 +247,68 @@ def _post_gemini_generate(
 
 
 def generate_visual_post_data(api_key: str, track: str | None = None, day: int | None = None) -> dict:
-    """Calls Gemini API to generate structured visual code comparison data with anchored metric bullets."""
+    """Calls Gemini API to generate structured editorial card data and practitioner LinkedIn post copy."""
     active_track, day_num, track_display, item = get_current_item(track, day)
     configured_model = os.environ.get("GEMINI_MODEL", "").strip()
     models_to_try = [configured_model] if configured_model else list(FALLBACK_GEMINI_MODELS)
     clean_key = api_key.strip().strip('"').strip("'")
+    hashtags = TRACK_HASHTAGS.get(
+        active_track,
+        "#SoftwareEngineering #Performance #CleanCode #WebDevelopment",
+    )
 
     system_prompt = f"""
-You are an expert Fullstack Architect writing Day {day_num} of a 30-day LinkedIn series:
-"🔥 30 Days, 30 Hidden Concepts in {track_display}".
+You are a Senior Fullstack Engineer (.NET, Angular, SQL Server) writing Day {day_num} of your personal LinkedIn engineering series:
+"Day {day_num}/30: {track_display} Hidden Concepts".
 
-Today's Topic: {item['concept']}
-Guidance: {item['focus']}
+Today's Concept: {item['concept']}
+Technical Focus: {item['focus']}
 
-Requirements:
-- Focus on why this is a HIDDEN GEM: highly useful in production, but 90% of developers don't know it or use a slower/clunkier pattern.
-- Provide a clear, concrete code comparison:
-1. The Common / Clunky / Slower Pattern (bad_code)
-  2. The Hidden / Performant Pattern (good_code)
-- Be specific with exact syntax (C#, TypeScript, or T-SQL), keeping each code line <= 42 characters so it fits cleanly inside the card box.
+Voice & Tone Rules (CRITICAL - sound like a real practitioner, NOT an AI):
+- Write like a senior dev sharing a practical tip from a real code review or production profiling session.
+- Keep sentences short, direct, and grounded in how the runtime/compiler/engine actually behaves.
+- NEVER use AI clichés or marketing hype: NO "completely missing out", "drastically cut down", "delivers up to 10x", "skyrocket", "unlock", "game-changer", "leverage", "utilize", "delve", "elevate", or "in today's fast-paced world".
+- Do NOT invent fake metrics like "50k+ req/sec" unless it's a real architectural behavior. Focus on real mechanics (allocations, GC pressure, execution plans, change detection cycles).
+
+Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template):
+- headline_line1: Short bold white hook (3-5 words, e.g. "Stop allocating arrays")
+- headline_accent: Short colored continuation (4-6 words max so it never clips, e.g. "for repeated char lookups.")
+- pill_tag: Short feature/API pill (e.g. "SearchValues<char>")
+- pill_badge: Short version tag (e.g. "NET 8+", "ANGULAR 19", "SQL 2019+")
+- code_filename: Realistic short filename for the snippet header (e.g. "SearchValuesDemo.cs", "signal-store.ts", "query.sql")
+- card_highlights: Exactly 3 ultra-short metric/takeaway boxes:
+  [
+    {{"stat": "0 B", "label": "Heap allocations per lookup"}},
+    {{"stat": "SIMD", "label": "Vectorized CPU instructions"}},
+    {{"stat": "Span", "label": "Works directly on slices"}}
+  ]
+- good_code: 4 to 6 lines of production-accurate optimized code (include a short // or -- comment on line 1, keep each line <= 46 chars naturally).
+- Do NOT put emojis inside any card fields (headline, pill_tag, card_highlights, good_code, subtitle).
 
 MANDATORY POST COMMENTARY BULLET RULE:
-Every single bullet point under the production impact section MUST strictly follow this exact syntax:
-- **[Tech Anchor]:** [Exact metric, benchmark figure, or technical trade-off]
+Every bullet point under the takeaway section MUST strictly follow this exact syntax:
+• **[Tech Anchor]:** [Exact mechanism, memory/I/O difference, or real trade-off]
 
-Examples of required bullet format:
-- **Memory Allocation:** Zero heap allocation compared to 48 bytes allocated per substring in standard string slicing.
-- **Hardware Vectorization:** Leverages SIMD instructions to evaluate 16-32 bytes concurrently in a single CPU cycle.
-- **GC Pressure:** Eliminates Gen0 collections on high-throughput microservices handling 5,000+ req/sec.
+Use double newlines (`\\n\\n`) between every paragraph and section in `post_text` so it breathes nicely on LinkedIn.
 
 Return STRICT JSON with these keys:
 {{
-  "series_badge": "🔥 DAY {day_num}/30 • HIDDEN {track_display.upper()} GEMS",
+  "series_badge": "30 DAYS OF HIDDEN {track_display.upper()} GEMS  •  DAY {day_num:02d}",
   "title": "{item['concept']}",
-  "bad_label": "❌ COMMON / CLUNKY PATTERN",
-  "bad_code": "2 to 4 lines of realistic code showing the everyday suboptimal pattern",
-  "good_label": "✅ HIDDEN GEM / OPTIMIZED",
-  "good_code": "2 to 4 lines of clean, modern, performant code",
-  "key_metric": "A punchy impact line (e.g. '⚡ 10x Faster • Zero Allocations')",
-  "post_text": "Complete ready-to-post LinkedIn text (under 2400 chars) structured as:\\n\\n🔥 Day {day_num} of 30: Hidden {track_display} Concepts\\n\\n[A punchy 2-line hook explaining what most developers get wrong]\\n\\n❌ Common Approach:\\n[formatted code]\\n\\n✅ Hidden Gem Approach:\\n[formatted code]\\n\\n⚡ Production Impact & Trade-offs:\\n• **[Tech Anchor 1]:** [Exact metric or trade-off]\\n• **[Tech Anchor 2]:** [Exact metric or trade-off]\\n• **[Tech Anchor 3]:** [Exact metric or trade-off]\\n\\nHave you leveraged this in your production apps?\\n\\n#DotNet #Angular #SQLServer #SoftwareEngineering #WebDevelopment"
+  "headline_line1": "3-5 word white headline",
+  "headline_accent": "4-6 word accent headline continuation",
+  "subtitle": "Crisp 8-12 word engineering summary",
+  "pill_tag": "Core API or feature name",
+  "pill_badge": "Version tag (e.g. NET 8+)",
+  "code_filename": "Short realistic filename (.cs, .ts, or .sql)",
+  "card_highlights": [
+    {{"stat": "Short stat", "label": "4-6 word description"}},
+    {{"stat": "Short stat", "label": "4-6 word description"}},
+    {{"stat": "Short stat", "label": "4-6 word description"}}
+  ],
+  "bad_code": "3 to 5 lines of realistic suboptimal code",
+  "good_code": "4 to 6 lines of realistic optimized code",
+  "post_text": "Complete ready-to-post LinkedIn text (under 2200 chars) structured as:\\n\\nDay {day_num}/30 — {item['concept']} ({track_display})\\n\\n[2 short, conversational lines from a real dev perspective explaining the problem you hit in code]\\n\\nBefore:\\n[clean formatted code]\\n\\nAfter:\\n[clean formatted code]\\n\\nWhy this matters in production:\\n• **[Tech Anchor 1]:** [Exact mechanism or trade-off]\\n• **[Tech Anchor 2]:** [Exact mechanism or trade-off]\\n• **[Tech Anchor 3]:** [Exact mechanism or trade-off]\\n\\n[1 natural, peer-to-peer question for other devs]\\n\\n{hashtags}"
 }}
 """
 
@@ -254,24 +333,35 @@ Return STRICT JSON with these keys:
     return data
 
 
+def _strip_unsupported_emojis(text: str, preserve_newlines: bool = False) -> str:
+    """Removes emojis unsupported by DejaVu/Arial so Pillow never renders □ tofu boxes."""
+    cleaned = _CARD_UNSUPPORTED_EMOJI_RE.sub("", text or "")
+    if preserve_newlines:
+        return "\n".join(line.expandtabs(4).rstrip() for line in cleaned.splitlines())
+    return re.sub(r"\s{2,}", " ", cleaned).strip()
+
+
 def _load_font(size: int, mono: bool = False, bold: bool = False) -> ImageFont.ImageFont:
     if mono:
         candidates = [
             "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
             "/System/Library/Fonts/Supplemental/Courier New.ttf",
             "/Library/Fonts/Courier New.ttf",
+            "/System/Library/Fonts/Menlo.ttc",
         ]
     elif bold:
         candidates = [
             "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
             "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
             "/Library/Fonts/Arial Bold.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
         ]
     else:
         candidates = [
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
             "/System/Library/Fonts/Supplemental/Arial.ttf",
             "/Library/Fonts/Arial.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
         ]
 
     for path in candidates:
@@ -283,14 +373,56 @@ def _load_font(size: int, mono: bool = False, bold: bool = False) -> ImageFont.I
         return ImageFont.load_default()
 
 
-def _wrap_code_block(code: str, max_chars: int = 41, max_lines: int = 10) -> str:
-    wrapped_lines: list[str] = []
+def _make_mesh_bg(
+    width: int,
+    height: int,
+    c_base: tuple[int, int, int],
+    c_glow1: tuple[int, int, int],
+    c_glow2: tuple[int, int, int],
+) -> Image.Image:
+    """Generates a smooth radial mesh gradient background (editorial style)."""
+    sw, sh = width // 4, height // 4
+    small = Image.new("RGB", (sw, sh), c_base)
+    spx = small.load()
+    sgx1, sgy1 = int(sw * 0.85), int(sh * 0.86)
+    sgx2, sgy2 = int(sw * 0.16), int(sh * 0.18)
+    sr1, sr2 = (width * 0.95) / 4.0, (width * 0.75) / 4.0
+
+    for y in range(sh):
+        for x in range(sw):
+            d1 = math.hypot(x - sgx1, y - sgy1) / sr1
+            d2 = math.hypot(x - sgx2, y - sgy2) / sr2
+            w1 = max(0.0, 1.0 - d1) ** 2.1
+            w2 = max(0.0, 1.0 - d2) ** 2.3
+            r = min(255, int(c_base[0] + (c_glow1[0] - c_base[0]) * w1 + (c_glow2[0] - c_base[0]) * w2 * 0.55))
+            g = min(255, int(c_base[1] + (c_glow1[1] - c_base[1]) * w1 + (c_glow2[1] - c_base[1]) * w2 * 0.55))
+            b = min(255, int(c_base[2] + (c_glow1[2] - c_base[2]) * w1 + (c_glow2[2] - c_base[2]) * w2 * 0.55))
+            spx[x, y] = (r, g, b)
+
+    return small.resize((width, height), Image.Resampling.BICUBIC)
+
+
+def _draw_glass_rect(
+    base_img: Image.Image,
+    xy: list[int],
+    fill_rgba: tuple[int, int, int, int],
+    outline_rgba: tuple[int, int, int, int],
+    radius: int = 18,
+) -> Image.Image:
+    overlay = Image.new("RGBA", base_img.size, (0, 0, 0, 0))
+    odraw = ImageDraw.Draw(overlay)
+    odraw.rounded_rectangle(xy, radius=radius, fill=fill_rgba, outline=outline_rgba, width=2)
+    return Image.alpha_composite(base_img.convert("RGBA"), overlay).convert("RGB")
+
+
+def _wrap_code_lines(code: str, max_chars: int = 46, max_lines: int = 8) -> list[str]:
+    wrapped: list[str] = []
     for raw_line in (code or "").splitlines():
         if not raw_line.strip():
-            wrapped_lines.append("")
+            wrapped.append("")
             continue
         indent = len(raw_line) - len(raw_line.lstrip(" "))
-        sub_indent = " " * min(indent + 2, 8)
+        sub_indent = " " * min(indent + 4, 8)
         parts = textwrap.wrap(
             raw_line,
             width=max_chars,
@@ -298,72 +430,210 @@ def _wrap_code_block(code: str, max_chars: int = 41, max_lines: int = 10) -> str
             break_long_words=True,
             break_on_hyphens=False,
         )
-        wrapped_lines.extend(parts or [""])
-    return "\n".join(wrapped_lines[:max_lines])
+        wrapped.extend(parts or [""])
+    return wrapped[:max_lines]
+
+
+def _draw_syntax_highlighted_lines(
+    draw: ImageDraw.ImageDraw,
+    lines: list[str],
+    x_gutter: int,
+    x_code: int,
+    y_start: int,
+    line_height: int,
+    font_code: ImageFont.ImageFont,
+) -> None:
+    """Draws code lines with subtle line numbers and VS Code Dark+ syntax highlighting."""
+    c_gutter = (100, 116, 139)
+    c_comment = (148, 163, 184)
+    c_string = (163, 230, 53)
+    c_keyword = (192, 132, 252)
+    c_type = (56, 189, 248)
+    c_number = (251, 191, 36)
+    c_default = (241, 245, 249)
+
+    for idx, line in enumerate(lines, start=1):
+        y = y_start + (idx - 1) * line_height
+        draw.text((x_gutter, y), f"{idx:2d}", fill=c_gutter, font=font_code)
+
+        x_cursor = x_code
+        for m in _TOKEN_RE.finditer(line):
+            tok = m.group(0)
+            if m.group(1):
+                color = c_comment
+            elif m.group(2):
+                color = c_string
+            elif m.group(3):
+                if tok in _KEYWORDS:
+                    color = c_keyword
+                elif tok[0].isupper() and len(tok) > 1:
+                    color = c_type
+                else:
+                    color = c_default
+            elif m.group(4):
+                color = c_number
+            else:
+                color = c_default
+
+            draw.text((x_cursor, y), tok, fill=color, font=font_code)
+            if hasattr(draw, "textlength"):
+                x_cursor += draw.textlength(tok, font=font_code)
+            else:
+                bbox = draw.textbbox((0, 0), tok, font=font_code)
+                x_cursor += bbox[2] - bbox[0]
 
 
 def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
-    """Renders a 1200x675 dark-mode technical comparison card with Pillow."""
-    width, height = 1200, 675
-    img = Image.new("RGB", (width, height), color=(15, 23, 42))  # Slate-900
+    """Renders a 1080x1350 (4:5 portrait) editorial Gradient-Glass LinkedIn card."""
+    width, height = 1080, 1350
+    track = data.get("track", "dotnet")
+    pal = _TRACK_PALETTES.get(track, _TRACK_PALETTES["dotnet"])
+
+    img = _make_mesh_bg(width, height, pal["base"], pal["glow1"], pal["glow2"])
     draw = ImageDraw.Draw(img)
 
-    font_badge = _load_font(20, bold=True)
-    font_title = _load_font(34, bold=True)
-    font_label = _load_font(21, bold=True)
-    font_code = _load_font(18, mono=True)
-    font_metric = _load_font(22, bold=True)
+    font_kicker = _load_font(19, bold=False)
+    font_pill = _load_font(22, bold=True)
+    font_badge = _load_font(15, bold=True)
+    font_h1 = _load_font(58, bold=True)
+    font_sub = _load_font(25, bold=False)
+    font_stat = _load_font(30, bold=True)
+    font_stat_lbl = _load_font(18, bold=False)
+    font_code = _load_font(19, mono=True)
+    font_fname = _load_font(15, mono=True)
+    font_brand = _load_font(24, bold=True)
+    font_right = _load_font(22, bold=False)
 
-    # Series Pill Badge (dynamically sized so long track names never overflow)
-    badge_text = data.get("series_badge", "🔥 30 DAYS • 30 HIDDEN CONCEPTS")
-    badge_box = draw.textbbox((0, 0), badge_text, font=font_badge)
-    badge_right = min(max(75 + (badge_box[2] - badge_box[0]) + 20, 420), width - 60)
-    draw.rounded_rectangle([60, 38, badge_right, 76], radius=8, fill=(30, 41, 59), outline=(245, 158, 11), width=2)
-    draw.text((75, 46), badge_text, fill=(251, 191, 36), font=font_badge)
+    margin = 80
+    day_num = int(data.get("day", 1))
 
-    # Title (wrapped up to 2 lines cleanly)
-    title_lines = textwrap.wrap(data.get("title", "Hidden Concept Breakdown"), width=48)[:2]
-    title_y = 92
-    for line in title_lines:
-        draw.text((60, title_y), line, fill=(248, 250, 252), font=font_title)
-        title_y += 40
+    # 1. Top Eyebrow Kicker
+    kicker = _strip_unsupported_emojis(data.get("series_badge", f"30 DAYS OF HIDDEN GEMS  •  DAY {day_num:02d}"))
+    draw.text((margin, 78), kicker, fill=pal["kicker"], font=font_kicker)
 
-    # Comparison Boxes
-    box_w, y_start = 515, max(title_y + 18, 175)
-    box_bottom = 545
+    # 2. Pill Tag + Version Badge
+    pill_tag = _strip_unsupported_emojis(data.get("pill_tag") or data.get("title", "Hidden Concept"))
+    pill_badge = _strip_unsupported_emojis(data.get("pill_badge") or "")
+    tag_w = draw.textlength(pill_tag, font=font_pill) if hasattr(draw, "textlength") else len(pill_tag) * 13
+    badge_w = (draw.textlength(pill_badge, font=font_badge) + 28) if pill_badge else 0
+    pill_total_w = int(min(tag_w + badge_w + (68 if pill_badge else 48), width - 2 * margin))
 
-    boxes = [
-        (
-            60,
-            (239, 68, 68),
-            (127, 29, 29),
-            data.get("bad_label", "❌ COMMON PATTERN"),
-            (254, 202, 202),
-            _wrap_code_block(data.get("bad_code", "// standard way")),
-        ),
-        (
-            625,
-            (16, 185, 129),
-            (6, 95, 70),
-            data.get("good_label", "✅ HIDDEN GEM"),
-            (167, 243, 208),
-            _wrap_code_block(data.get("good_code", "// hidden pattern")),
-        ),
+    img = _draw_glass_rect(
+        img,
+        [margin, 128, margin + pill_total_w, 180],
+        fill_rgba=(*pal["pill_bg"], 75),
+        outline_rgba=(*pal["kicker"], 150),
+        radius=14,
+    )
+    draw = ImageDraw.Draw(img)
+    draw.text((margin + 22, 141), pill_tag, fill=(248, 250, 252), font=font_pill)
+    if pill_badge:
+        bx0 = int(margin + 22 + tag_w + 16)
+        bx1 = min(int(bx0 + badge_w), margin + pill_total_w - 14)
+        draw.rounded_rectangle([bx0, 139, bx1, 169], radius=10, fill=pal["pill_bg"])
+        draw.text((bx0 + 13, 145), pill_badge, fill=(255, 255, 255), font=font_badge)
+
+    # 3. Two-Tone Editorial Headline
+    h1_top = _strip_unsupported_emojis(data.get("headline_line1") or data.get("title", "Production Pattern"))
+    h1_accent = _strip_unsupported_emojis(data.get("headline_accent") or "")
+    y_h = 212
+    for ln in textwrap.wrap(h1_top, width=25)[:2]:
+        draw.text((margin, y_h), ln, fill=(248, 250, 252), font=font_h1)
+        y_h += 70
+    if h1_accent:
+        for ln in textwrap.wrap(h1_accent, width=26)[:2]:
+            draw.text((margin, y_h), ln, fill=pal["accent"], font=font_h1)
+            y_h += 70
+
+    # 4. Crisp Subtitle with generous breathing room
+    sub = _strip_unsupported_emojis(data.get("subtitle", ""))
+    y_sub = y_h + 18
+    if sub:
+        for ln in textwrap.wrap(sub, width=58)[:2]:
+            draw.text((margin, y_sub), ln, fill=(203, 213, 225), font=font_sub)
+            y_sub += 36
+
+    # 5. Three Glassmorphic Stat / Takeaway Cards (Gradient-Glass signature)
+    highlights = data.get("card_highlights") or [
+        {"stat": "Zero Alloc", "label": "No heap pressure in hot paths"},
+        {"stat": "Cleaner", "label": "Idiomatic modern syntax"},
+        {"stat": "Tested", "label": "Production-ready pattern"},
     ]
-    for x_left, outline_c, header_c, label, label_c, code_text in boxes:
-        draw.rounded_rectangle([x_left, y_start, x_left + box_w, box_bottom], radius=12, fill=(30, 41, 59), outline=outline_c, width=2)
-        draw.rounded_rectangle([x_left, y_start, x_left + box_w, y_start + 45], radius=10, fill=header_c)
-        draw.text((x_left + 20, y_start + 12), label, fill=label_c, font=font_label)
-        draw.multiline_text((x_left + 20, y_start + 62), code_text, fill=(241, 245, 249), font=font_code, spacing=8)
+    highlights = highlights[:3]
+    y_cards = max(y_sub + 34, 520)
+    card_gap = 20
+    card_w = (width - 2 * margin - card_gap * 2) // 3
+    card_h = 148
 
-    # Bottom Metric Banner
-    metric_text = data.get("key_metric", "⚡ Production Tested • 100% Practical")
-    metric_line = textwrap.shorten(metric_text, width=82, placeholder="...")
-    draw.rounded_rectangle([60, 568, 1140, 628], radius=10, fill=(17, 24, 39), outline=(71, 85, 105), width=1)
-    draw.text((85, 586), metric_line, fill=(52, 211, 153), font=font_metric)
+    for idx, item in enumerate(highlights):
+        cx0 = margin + idx * (card_w + card_gap)
+        img = _draw_glass_rect(
+            img,
+            [cx0, y_cards, cx0 + card_w, y_cards + card_h],
+            fill_rgba=(255, 255, 255, 18),
+            outline_rgba=(255, 255, 255, 48),
+            radius=18,
+        )
+        draw = ImageDraw.Draw(img)
+        stat_txt = _strip_unsupported_emojis(str(item.get("stat", "")))[:14]
+        lbl_txt = _strip_unsupported_emojis(str(item.get("label", "")))
+        draw.text((cx0 + 22, y_cards + 24), stat_txt, fill=(248, 250, 252), font=font_stat)
+        ly = y_cards + 72
+        for ln in textwrap.wrap(lbl_txt, width=22)[:2]:
+            draw.text((cx0 + 22, ly), ln, fill=(203, 213, 225), font=font_stat_lbl)
+            ly += 24
+
+    # 6. Frosted Glass Syntax-Highlighted Code Block
+    y_code_box = y_cards + card_h + 34
+    y_code_bottom = height - 155
+    img = _draw_glass_rect(
+        img,
+        [margin, y_code_box, width - margin, y_code_bottom],
+        fill_rgba=(10, 12, 26, 200),
+        outline_rgba=(*pal["kicker"], 85),
+        radius=20,
+    )
+    draw = ImageDraw.Draw(img)
+
+    # Subtle macOS-style dots + filename header inside code card
+    dot_y = y_code_box + 26
+    for i, c in enumerate(((239, 68, 68), (245, 158, 11), (16, 185, 129))):
+        draw.ellipse([margin + 24 + i * 20, dot_y - 6, margin + 36 + i * 20, dot_y + 6], fill=c)
+    default_fnames = {"dotnet": "Program.cs", "angular": "component.ts", "sql_server": "query.sql"}
+    code_fname = _strip_unsupported_emojis(data.get("code_filename") or default_fnames.get(track, "snippet.cs"))
+    fn_w = draw.textlength(code_fname, font=font_fname) if hasattr(draw, "textlength") else len(code_fname) * 9
+    draw.text((width - margin - 24 - fn_w, y_code_box + 17), code_fname, fill=(148, 163, 184), font=font_fname)
+    draw.line([(margin + 1, y_code_box + 50), (width - margin - 1, y_code_box + 50)], fill=(255, 255, 255, 25), width=1)
+
+    good_clean = _strip_unsupported_emojis(data.get("good_code", "// optimized pattern"), preserve_newlines=True)
+    code_lines = _wrap_code_lines(good_clean, max_chars=52, max_lines=10)
+    avail_h = (y_code_bottom - 18) - (y_code_box + 66)
+    line_h = min(36, max(26, avail_h // max(len(code_lines), 1)))
+    _draw_syntax_highlighted_lines(
+        draw,
+        code_lines,
+        margin + 24,
+        margin + 68,
+        y_code_box + 70,
+        line_h,
+        font_code,
+    )
+
+    # 7. Minimal Editorial Footer
+    fx, fy = margin, height - 96
+    s, gap = 12, 4
+    draw.rounded_rectangle([fx, fy, fx + s, fy + s], radius=3, fill=pal["pill_bg"])
+    draw.rounded_rectangle([fx + s + gap, fy, fx + 2 * s + gap, fy + s], radius=3, fill=(56, 189, 248))
+    draw.rounded_rectangle([fx, fy + s + gap, fx + s, fy + 2 * s + gap], radius=3, fill=(192, 132, 252))
+    draw.rounded_rectangle([fx + s + gap, fy + s + gap, fx + 2 * s + gap, fy + 2 * s + gap], radius=3, fill=(52, 211, 153))
+    draw.text((fx + 42, fy + 1), "Madelixa", fill=(248, 250, 252), font=font_brand)
+
+    right_lbl = f"Day {day_num:02d} / 30  \u2192"
+    rw = draw.textlength(right_lbl, font=font_right) if hasattr(draw, "textlength") else len(right_lbl) * 12
+    draw.text((width - margin - rw, fy + 1), right_lbl, fill=(226, 232, 240), font=font_right)
 
     img.save(output_path, "PNG")
-    print(f"Generated 30-day series card: {output_path}")
+    print(f"Generated 4:5 editorial card: {output_path}")
     return output_path
 
 
