@@ -1,0 +1,31 @@
+{
+  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 03",
+  "title": "ArrayPool<T>.Shared for High-Throughput APIs",
+  "headline_line1": "Stop reallocating temporary buffers",
+  "headline_accent": "rent from ArrayPool instead.",
+  "subtitle": "Rent reusable memory buffers to drop GC Gen0 collections to zero",
+  "pill_tag": "ArrayPool<T>.Shared",
+  "pill_badge": "NET Core 3.1+",
+  "code_filename": "BufferHandler.cs",
+  "card_highlights": [
+    {
+      "stat": "0 B",
+      "label": "Per-request Gen0 heap allocations"
+    },
+    {
+      "stat": "O(1)",
+      "label": "Bucket-based buffer rental"
+    },
+    {
+      "stat": "LOH Safe",
+      "label": "Prevents large heap fragmentation"
+    }
+  ],
+  "bad_code": "byte[] buffer = new byte[4096];\nint read = await stream.ReadAsync(buffer);\nProcessData(buffer.AsSpan(0, read));",
+  "good_code": "byte[] buffer = ArrayPool<byte>.Shared.Rent(4096);\ntry {\n    int read = await stream.ReadAsync(buffer);\n    ProcessData(buffer.AsSpan(0, read));\n} finally { ArrayPool<byte>.Shared.Return(buffer); }",
+  "post_text": "Day 3/30 \u2014 ArrayPool<T>.Shared for High-Throughput APIs (.NET & C#)\n\nAllocating short-lived byte buffers on high-traffic endpoints keeps Gen0 GC constantly collecting.\n\n\u2022 **Memory Rental:** ArrayPool rents pre-allocated chunks from thread-safe internal buckets with zero heap churn.\n\u2022 **Buffer Length:** Rented arrays may be larger than requested, so always slice with AsSpan(0, count).\n\u2022 **Try-Finally Discipline:** Returning buffers in finally blocks prevents pool depletion and silent leaks.\n\nWatch out: Failing to clear sensitive payload data when calling Return can expose old tenant data to subsequent rentals.\n\nAre you renting buffers or using MemoryPool<T> across your IO pipelines?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+  "devto_markdown": "High-throughput web services processing streams or JSON payloads often allocate thousands of temporary `byte[]` instances per second. Under high concurrency, these transient allocations hammer Gen0 and Gen1, triggering frequent garbage collection pauses.\n\n### Before: Constant Heap Allocations\n\n```csharp\nbyte[] buffer = new byte[4096];\nint read = await stream.ReadAsync(buffer);\nProcessData(buffer.AsSpan(0, read));\n```\n\n### After: Rented Pooled Buffers\n\n```csharp\nbyte[] buffer = ArrayPool<byte>.Shared.Rent(4096);\ntry\n{\n    int read = await stream.ReadAsync(buffer);\n    ProcessData(buffer.AsSpan(0, read));\n}\nfinally\n{\n    ArrayPool<byte>.Shared.Return(buffer);\n}\n```\n\n### Why It Matters\n\n- **Zero Allocations:** `ArrayPool<T>.Shared` checks out existing buckets in memory, eliminating per-request allocations entirely.\n- **LOH Avoidance:** Renting buffers greater than 85,000 bytes prevents large objects from fragmenting the Large Object Heap.\n- **Actual Size vs Requested Size:** Rented arrays round up to powers of two. Always pass the actual bytes read using `AsSpan(0, bytesRead)` rather than reading `buffer.Length`.\n\nWatch out: `Return(buffer)` does not zero out contents by default. If your buffer handles tenant data or tokens, pass `clearArray: true` to avoid data leakage.\n\nDo you use `ArrayPool<T>.Shared` or pipe streams directly via `PipeReader`?",
+  "track": "dotnet",
+  "day": 3,
+  "dynamic": false
+}
