@@ -1,3 +1,4 @@
 [
-  "ValueTask vs Task Allocation Traps"
+  "ValueTask vs Task Allocation Traps",
+  "ArrayPool<T>.Shared for High-Throughput APIs"
 ]
