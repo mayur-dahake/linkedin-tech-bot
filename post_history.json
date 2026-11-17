@@ -1,4 +1,5 @@
 [
   "ValueTask vs Task Allocation Traps",
-  "ArrayPool<T>.Shared for High-Throughput APIs"
+  "ArrayPool<T>.Shared for High-Throughput APIs",
+  "IAsyncEnumerable<T> Streaming"
 ]
