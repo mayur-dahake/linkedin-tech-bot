@@ -5,7 +5,7 @@
 | Day | Topic | Article | Published |
 | :--- | :--- | :--- | :--- |
 | :--- | :--- | :--- | :--- |
-| Day 04 | IAsyncEnumerable<T> Streaming | [Read on Dev.to](https://dev.to/maayurdahake/iasyncenumerable-streaming-m69) | 2026-11-17 |
+| Day 05 | FrozenDictionary<K, V> in .NET 8+ | [Read on Dev.to](https://dev.to/maayurdahake/frozendictionaryk-v-in-net-8-902) | 2026-11-18 |
 
 ## Angular
 
