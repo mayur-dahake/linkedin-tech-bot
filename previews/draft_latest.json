@@ -1,31 +1,31 @@
 {
-  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 04",
-  "title": "IAsyncEnumerable<T> Streaming",
-  "headline_line1": "Stop materializing large queries",
-  "headline_accent": "stream directly to clients instead.",
-  "subtitle": "Stream EF Core results without buffering 50,000 items in RAM.",
-  "pill_tag": "IAsyncEnumerable",
+  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 05",
+  "title": "FrozenDictionary<K, V> in .NET 8+",
+  "headline_line1": "Stop allocating dictionary wrappers",
+  "headline_accent": "for read-heavy reference lookups.",
+  "subtitle": "Precompile hash tables into flat structures for zero Gen0 pressure.",
+  "pill_tag": "FrozenDictionary",
   "pill_badge": "NET 8+",
-  "code_filename": "OrderController.cs",
+  "code_filename": "ConfigCache.cs",
   "card_highlights": [
     {
+      "stat": "40%",
+      "label": "Faster lookups than Dictionary"
+    },
+    {
+      "stat": "0 B",
+      "label": "Allocation during queries"
+    },
+    {
       "stat": "O(1)",
-      "label": "Memory footprint for large datasets"
-    },
-    {
-      "stat": "Zero",
-      "label": "List allocations on the heap"
-    },
-    {
-      "stat": "Async",
-      "label": "Non-blocking TCP socket writes"
+      "label": "Optimized bucket layout"
     }
   ],
-  "bad_code": "var list = await db.Orders.ToListAsync();\nreturn Ok(list); // buffers all rows in RAM",
-  "good_code": "IAsyncEnumerable<Order> stream =\n    db.Orders.AsAsyncEnumerable();\n\nreturn Ok(stream);",
-  "post_text": "Day 4/30 \u2014 IAsyncEnumerable<T> Streaming (.NET & C#)\n\nSpotted a memory spike during a code review because a heavy endpoint buffered 50,000 database rows into a single List before serializing.\n\n\u2022 **Memory Profile:** Eliminates massive Gen2 GC pressure by avoiding array resizing.\n\u2022 **Network Buffering:** Flushes JSON chunks straight to the TCP output stream as they arrive from SQL.\n\u2022 **Execution Pipeline:** Keeps the database reader open during iteration via ConfigureAwait.\n\nWatch out: Swallowing exceptions mid-stream leaves the active DbContext connection hung.\n\nHave you replaced ToListAsync with streaming yet?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
-  "devto_markdown": "### The Memory Trap of Materialization\n\nDuring a recent performance audit of our reporting APIs, I tracked down erratic Gen2 GC pauses to a seemingly innocent endpoint. The code called `.ToListAsync()` on a massive table containing over 50,000 historical transaction records before returning an `Ok(list)` response.\n\nThis approach forces ASP.NET Core to allocate the entire result set in memory, doubling or tripling allocations during JSON serialization and locking up thread pool resources.\n\n### Before\n\n```csharp\n[HttpGet(\"reports\")]\npublic async Task<IActionResult> GetReports()\n{\n    var list = await db.Orders.ToListAsync();\n    return Ok(list); // buffers all rows in RAM\n}\n```\n\n### After\n\nBy leveraging `IAsyncEnumerable<T>` straight from Entity Framework Core, we bypass the intermediate list allocation entirely. The ASP.NET Core framework understands this interface and immediately streams the records down the HTTP response pipe as data flows from the underlying SQL Server data reader.\n\n```csharp\n[HttpGet(\"reports\")]\npublic IAsyncEnumerable<Order> GetReports()\n{\n    return db.Orders.AsAsyncEnumerable();\n}\n```\n\n### Why It Matters\n\n* **Heap Allocations:** Bypasses temporary `List<T>` backing arrays, keeping memory usage flat regardless of row count.\n* **Time-to-First-Byte:** The client receives the first JSON chunk instantly instead of waiting for the full query to materialize on the server.\n* **Concurrency:** Frees up worker threads from waiting on massive memory allocations during peak traffic.\n\n### Watch Out\n\nIf an exception occurs halfway through reading the stream, your `DbContext` instance may already be disposed depending on how the request scope handles asynchronous disposal. Ensure your middleware handles mid-stream failures gracefully without corrupting HTTP headers.\n\nHow do you handle large data exports in your current architecture?",
+  "bad_code": "private readonly Dictionary<string, int> _cache =\n    new() { {\"Timeout\", 30}, {\"Retries\", 3} };\n// Allocates entry nodes on every resize.",
+  "good_code": "private readonly FrozenDictionary<string, int> _cache =\n    new Dictionary<string, int> {\n        {\"Timeout\", 30}, {\"Retries\", 3}\n    }.ToFrozenDictionary();\n// Internal layout flattened for zero-alloc.",
+  "post_text": "Day 5/30 \u2014 FrozenDictionary<K, V> (.NET & C#)\n\nSpotted a lookup-heavy lookup service thrashing Gen0 GC because it used standard dictionaries for static config.\n\n\u2022 **Memory Profile:** Precomputing maps into frozen buckets eliminates internal node allocations completely.\n\u2022 **CPU Cache:** Flat internal memory arrays improve cache locality during high-frequency requests.\n\u2022 **Trade-off:** Fast reads come at the cost of slow mutations since adding items requires a rebuild.\n\nWatch out: Avoid freezing dictionaries that undergo frequent runtime writes.\n\nAny static lookups left in your codebase?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+  "devto_markdown": "In many backend microservices, configuration maps, static lookup tables, and feature flags are initialized once at startup and read millions of times throughout the application lifecycle. Using a standard `System.Collections.Generic.Dictionary<TKey, TValue>` for these scenarios is a hidden tax on your memory allocations and Gen0 garbage collection cycles.\n\n### Before\n```csharp\nprivate readonly Dictionary<string, int> _settings = new()\n{\n    {\"Timeout\", 30},\n    {\"Retries\", 3},\n    {\"MaxBatch\", 500}\n};\n\npublic int Get(string key) => _settings[key];\n```\n\nStandard dictionaries must handle dynamic resizing, collision chains, and structural modifications. Even when your data is strictly read-only after startup, the runtime still carries the overhead of mutable structures.\n\n### After\n```csharp\nprivate readonly FrozenDictionary<string, int> _settings = new Dictionary<string, int>\n{\n    {\"Timeout\", 30},\n    {\"Retries\", 3},\n    {\"MaxBatch\", 500}\n}.ToFrozenDictionary();\n\npublic int Get(string key) => _settings[key];\n```\n\n### Why it matters\n- **Zero Allocations:** `FrozenDictionary<TKey, TValue>` optimizes the internal bucket and entry layout for read-only workloads, dropping query heap allocations to zero bytes.\n- **Performance Boost:** Benchmarks show read throughput beats standard dictionaries by up to 40% due to superior CPU cache utilization and flattened array traversal.\n- **Initialization Cost:** Freezing the dictionary is an expensive operation. Always perform `.ToFrozenDictionary()` during application startup or type construction, never per request.\n\n### Watch out\nNever use frozen collections for data that changes dynamically. Mutation requires calling `ToFrozenDictionary()` again, which completely rebuilds the underlying hash structures and negates any performance gains.\n\nWhere are you still using mutable collections for static reference data?",
   "track": "dotnet",
-  "day": 4,
+  "day": 5,
   "dynamic": false
 }
