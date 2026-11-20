@@ -2,5 +2,6 @@
   "ValueTask vs Task Allocation Traps",
   "ArrayPool<T>.Shared for High-Throughput APIs",
   "IAsyncEnumerable<T> Streaming",
-  "FrozenDictionary<K, V> in .NET 8+"
+  "FrozenDictionary<K, V> in .NET 8+",
+  "System.Threading.Channels"
 ]
