@@ -1,0 +1,31 @@
+{
+  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 07",
+  "title": "PeriodicTimer vs System.Threading.Timer",
+  "headline_line1": "Stop using Threading Timer",
+  "headline_accent": "for async background looping.",
+  "subtitle": "Use PeriodicTimer and WaitForNextTickAsync for clean async loop state.",
+  "pill_tag": "PeriodicTimer",
+  "pill_badge": "NET 6+",
+  "code_filename": "BackgroundWorker.cs",
+  "card_highlights": [
+    {
+      "stat": "Async",
+      "label": "Native await support without closure captures"
+    },
+    {
+      "stat": "Reentrancy",
+      "label": "Prevents overlapping tick executions"
+    },
+    {
+      "stat": "0 B",
+      "label": "Zero thread pool thread starvation"
+    }
+  ],
+  "bad_code": "var timer = new Timer(async _ => {\n    await ProcessQueueAsync();\n}, null, 0, 1000);",
+  "good_code": "using var timer = new PeriodicTimer(\n    TimeSpan.FromSeconds(1));\n\nwhile (await timer.WaitForNextTickAsync()) {\n    await ProcessQueueAsync();\n}",
+  "post_text": "Day 7/30 \u2014 PeriodicTimer vs System.Threading.Timer (.NET & C#)\n\nOld-school timers invite thread pool starvation and unhandled async void exceptions during long-running queue polls.\n\n\u2022 **Async Safety:** WaitForNextTickAsync allows proper task continuation without void delegates.\n\u2022 **Reentrancy Control:** Prevents overlapping execution ticks if work takes longer than the interval.\n\u2022 **Resource Cleanup:** Implements IAsyncDisposable for deterministic background lifecycle management.\n\nWatch out: Disposing the timer mid-tick cancels the active wait token.\n\nAre you still using callback timers?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+  "devto_markdown": "When building background workers in .NET, the classic `System.Threading.Timer` has been a staple for decades. However, its callback signature `TimerCallback(object? state)` is inherently synchronous (`void`). Developers frequently resort to async-void lambdas inside the constructor, leading to unhandled exception crashes and thread pool starvation during slow iterations.\n\n.NET 6 introduced `PeriodicTimer`, designed specifically for asynchronous background loops using modern `async/await` mechanics.\n\n### Before\n```csharp\nvar timer = new Timer(async _ => {\n    await ProcessQueueAsync();\n}, null, 0, 1000);\n```\n\n### After\n```csharp\nusing var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));\n\nwhile (await timer.WaitForNextTickAsync()) {\n    await ProcessQueueAsync();\n}\n```\n\n### Why it matters\n\u2022 **Async Safety:** `WaitForNextTickAsync` integrates cleanly with standard task continuations, avoiding async-void pitfalls.\n\u2022 **Reentrancy Control:** Unlike callback timers that fire blindly on an interval, sequential loop execution prevents overlapping workloads.\n\u2022 **Resource Cleanup:** Implements `IDisposable` and provides clean cancellation token propagation.\n\n**Watch out:** If your background work exceeds the interval duration, `PeriodicTimer` queues ticks sequentially rather than overlapping, but disposing the timer mid-tick will immediately cancel the active `WaitForNextTickAsync` awaiter.\n\nHow do you structure your background workers in production?",
+  "track": "dotnet",
+  "day": 7,
+  "dynamic": false
+}
