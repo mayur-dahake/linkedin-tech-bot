@@ -1,0 +1,31 @@
+{
+  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 08",
+  "title": "EF Core IDbCommandInterceptor",
+  "headline_line1": "Inject multi tenancy rules",
+  "headline_accent": "directly into raw SQL commands.",
+  "subtitle": "Intercepting SQL queries dynamically for automatic multi-tenancy and soft delete.",
+  "pill_tag": "IDbCommandInterceptor",
+  "pill_badge": "EF CORE",
+  "code_filename": "TenantInterceptor.cs",
+  "card_highlights": [
+    {
+      "stat": "Zero",
+      "label": "Manual query modifications needed"
+    },
+    {
+      "stat": "100%",
+      "label": "Tenant isolation enforcement"
+    },
+    {
+      "stat": "Global",
+      "label": "Soft delete filter safety"
+    }
+  ],
+  "bad_code": "var users = db.Users\n    .Where(u => u.TenantId == id)\n    .ToList();",
+  "good_code": "public class TenantInterceptor \n    : DbCommandInterceptor\n{\n    // Mutates command text before dispatch\n}",
+  "post_text": "Day 8/30 \u2014 EF Core IDbCommandInterceptor (.NET & C#)\n\nStop cluttering every LINQ query with manual `.Where(t => t.TenantId == id)` filters that developers inevitably forget.\n\n\u2022 **Command Manipulation:** Rewrites the underlying SQL text right before database dispatch.\n\u2022 **Global Safety:** Enforces tenancy and soft delete rules at the database driver boundary.\n\u2022 **Memory Efficiency:** Avoids Expression Tree recompilation overhead on hot execution paths.\n\nWatch out: Mutating SQL strings via regex can break execution plans and bypass query cache.\n\nHow do you handle multi-tenancy in your repositories?\n\n#DotNet #CSharp #EFCore #Architecture #BackendDevelopment",
+  "devto_markdown": "In multi-tenant systems, forgetting to append a tenant filter in a LINQ query leads to catastrophic data leaks. While EF Core global query filters help, they often fall short when dealing with raw SQL, complex stored procedure wrappers, or decoupled microservices sharing a single context.\n\nInstead of relying purely on convention, you can intercept the command lifecycle right before the database driver executes the query.\n\n### Before\n\n```csharp\n// Easy to forget when writing ad-hoc queries\nvar users = db.Users\n    .Where(u => u.TenantId == currentTenant)\n    .ToList();\n```\n\n### After\n\n```csharp\npublic class TenantInterceptor : DbCommandInterceptor\n{\n    public override InterceptionResult<DbDataReader> ReaderExecuting(\n        DbCommand command,\n        CommandEventData eventData,\n        InterceptionResult<DbDataReader> result)\n    {\n        // Inject tenant predicate or validate command text\n        return base.ReaderExecuting(command, eventData, result);\n    }\n}\n```\n\n### Why it matters\n\n- **Zero Leakage:** Guarantees isolation even if developers write raw SQL or forget context filters.\n- **Plan Cache Impact:** Modifying command text changes the SQL hash, so ensure mutations are deterministic.\n- **Pipeline Integration:** Registered easily in `AddDbContext` dependency injection setups.\n\n### Watch out\n\nRegex string manipulation on SQL commands can corrupt complex queries containing subqueries or joins. Always validate generated execution plans under load.\n\nHow do you enforce tenancy boundaries in your data access layer?",
+  "track": "dotnet",
+  "day": 8,
+  "dynamic": false
+}
