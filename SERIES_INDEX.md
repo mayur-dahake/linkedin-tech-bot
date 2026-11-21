@@ -5,7 +5,7 @@
 | Day | Topic | Article | Published |
 | :--- | :--- | :--- | :--- |
 | :--- | :--- | :--- | :--- |
-| Day 06 | System.Threading.Channels | [Read on Dev.to](https://dev.to/maayurdahake/systemthreadingchannels-14aj) | 2026-11-20 |
+| Day 07 | PeriodicTimer vs System.Threading.Timer | [Read on Dev.to](https://dev.to/maayurdahake/periodictimer-vs-systemthreadingtimer-3308) | 2026-11-21 |
 
 ## Angular
 

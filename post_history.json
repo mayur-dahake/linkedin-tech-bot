@@ -3,5 +3,6 @@
   "ArrayPool<T>.Shared for High-Throughput APIs",
   "IAsyncEnumerable<T> Streaming",
   "FrozenDictionary<K, V> in .NET 8+",
-  "System.Threading.Channels"
+  "System.Threading.Channels",
+  "PeriodicTimer vs System.Threading.Timer"
 ]
