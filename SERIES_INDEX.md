@@ -5,7 +5,7 @@
 | Day | Topic | Article | Published |
 | :--- | :--- | :--- | :--- |
 | :--- | :--- | :--- | :--- |
-| Day 07 | PeriodicTimer vs System.Threading.Timer | [Read on Dev.to](https://dev.to/maayurdahake/periodictimer-vs-systemthreadingtimer-3308) | 2026-11-21 |
+| Day 08 | EF Core IDbCommandInterceptor | [Read on Dev.to](https://dev.to/maayurdahake/ef-core-idbcommandinterceptor-410d) | 2026-11-22 |
 
 ## Angular
 

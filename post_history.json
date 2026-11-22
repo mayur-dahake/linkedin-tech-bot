@@ -4,5 +4,6 @@
   "IAsyncEnumerable<T> Streaming",
   "FrozenDictionary<K, V> in .NET 8+",
   "System.Threading.Channels",
-  "PeriodicTimer vs System.Threading.Timer"
+  "PeriodicTimer vs System.Threading.Timer",
+  "EF Core IDbCommandInterceptor"
 ]
