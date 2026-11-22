@@ -20,7 +20,7 @@ linkedin-tech-bot/
 ## How It Works
 
 1. **Generate Daily Draft (`daily_draft_review.yml`)**
-   - Runs daily at `10:30 UTC` (`16:00 IST` / `4:00 PM IST`) or manually via `workflow_dispatch` (with optional `track` and `day` overrides).
+   - Runs daily targeting ~5:30 PM IST (using off-peak odd-minute GitHub schedule `11:47 UTC` / `5:17 PM IST` with a `12:07 UTC` fallback) or manually via `workflow_dispatch` (with optional `track` and `day` overrides).
    - Reads the active `track`, `day`, and `cycle` from `series_state.json`, queries Gemini for a Before/After code comparison + minimal commentary, and renders a 4:5 (`1080×1350`) Gradient-Glass card (`post_card.png`) with `@maayurdahake` branding.
    - Pushes preview images to an isolated `previews` branch, closes any stale open `📝 Review Draft:` issues, and opens today's review issue assigned to the repo owner.
 2. **Publish or Regenerate (`publish_on_approval.yml`)**

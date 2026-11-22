@@ -5,14 +5,15 @@
 - [x] **Cycle 2+ Live Market Radar:** Gemini `google_search` grounding with `post_history.json` deduplication.
 - [x] **4:5 Before/After Visual Card:** Gradient-Glass Pillow renderer (`1080×1350`) with syntax highlighting, 3 metric boxes, and `@maayurdahake` footer (`linkedin_daily_bot.py`).
 - [x] **Minimal LinkedIn Formatting:** Unicode Sans-Serif bold headers/anchors with inline code stripping so the image carries the code.
-- [x] **Human-in-the-Loop GitHub Workflow:** Daily `4:00 PM IST` (`10:30 UTC`) draft generation, `previews` branch isolation, auto-assignment notifications, `/regenerate`, `/publish`, and `503` API retry handling (`.github/workflows/`).
+- [x] **Human-in-the-Loop GitHub Workflow:** Daily ~5:30 PM IST (`11:47 UTC` / `12:07 UTC` off-peak) draft generation, `previews` branch isolation, auto-assignment notifications, `/regenerate`, `/publish`, and `503` API retry handling (`.github/workflows/`).
 - [x] **Cross-Posting:** Automated publishing to **LinkedIn** and **Dev.to** (with uncropped card embed + `main_image`).
 
 ---
 
 ## Phase 2: Reliability & Content Quality (Completed)
-- [x] **Guaranteed 4:00 PM IST Cron Fallback & Duplicate Guard**
-  - Added same-day duplicate guard (`force` input override) in `daily_draft_review.yml` so pairing GitHub's `schedule` with an external [cron-job.org](https://cron-job.org/) `workflow_dispatch` trigger never opens duplicate issues.
+- [x] **Guaranteed 5:30 PM IST Staggered Schedule & Duplicate Guard**
+  - Uses odd off-peak minute schedule (`11:47 UTC` and `12:07 UTC`) combined with the same-day duplicate guard in `daily_draft_review.yml` to completely avoid GitHub queue delays without external cron tools.
+
 - [x] **60-Day LinkedIn Token Expiry Warning**
   - Reads `LINKEDIN_TOKEN_UPDATED_AT` (`YYYY-MM-DD` repository variable) and injects an alert banner into the daily review issue starting at Day 50 (`<= 10` days remaining).
 - [x] **Dedicated Dev.to Long-Form Copy & Series Grouping**

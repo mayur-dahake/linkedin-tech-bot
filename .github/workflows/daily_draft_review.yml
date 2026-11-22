@@ -2,9 +2,11 @@ name: 1. Generate Daily Draft for Review
 
 on:
   schedule:
-    # Runs at 10:30 UTC (4:00 PM IST) every day
-    - cron: '30 10 * * *'
-  # Allows manual runs or backup cron-job.org triggers anytime
+    # Primary: 11:47 UTC (5:17 PM IST) - odd off-peak minute bypasses GitHub queue congestion
+    - cron: '47 11 * * *'
+    # Backup: 12:07 UTC (5:37 PM IST) - safety net; skipped by duplicate guard if 5:17 PM ran
+    - cron: '7 12 * * *'
+  # Allows manual runs from the Actions tab anytime
   workflow_dispatch:
     inputs:
       track:
