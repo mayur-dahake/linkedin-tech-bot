@@ -1,0 +1,31 @@
+{
+  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 09",
+  "title": "AsSplitQuery() vs Cartesian Explosion",
+  "headline_line1": "Stop the cartesian",
+  "headline_accent": "explosion in your SQL queries.",
+  "subtitle": "Multiple navigation includes multiply row counts and flood the network pipe.",
+  "pill_tag": "AsSplitQuery()",
+  "pill_badge": "EF CORE",
+  "code_filename": "OrderRepository.cs",
+  "card_highlights": [
+    {
+      "stat": "O(N * M)",
+      "label": "Exponential row duplication risk"
+    },
+    {
+      "stat": "Network",
+      "label": "Reduces redundant data payload"
+    },
+    {
+      "stat": "Roundtrips",
+      "label": "Trades one query for many"
+    }
+  ],
+  "bad_code": "var q = db.Orders\n  .Include(o => o.Items)\n  .Include(o => o.Logs)\n  .ToList();",
+  "good_code": "var q = db.Orders\n  .Include(o => o.Items)\n  .Include(o => o.Logs)\n  .AsSplitQuery()\n  .ToList();",
+  "post_text": "Day 9/30 \u2014 AsSplitQuery() vs Cartesian Explosion (.NET & C#)\n\nSpotted a slow endpoint during a code review because a single order query was returning thousands of duplicate rows over the wire.\n\n\u2022 **Network payload:** Single JOIN queries repeat parent data for every child record.\n\u2022 **Memory pressure:** EF Core must materialize duplicated instances in memory before deduplication.\n\u2022 **Roundtrip trade-off:** Split queries issue separate commands to avoid exponential duplication.\n\nWatch out: Do not use split queries for small child collections or you will waste time on extra roundtrips.\n\nWhen do you choose split queries over single SQL joins in production?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+  "devto_markdown": "During a recent database profiler session, I noticed an endpoint that spiked CPU and network utilization whenever it fetched an order aggregate. The culprit was a classic cartesian explosion caused by chaining multiple `.Include()` calls on a single LINQ query.\n\nWhen EF Core generates a single SQL query with multiple collection includes (like Order -> Items -> Logs), SQL Server returns a cartesian product. If an order has 10 items and 10 logs, the database streams 100 rows containing duplicated parent order data. This inflates network packets and increases memory allocations during materialization.\n\n### Before\n```csharp\nvar q = db.Orders\n  .Include(o => o.Items)\n  .Include(o => o.Logs)\n  .ToList();\n```\n\n### After\n```csharp\nvar q = db.Orders\n  .Include(o => o.Items)\n  .Include(o => o.Logs)\n  .AsSplitQuery()\n  .ToList();\n```\n\n### Why it matters\n\u2022 **Network payload:** Eliminates redundant parent column transmission across the wire.\n\u2022 **Memory pressure:** Reduces Gen0 allocations by avoiding massive duplicate instance graphs.\n\u2022 **Query mechanics:** EF Core executes sequential SQL commands and stitches the entities back together client-side.\n\n### Watch out\nAvoid applying `.AsSplitQuery()` globally or on tiny collections. The overhead of multiple database roundtrips and connection handle management can outweigh the savings if the dataset is small.\n\nWhen do you decide to split queries versus sticking to a single JOIN in your repositories?",
+  "track": "dotnet",
+  "day": 9,
+  "dynamic": false
+}
