@@ -5,7 +5,7 @@
 | Day | Topic | Article | Published |
 | :--- | :--- | :--- | :--- |
 | :--- | :--- | :--- | :--- |
-| Day 08 | EF Core IDbCommandInterceptor | [Read on Dev.to](https://dev.to/maayurdahake/ef-core-idbcommandinterceptor-410d) | 2026-11-22 |
+| Day 09 | AsSplitQuery() vs Cartesian Explosion | [Read on Dev.to](https://dev.to/maayurdahake/assplitquery-vs-cartesian-explosion-2dhk) | 2026-11-23 |
 
 ## Angular
 

@@ -5,5 +5,6 @@
   "FrozenDictionary<K, V> in .NET 8+",
   "System.Threading.Channels",
   "PeriodicTimer vs System.Threading.Timer",
-  "EF Core IDbCommandInterceptor"
+  "EF Core IDbCommandInterceptor",
+  "AsSplitQuery() vs Cartesian Explosion"
 ]
