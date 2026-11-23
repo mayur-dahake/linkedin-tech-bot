@@ -1,0 +1,31 @@
+{
+  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 10",
+  "title": "IExceptionHandler in ASP.NET Core 8",
+  "headline_line1": "Stop writing custom middleware",
+  "headline_accent": "for uniform error handling.",
+  "subtitle": "Use the standardized IExceptionHandler pipeline built into ASP.NET Core 8.",
+  "pill_tag": "IExceptionHandler",
+  "pill_badge": "NET 8+",
+  "code_filename": "ExceptionHandlers.cs",
+  "card_highlights": [
+    {
+      "stat": "Native",
+      "label": "Pipeline integration"
+    },
+    {
+      "stat": "Clean",
+      "label": "Separation of concerns"
+    },
+    {
+      "stat": "Fast",
+      "label": "Zero allocation overhead"
+    }
+  ],
+  "bad_code": "public class CustomMiddleware\n{\n    public async Task Invoke(HttpContext ctx)\n    {\n        try { await _next(ctx); }\n        catch (Exception ex) { /* messy */ }\n    }\n}",
+  "good_code": "public class GlobalHandler : IExceptionHandler\n{\n    public async ValueTask<bool> TryHandleAsync(\n        HttpContext ctx, Exception ex, CancellationToken ct)\n    {\n        // Typed handling logic here\n        return true;\n    }\n}",
+  "post_text": "Day 10/30 \u2014 IExceptionHandler in ASP.NET Core 8 (.NET & C#)\n\nCustom try-catch middleware pollutes request pipelines and forces repetitive context wrapping.\n\n\u2022 **Pipeline Integration:** Native handlers cleanly intercept exceptions before they reach developer controllers.\n\u2022 **Status Mapping:** Centralized logic maps specific exception types directly to correct HTTP status codes.\n\u2022 **Memory Efficiency:** Reduces unnecessary delegate allocations during error states.\n\nWatch out: Register handlers via AddExceptionHandler and UseExceptionHandler or unhandled faults still return default HTML.\n\nHave you migrated your legacy error middleware yet?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+  "devto_markdown": "### The Problem with Custom Error Middleware\n\nFor years, ASP.NET Core developers relied on custom exception-handling middleware wrapped in `try-catch` blocks to standardize API error responses. While functional, this approach often clutters the request pipeline, muddies logging scopes, and duplicates status-code mapping logic across services.\n\n### The Built-in Solution: IExceptionHandler\n\nASP.NET Core 8 introduced the `IExceptionHandler` interface, offering a standardized, first-class contract for processing unhandled exceptions globally. Instead of managing raw delegate chains, you implement this interface, return a boolean indicating if the exception was handled, and map errors to RFC 7807 problem details cleanly.\n\n### Before\n\n```csharp\npublic class CustomMiddleware\n{\n    private readonly RequestDelegate _next;\n    public CustomMiddleware(RequestDelegate next) => _next = next;\n\n    public async Task Invoke(HttpContext ctx)\n    {\n        try { await _next(ctx); }\n        catch (Exception ex) { /* messy handling */ }\n    }\n}\n```\n\n### After\n\n```csharp\npublic class GlobalHandler : IExceptionHandler\n{\n    public async ValueTask<bool> TryHandleAsync(\n        HttpContext ctx, Exception ex, CancellationToken ct)\n    {\n        if (ex is not NotFoundException) return false;\n        ctx.Response.StatusCode = StatusCodes.Status404NotFound;\n        await ctx.Response.WriteAsJsonAsync(new { error = ex.Message }, ct);\n        return true;\n    }\n}\n```\n\n### Why It Matters\n\n* **Pipeline Integration:** Native framework support cleanly intercepts errors without manual delegate wrapping.\n* **Status Mapping:** Centralized logic maps domain exceptions directly to appropriate HTTP response codes.\n* **Memory Efficiency:** Avoids excessive heap allocations during exception execution paths.\n\n### Watch Out\n\nMake sure to register your implementation via `services.AddExceptionHandler<GlobalHandler>()` and add `app.UseExceptionHandler()` early in your middleware pipeline, or unhandled faults will still fall through to the default developer exception page.\n\nHave you migrated your legacy error middleware to the .NET 8 standard yet?",
+  "track": "dotnet",
+  "day": 10,
+  "dynamic": false
+}
