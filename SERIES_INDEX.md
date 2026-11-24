@@ -5,7 +5,7 @@
 | Day | Topic | Article | Published |
 | :--- | :--- | :--- | :--- |
 | :--- | :--- | :--- | :--- |
-| Day 09 | AsSplitQuery() vs Cartesian Explosion | [Read on Dev.to](https://dev.to/maayurdahake/assplitquery-vs-cartesian-explosion-2dhk) | 2026-11-23 |
+| Day 10 | IExceptionHandler in ASP.NET Core 8 | [Read on Dev.to](https://dev.to/maayurdahake/iexceptionhandler-in-aspnet-core-8-13in) | 2026-11-24 |
 
 ## Angular
 

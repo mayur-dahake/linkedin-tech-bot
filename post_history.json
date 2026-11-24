@@ -6,5 +6,6 @@
   "System.Threading.Channels",
   "PeriodicTimer vs System.Threading.Timer",
   "EF Core IDbCommandInterceptor",
-  "AsSplitQuery() vs Cartesian Explosion"
+  "AsSplitQuery() vs Cartesian Explosion",
+  "IExceptionHandler in ASP.NET Core 8"
 ]
