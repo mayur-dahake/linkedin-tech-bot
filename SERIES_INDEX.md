@@ -5,7 +5,7 @@
 | Day | Topic | Article | Published |
 | :--- | :--- | :--- | :--- |
 | :--- | :--- | :--- | :--- |
-| Day 10 | IExceptionHandler in ASP.NET Core 8 | [Read on Dev.to](https://dev.to/maayurdahake/iexceptionhandler-in-aspnet-core-8-13in) | 2026-11-24 |
+| Day 11 | Memory<T> and ReadOnlySpan<T> Slicing | [Read on Dev.to](https://dev.to/maayurdahake/memory-and-readonlyspan-slicing-569d) | 2026-11-25 |
 
 ## Angular
 
