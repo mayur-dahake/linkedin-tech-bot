@@ -154,153 +154,153 @@
   "angular": [
     {
       "day": 1,
-      "concept": "effect() onCleanup Callback",
-      "focus": "Canceling pending HTTP requests or clearing timers when signal dependencies change."
+      "concept": "Signal Forms in Angular 22",
+      "focus": "Reactive forms directly backed by signals via @angular/forms/signals, eliminating FormGroup boilerplate and synchronizing with model signals."
     },
     {
       "day": 2,
-      "concept": "untracked() in Angular Signals",
-      "focus": "Reading a signal's current value inside an effect or computed without creating an unwanted reactive trigger."
+      "concept": "httpResource() in Angular 22",
+      "focus": "Declarative HTTP fetching natively wired to signals, auto-refetching when dependencies change with built-in .isLoading() and .error()."
     },
     {
       "day": 3,
-      "concept": "linkedSignal() in Angular 19",
-      "focus": "Creating writable signals that automatically reset when a dependent source signal changes."
+      "concept": "@boundary Template Error Boundaries in Angular 22",
+      "focus": "Isolating runtime template rendering errors with @boundary and @error (retry = $reset) to prevent fatal app-wide crashes."
     },
     {
       "day": 4,
-      "concept": "resource() & rxResource() in Angular 19",
-      "focus": "Asynchronous data fetching natively integrated with signals, eliminating manual subscribe boilerplate."
+      "concept": "linkedSignal() in Angular 19+",
+      "focus": "Writable signal that resets automatically when source signals change while allowing manual state overrides without side-effect syncing."
     },
     {
       "day": 5,
-      "concept": "DestroyRef & takeUntilDestroyed",
-      "focus": "Cleaning up subscriptions anywhere in services or utilities without implementing OnDestroy."
+      "concept": "provideZonelessChangeDetection() in Angular 18/20+",
+      "focus": "Running Angular completely Zone.js-free for smaller bundles, faster initial load, and fine-grained signal-driven change detection."
     },
     {
       "day": 6,
-      "concept": "@defer Control Flow with Triggers",
-      "focus": "Lazy-loading heavy subcomponents on viewport intersection or user interaction (@defer (on viewport))."
+      "concept": "@let Template Declarations in Angular 18.1+",
+      "focus": "Defining local template variables cleanly with @let total = price * qty, eliminating clumsy *ngIf 'as' hacks and dummy micro-pipes."
     },
     {
       "day": 7,
-      "concept": "View Transitions API in Angular Router",
-      "focus": "Enabling smooth native mobile-like page transitions with withViewTransitions()."
+      "concept": "resource() & rxResource() in Angular 19+",
+      "focus": "Native async signal loading primitives bridging promises and RxJS observables into reactive signal states with built-in reload()."
     },
     {
       "day": 8,
-      "concept": "provideExperimentalZonelessChangeDetection()",
-      "focus": "Running Angular without Zone.js for smaller bundle sizes, faster startup, and pure signal reactivity."
+      "concept": "OnPush by Default & Zoneless Blueprint in Angular 22",
+      "focus": "Automated performance by default where components default to OnPush and standard templates run with zero Zone.js monkey patching."
     },
     {
       "day": 9,
-      "concept": "RouteReuseStrategy for Tab State Preservation",
-      "focus": "Keeping component instances alive in memory when navigating between tabs instead of re-rendering."
+      "concept": "Angular Aria Headless UI Primitives in Angular 22",
+      "focus": "Building accessible design system components using Angular Aria headless primitives without reinventing keyboard navigation and ARIA roles."
     },
     {
       "day": 10,
-      "concept": "Functional Interceptors with HttpContext",
-      "focus": "Passing custom metadata flags (e.g. BYPASS_CACHE) per-request to functional HTTP interceptors."
+      "concept": "Advanced Template Expressions in Angular 22",
+      "focus": "Writing array/object spreads (...items) and arrow functions directly inside template bindings without cluttering component classes."
     },
     {
       "day": 11,
-      "concept": "input.required() and model() Two-Way Signals",
-      "focus": "Replacing @Input() and @Output() with clean signal-based inputs and two-way model() primitives."
+      "concept": "input() & input.required() with Transforms in Angular 17.1+",
+      "focus": "Signal-based component inputs replacing @Input() decorators with compile-time safety and built-in booleanAttribute/numberAttribute transforms."
     },
     {
       "day": 12,
-      "concept": "NgOptimizedImage (ngSrc) Priority & Placeholders",
-      "focus": "Automatic responsive sizing, WebP conversion, and LCP boost with priority loading hints."
+      "concept": "model() Two-Way Signal Binding in Angular 17.2+",
+      "focus": "Two-way component state binding eliminating synchronized @Input and @Output pairs with a single reactive model() signal."
     },
     {
       "day": 13,
-      "concept": "NgZone.runOutsideAngular",
-      "focus": "Running high-frequency canvas animations or scroll listeners without triggering change detection loops."
+      "concept": "output() & outputFromObservable() in Angular 17.3+",
+      "focus": "Signal-era declarative component events replacing EventEmitter instances, with seamless interop for RxJS streams."
     },
     {
       "day": 14,
-      "concept": "ChangeDetectorRef.detach() for Live Streaming",
-      "focus": "Detaching high-throughput WebSocket data grids and updating UI manually on animation frames."
+      "concept": "viewChild() & contentChild() Signal Queries in Angular 17.2+",
+      "focus": "Signal-based reactive DOM and component queries replacing static @ViewChild decorators with automatic reactivity and type safety."
     },
     {
       "day": 15,
-      "concept": "Multi-Slot Content Projection with ng-content",
-      "focus": "Building flexible compound components using ng-content select=\"[header]\" with default fallback slots."
+      "concept": "@defer Control Flow & Viewport Triggers in Angular 17+",
+      "focus": "Declarative lazy-loading of heavy template chunks triggered by viewport intersection, user interaction, or idle prefetching."
     },
     {
       "day": 16,
-      "concept": "Custom Router TitleStrategy",
-      "focus": "Centralizing dynamic document title updates with breadcrumbs and i18n directly in router configuration."
+      "concept": "Incremental Hydration with @defer in Angular 19+",
+      "focus": "Progressive SSR hydration breaking monolithic bundles by hydrating deferred components only upon viewport or interaction triggers."
     },
     {
       "day": 17,
-      "concept": "InjectionToken with factory Providers",
-      "focus": "Self-providing modular services with providedIn: 'root' and factory functions without root module bloat."
+      "concept": "Event Replay & Hydration in Angular 18+",
+      "focus": "Capturing and automatically replaying user clicks and keystrokes that occur during SSR page load before hydration completes."
     },
     {
       "day": 18,
-      "concept": "canMatch Router Guard for Feature Flags",
-      "focus": "Swapping entire component routes conditionally based on feature flags before loading chunks."
+      "concept": "Server Route Configuration (serverRoutes) in Angular 19+",
+      "focus": "Hybrid rendering control defining per-route Prerender, SSR, and Client strategies cleanly inside server.routes.ts."
     },
     {
       "day": 19,
-      "concept": "KeyValuePipe with Custom Comparator (0)",
-      "focus": "Preserving exact insertion order in object key iteration by passing () => 0 to keyValue pipe."
+      "concept": "RedirectCommand in Router Guards in Angular 18+",
+      "focus": "Expressive router guard navigation returning new RedirectCommand() with NavigationBehaviorOptions like skipLocationChange."
     },
     {
       "day": 20,
-      "concept": "host Property vs @HostBinding Decorators",
-      "focus": "Clean component metadata configuration: host: { '[class.active]': 'isActive()' }."
+      "concept": "Unified Control State Change Events in Angular 18+",
+      "focus": "Introspecting form control state lifecycle changes (status, touched, pristine) via unified control.events observable stream."
     },
     {
       "day": 21,
-      "concept": "ControlValueAccessor with Signal Forms",
-      "focus": "Writing robust custom form controls that seamlessly bridge reactive forms and signals."
+      "concept": "afterRender & afterNextRender in Angular 17+",
+      "focus": "Post-render DOM lifecycle hooks replacing ngAfterViewInit and manual Zone checks without crashing SSR hydration pipelines."
     },
     {
       "day": 22,
-      "concept": "DOCUMENT Token for Safe SSR",
-      "focus": "Injecting DOCUMENT from @angular/common to avoid breaking server-side rendering with global window/document."
+      "concept": "provideAppInitializer() in Angular 19+",
+      "focus": "Modern standalone application initialization replacing the multi-provider APP_INITIALIZER token boilerplate with a clean function."
     },
     {
       "day": 23,
-      "concept": "toSignal() Edge Cases: rejectErrors & initialValue",
-      "focus": "Handling observable error states and avoiding undefined flash during initial observable emission."
+      "concept": "hostDirectives Directive Composition in Angular 17+",
+      "focus": "Applying reusable behaviors and directives directly onto components via hostDirectives array without brittle class inheritance."
     },
     {
       "day": 24,
-      "concept": "viewProviders vs providers",
-      "focus": "Preventing projected ng-content children from accessing parent service instances using viewProviders."
+      "concept": "withViewTransitions() in Angular 17+",
+      "focus": "Plugging the native browser View Transitions API directly into Angular Router for fluid mobile-like page navigation animations."
     },
     {
       "day": 25,
-      "concept": "ENVIRONMENT_INITIALIZER vs APP_INITIALIZER",
-      "focus": "Modern standalone app initialization logic using provideEnvironmentInitializer()."
+      "concept": "DestroyRef & takeUntilDestroyed in Angular 17+",
+      "focus": "Injectable lifecycle cleanup automatically terminating subscriptions and listeners anywhere in services without ngOnDestroy."
     },
     {
       "day": 26,
-      "concept": "CDK Coercion Utilities",
-      "focus": "Using coerceBooleanProperty and coerceArray to make custom component inputs resilient to HTML attributes."
+      "concept": "toSignal() & toObservable() RxJS Interop in Angular 17+",
+      "focus": "Clean bidirectional interop bridging RxJS streams and signals with custom initial values and rejectErrors error boundaries."
     },
     {
       "day": 27,
-      "concept": "Custom Async Validators with distinctUntilChanged",
-      "focus": "Debouncing API validation checks inside custom AsyncValidatorFn to prevent server flooding."
+      "concept": "provideHttpClient() with withFetch() in Angular 17/21+",
+      "focus": "Configuring native Fetch API for HttpClient to enable streaming responses, HTTP/2 multiplexing, and server-side stability."
     },
     {
       "day": 28,
-      "concept": "SVG Dynamic Interpolation in Templates",
-      "focus": "Rendering inline scalable SVG icons and charts with dynamic bound attributes without third-party libs."
+      "concept": "Functional Router Guards with canMatch in Angular 17+",
+      "focus": "Intercepting route requests before JavaScript bundle chunks are loaded to conditionally load alternative component implementations."
     },
     {
       "day": 29,
-      "concept": "Angular CLI Source-Map Explorer",
-      "focus": "Visualizing webpack/esbuild bundle chunk composition to find accidentally imported barrel file bloat."
+      "concept": "Signals-Based Lightweight Store with linkedSignal in Angular 19+",
+      "focus": "Building focused 30-line reactive state stores with computed signals and linkedSignal without heavyweight state management libraries."
     },
     {
       "day": 30,
-      "concept": "Signals-Based Custom Store Pattern",
-      "focus": "Writing a 30-line lightweight reactive store with signals, computed, and update methods without NgRx."
+      "concept": "Vitest Integration for Modern Unit Testing in Angular 21/22",
+      "focus": "High-speed native ESM unit testing with Vitest replacing legacy Karma and Webpack test runners for 10x faster test execution."
     }
   ],
   "sql_server": [

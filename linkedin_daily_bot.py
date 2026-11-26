@@ -353,6 +353,10 @@ Voice & Tone Rules (CRITICAL - sound like a real practitioner, NOT an AI):
 - NEVER use AI clichés or marketing hype: NO "completely missing out", "drastically cut down", "delivers up to 10x", "skyrocket", "unlock", "game-changer", "leverage", "leverages", "leveraged", "utilize", "delve", "elevate", or "in today's fast-paced world".
 - Include one concise, honest `Watch out:` line naming a real production edge case or caveat.
 - Code accuracy: Verify exact C#/Angular/T-SQL API signatures (e.g. `SearchValues<T>` requires `input.AsSpan().ContainsAny(...)`, not `string.ContainsAny(...)`), and avoid `\r`, `\n`, `\t` escape literals inside sample strings—use visible chars like `','`, `';'`, `'/'`, `'?'` instead.
+- Framework Release & Version Tagging (CRITICAL):
+  - When the topic mentions a framework release (especially Angular 22, Angular 21, Angular 19+, .NET 8/9, SQL 2022): State the version explicitly in `pill_badge` (e.g. "ANGULAR 22", "ANGULAR 21", "ANGULAR 19+", "NET 9", "SQL 2022").
+  - For Angular in particular: Frame the post as a breakthrough modern update (Signals-first, Zoneless, Control Flow, Signal Forms, Error Boundaries). In `bad_code`, show the legacy pattern it obsoletes (e.g., bulky FormGroup/FormControl, manual RxJS subscribe/takeUntil, clumsy *ngIf 'as' hacks, Zone.js monkey patching). In `good_code`, showcase the modern idiomatic API (e.g., form() with [formField], httpResource(), @boundary, @let, linkedSignal()).
+  - In `post_text`, mention the release version in the opening hook (e.g., "Angular 22 stabilizes Signal Forms, eliminating...", "With Angular 18.1, the new @let syntax replaces...").
 
 Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template showing BOTH Before and After):
 - headline_line1: Short bold white hook (3-5 words, e.g. "Stop allocating arrays")
