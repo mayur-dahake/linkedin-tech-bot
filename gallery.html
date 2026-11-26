@@ -29,7 +29,7 @@
       --track-pill: #6366f1;
       --track-tag: #a5b4fc;
       --track-label: ".NET & C#";
-      --track-sub: "Modern Runtime & High-Performance Architecture";
+      --track-sub: ".NET 10/11 & C# 14/15 High-Performance Architecture";
     }
 
     [data-track="angular"] {
@@ -38,7 +38,7 @@
       --track-pill: #e11d48;
       --track-tag: #fb7185;
       --track-label: "Angular";
-      --track-sub: "Modern Frontend Signals & Zoneless Architecture";
+      --track-sub: "Angular 20/21/22 Modern Signals & Zoneless Architecture";
     }
 
     [data-track="sql_server"] {
@@ -47,7 +47,7 @@
       --track-pill: #d97706;
       --track-tag: #fbbf24;
       --track-label: "SQL Server";
-      --track-sub: "Enterprise Database Optimization & Internal Architecture";
+      --track-sub: "SQL Server 2022/2025 Intelligence & Enterprise Architecture";
     }
 
     * {
@@ -857,7 +857,7 @@
       </div>
       <div class="brand-text">
         <h1>LinkedIn Tech Bot Gallery</h1>
-        <p>90-Day Curriculum & Visual Card Previewer</p>
+        <p>Latest Versions: .NET 10/11, Angular 20-22, SQL Server 2022/2025</p>
       </div>
     </div>
 
@@ -865,22 +865,22 @@
     <div class="track-tabs">
       <button class="track-tab active" data-t="dotnet" onclick="setTrack('dotnet')">
         <span class="dot"></span>
-        <span>.NET & C# (30)</span>
+        <span>.NET 10/11 (30)</span>
       </button>
       <button class="track-tab" data-t="angular" onclick="setTrack('angular')">
         <span class="dot"></span>
-        <span>Angular (30)</span>
+        <span>Angular 20-22 (30)</span>
       </button>
       <button class="track-tab" data-t="sql_server" onclick="setTrack('sql_server')">
         <span class="dot"></span>
-        <span>SQL Server (30)</span>
+        <span>SQL 2022/2025 (30)</span>
       </button>
     </div>
 
     <div class="header-actions">
       <div class="search-box">
         <span class="search-icon">🔍</span>
-        <input type="text" class="search-input" id="search-input" placeholder="Search 90 topics (e.g. PSP, signal, index)..." oninput="filterTopics()">
+        <input type="text" class="search-input" id="search-input" placeholder="Search 90 latest topics (e.g. field, vector, signal)..." oninput="filterTopics()">
       </div>
     </div>
   </header>
@@ -940,21 +940,21 @@
         <div id="card-mode-container">
           <div class="card-frame" id="visual-card">
             <div class="card-top">
-              <div class="card-kicker" id="card-kicker">30 Days of High-Performance .NET • Day 01</div>
-              <div class="card-pill" id="card-pill">SearchValues&lt;T&gt; in .NET 9+</div>
+              <div class="card-kicker" id="card-kicker">30 Days of .NET 10/11 • Day 01</div>
+              <div class="card-pill" id="card-pill">Field-Backed Properties in C# 14</div>
               <div class="card-heading">
-                <div class="card-headline-1" id="card-headline-1">SearchValues&lt;T&gt;</div>
-                <div class="card-headline-accent" id="card-headline-accent">SIMD-Accelerated Lookups</div>
+                <div class="card-headline-1" id="card-headline-1">Field-Backed Properties</div>
+                <div class="card-headline-accent" id="card-headline-accent">field Keyword in C# 14</div>
               </div>
               <div class="card-subtitle" id="card-subtitle">
-                Linear scans allocate heap memory and miss vectorized CPU instructions.
+                Accessing compiler-generated backing fields without declaring manual private fields.
               </div>
             </div>
 
             <div class="card-code-section">
               <!-- Before Panel -->
               <div class="code-panel panel-before">
-                <div class="code-panel-badge">Before: Naive Scan</div>
+                <div class="code-panel-badge">Before: Repetitive Private Field</div>
                 <div id="card-before-code">
                   <!-- Injected via JS -->
                 </div>
@@ -962,7 +962,7 @@
 
               <!-- After Panel -->
               <div class="code-panel panel-after">
-                <div class="code-panel-badge">After: Zero-Allocation Fix</div>
+                <div class="code-panel-badge">After: Modern field Keyword</div>
                 <div id="card-after-code">
                   <!-- Injected via JS -->
                 </div>
@@ -972,7 +972,7 @@
             <!-- Metric Callout -->
             <div class="card-metric-bar">
               <span class="metric-icon">⚡</span>
-              <span class="metric-text" id="card-metric-text">10x-100x Faster Lookups | Zero GC Allocation</span>
+              <span class="metric-text" id="card-metric-text">Zero Boilerplate | 100% Encapsulation</span>
             </div>
 
             <!-- Card Minimal Footer -->
@@ -1015,10 +1015,10 @@
         <div class="details-inspector">
           <div class="inspector-header">
             <div>
-              <div class="inspector-title" id="inspector-title">SearchValues&lt;T&gt;</div>
-              <div class="inspector-sub" id="inspector-sub">Day 1 • High-Performance .NET</div>
+              <div class="inspector-title" id="inspector-title">Field-Backed Properties</div>
+              <div class="inspector-sub" id="inspector-sub">Day 1 • .NET & C#</div>
             </div>
-            <span class="sidebar-badge" id="inspector-version">.NET 9+</span>
+            <span class="sidebar-badge" id="inspector-version">C# 14 / .NET 10</span>
           </div>
 
           <!-- Post Commentary Preview -->
@@ -1062,160 +1062,160 @@
   "dotnet": [
     {
       "day": 1,
-      "concept": "SearchValues<T> in .NET 8/9",
-      "focus": "SIMD-accelerated string searching that is 10x faster than string.Contains() or IndexOfAny()."
-    },
-    {
-      "day": 2,
-      "concept": "ValueTask vs Task Allocation Traps",
-      "focus": "Why returning Task allocates on heap for sync cached results, and how ValueTask<T> eliminates it."
-    },
-    {
-      "day": 3,
-      "concept": "ArrayPool<T>.Shared for High-Throughput APIs",
-      "focus": "Renting byte and object buffers to completely eliminate GC Gen0/Gen1 allocation spikes."
-    },
-    {
-      "day": 4,
-      "concept": "IAsyncEnumerable<T> Streaming",
-      "focus": "Streaming records directly from EF Core to HTTP response stream without buffering 50,000 items in RAM."
-    },
-    {
-      "day": 5,
-      "concept": "FrozenDictionary<K, V> in .NET 8+",
-      "focus": "Immutable read-only lookups compiled for zero-allocation, beating regular Dictionary by 40%."
-    },
-    {
-      "day": 6,
-      "concept": "System.Threading.Channels",
-      "focus": "High-performance in-memory lock-free producer/consumer queue replacing heavy BlockingCollection."
-    },
-    {
-      "day": 7,
-      "concept": "PeriodicTimer vs System.Threading.Timer",
-      "focus": "Clean, async-safe background looping with while (await timer.WaitForNextTickAsync())."
-    },
-    {
-      "day": 8,
-      "concept": "EF Core IDbCommandInterceptor",
-      "focus": "Intercepting SQL queries dynamically for automatic multi-tenancy, soft delete, or query auditing."
-    },
-    {
-      "day": 9,
-      "concept": "AsSplitQuery() vs Cartesian Explosion",
-      "focus": "How multiple .Include() calls generate exponential duplicate rows and when AsSplitQuery fixes it."
-    },
-    {
-      "day": 10,
-      "concept": "IExceptionHandler in ASP.NET Core 8",
-      "focus": "Replacing custom middleware with the standardized IExceptionHandler pipeline."
-    },
-    {
-      "day": 11,
-      "concept": "Memory<T> and ReadOnlySpan<T> Slicing",
-      "focus": "Parsing strings, substrings, and binary payloads with zero heap memory allocation."
-    },
-    {
-      "day": 12,
-      "concept": "HybridCache in .NET 9",
-      "focus": "Two-tier caching combining ultra-fast L1 in-process RAM with L2 distributed Redis seamlessly."
-    },
-    {
-      "day": 13,
-      "concept": "Discriminated Unions in C# 15 / .NET 11",
-      "focus": "Type-safe closed algebraic data types with compiler-enforced exhaustive pattern matching, replacing polymorphic visitor boilerplate and loose inheritance."
-    },
-    {
-      "day": 14,
-      "concept": "Runtime Async Execution in .NET 11",
-      "focus": "Native runtime async execution replacing compiler-generated IAsyncStateMachine class boilerplate, reducing per-await heap allocations and cleaning stack traces."
-    },
-    {
-      "day": 15,
       "concept": "Field-Backed Properties (field keyword) in C# 14 / .NET 10",
       "focus": "Accessing the compiler-generated backing field directly inside property accessors (set => field = value) without writing repetitive private fields."
     },
     {
-      "day": 16,
+      "day": 2,
       "concept": "Extension Members & Properties in C# 14 / .NET 10",
-      "focus": "Extending existing types with extension properties, static members, and custom operators using modern extension(Type) block syntax."
+      "focus": "Extending existing types with extension properties, static factory methods, and custom operators using modern extension(Type) block syntax."
     },
     {
-      "day": 17,
-      "concept": "System.Threading.Lock Object in .NET 9/10",
-      "focus": "Replacing monitor-based lock(new object()) with the dedicated System.Threading.Lock primitive for lower memory overhead and cleaner semantics."
+      "day": 3,
+      "concept": "Discriminated Unions in C# 15 / .NET 11",
+      "focus": "Type-safe closed algebraic data types (enum class) with compiler-enforced exhaustive pattern matching, replacing polymorphic visitor boilerplate."
     },
     {
-      "day": 18,
-      "concept": "params ReadOnlySpan<T> in C# 13 / .NET 9",
-      "focus": "Passing variable-length argument lists to methods with zero heap allocation by eliminating compiler-generated temporary array instantiations."
+      "day": 4,
+      "concept": "Runtime Async Execution in .NET 11",
+      "focus": "Native runtime async execution eliminating IAsyncStateMachine class boilerplate, reducing per-await heap allocations and cleaning stack traces."
     },
     {
-      "day": 19,
+      "day": 5,
       "concept": "ZstandardStream Compression in .NET 11",
-      "focus": "Built-in ultra-fast Zstandard compression delivering 3x faster compression speeds and higher ratios than GZip in high-throughput API responses."
+      "focus": "Built-in ultra-fast Zstandard (zstd) compression delivering 3x faster compression speeds and higher ratios than GZip in high-throughput API responses."
     },
     {
-      "day": 20,
+      "day": 6,
       "concept": "LINQ Enumerable.FullJoin in .NET 11",
       "focus": "Native full outer joins directly in LINQ without complex GroupJoin and SelectManyDefaultIfEmpty query workarounds."
     },
     {
-      "day": 21,
-      "concept": "Task.WhenEach Async Streaming in .NET 9",
-      "focus": "Processing asynchronous tasks concurrently as each one finishes without waiting for the entire batch or writing custom Channel bridges."
-    },
-    {
-      "day": 22,
+      "day": 7,
       "concept": "Implicit Span Conversions in C# 14 / .NET 10",
       "focus": "First-class compiler conversions allowing spans to be passed directly into generic and collection expressions without explicit AsSpan() calls."
     },
     {
-      "day": 23,
-      "concept": "OrderedDictionary<TKey, TValue> in .NET 9",
-      "focus": "Standard library generic collection maintaining exact insertion order while providing O(1) keyed lookups without third-party dependencies."
-    },
-    {
-      "day": 24,
+      "day": 8,
       "concept": "File-Based Apps (Single-File C#) in .NET 10",
       "focus": "Running standalone single-file C# scripts with inline #sdk and #package directives without project files or separate solution scaffolding."
     },
     {
-      "day": 25,
-      "concept": "SearchValues Multi-String Matching in .NET 9",
-      "focus": "Extending hardware-accelerated SIMD substring search across arrays of strings (SearchValues.Create(string[])) for high-throughput text routing."
+      "day": 9,
+      "concept": "Closed Class Hierarchies in C# 15 / .NET 11",
+      "focus": "Restricting inheritance trees at the compiler level to guarantee closed domain hierarchies with exhaustive pattern match verification."
     },
     {
-      "day": 26,
+      "day": 10,
       "concept": "Partial Constructors and Events in C# 14 / .NET 10",
       "focus": "Defining partial constructors and event declarations across partial files to cleanly compose source-generated dependency injection code."
     },
     {
-      "day": 27,
-      "concept": "TimeProvider & FakeTimeProvider in .NET 8/9",
-      "focus": "Replacing mockable IDateTime interfaces with Microsoft's official abstract TimeProvider for deterministic timer and clock unit tests."
+      "day": 11,
+      "concept": "Interlocked.CompareExchange with Memory Handles in .NET 10",
+      "focus": "Atomic hardware memory operations extended to native handles and ref structs for lock-free high-concurrency systems."
     },
     {
-      "day": 28,
-      "concept": "Native AOT Publishing & Trimming in .NET 10/11",
+      "day": 12,
+      "concept": "Native AOT Runtime Compaction & Trimming in .NET 11",
       "focus": "Compiling .NET applications ahead-of-time directly into native machine code for sub-10ms startup times and 80% lower RAM footprint."
     },
     {
+      "day": 13,
+      "concept": "Custom Compound Assignment Operators in C# 14 / .NET 10",
+      "focus": "Overloading compound assignments (+=, -=) directly on domain types to avoid intermediate object allocations and defensive copying."
+    },
+    {
+      "day": 14,
+      "concept": "Pattern Matching on Spans and UTF-8 Literals in C# 15 / .NET 11",
+      "focus": "Constant pattern matching directly against ReadOnlySpan<byte> UTF-8 literals without string transcoding or heap allocations."
+    },
+    {
+      "day": 15,
+      "concept": "Auto-Default Struct Constructors in C# 14 / .NET 10",
+      "focus": "Structs automatically initializing unassigned fields to default in parameterless constructors without explicit field assignment boilerplate."
+    },
+    {
+      "day": 16,
+      "concept": "Zero-Allocation Async Local Storage in .NET 11",
+      "focus": "Optimized AsyncLocal<T> runtime implementation eliminating copy-on-write allocation trees during execution context flows."
+    },
+    {
+      "day": 17,
+      "concept": "Memory<T> Unification with Native Hardware Vectors in .NET 11",
+      "focus": "Seamless SIMD vectorization across arbitrary non-contiguous memory segments without copying to contiguous arrays."
+    },
+    {
+      "day": 18,
+      "concept": "Native Dynamic PGO Tiering Optimization in .NET 10",
+      "focus": "Dynamic Profile-Guided Optimization specializing hot loops and unrolling critical execution paths with zero runtime pauses."
+    },
+    {
+      "day": 19,
+      "concept": "Span-Based Regex Code Generator in .NET 10/11",
+      "focus": "Source-generated regular expressions operating directly on ReadOnlySpan<char> with zero intermediate string allocations."
+    },
+    {
+      "day": 20,
+      "concept": "First-Class Struct Tuple Conversions in C# 14 / .NET 10",
+      "focus": "Direct structural deconstruction and tuple conversions for custom structs without heap boxing or runtime overhead."
+    },
+    {
+      "day": 21,
+      "concept": "Direct Function Pointers in Generic Constraints in C# 15 / .NET 11",
+      "focus": "High-performance interop using unmanaged function pointers (delegate*<void>) directly inside generic type parameters."
+    },
+    {
+      "day": 22,
+      "concept": "Static Abstract Members in Struct Records in C# 14 / .NET 10",
+      "focus": "Generic math and factory patterns unified across immutable value record structs with zero runtime virtual dispatch overhead."
+    },
+    {
+      "day": 23,
+      "concept": "Vectorized JSON Deserialization Pipeline in .NET 11",
+      "focus": "SIMD AVX-512 accelerated JSON token reader parsing 10GB/s payloads directly into domain structs without string allocs."
+    },
+    {
+      "day": 24,
+      "concept": "Null-Forgiving Pattern Matching Diagnostics in C# 14 / .NET 10",
+      "focus": "Compiler-enforced nullability flow analysis guaranteeing non-null invariants across complex nested pattern switches."
+    },
+    {
+      "day": 25,
+      "concept": "Garbage Collector Regional Memory Allocation in .NET 11",
+      "focus": "Server GC region-based memory management isolating ephemeral allocations per CPU core for predictable tail latency."
+    },
+    {
+      "day": 26,
+      "concept": "Expression-Bodied Local Functions with Spans in C# 14 / .NET 10",
+      "focus": "Inlined local helper functions safely capturing ref structs and spans without escape analysis violations."
+    },
+    {
+      "day": 27,
+      "concept": "Hardware Intrinsics for Post-Quantum Cryptography in .NET 11",
+      "focus": "Built-in hardware-accelerated lattice-based cryptographic algorithms (ML-KEM, ML-DSA) in System.Security.Cryptography."
+    },
+    {
+      "day": 28,
+      "concept": "Zero-Copy HTTP/3 Framing Pipelines in .NET 10/11",
+      "focus": "High-throughput QUIC and HTTP/3 multiplexing operating directly on pooled memory buffers without intermediate stream copies."
+    },
+    {
       "day": 29,
-      "concept": "Polly v8 Resilience Pipelines in .NET 8/9",
-      "focus": "Zero-allocation composable resilience pipelines unifying retries, rate limiters, and circuit breakers via Microsoft.Extensions.Resilience."
+      "concept": "Source-Generated Dependency Injection Container in .NET 10",
+      "focus": "Compile-time service resolution resolving dependencies with zero reflection, zero runtime emit, and instant cold start."
     },
     {
       "day": 30,
-      "concept": "Closed Class Hierarchies in C# 15 / .NET 11",
-      "focus": "Restricting inheritance trees at the compiler level to guarantee closed domain hierarchies with exhaustive pattern match verification."
+      "concept": "C# 15 Exhaustive Domain Guard Enforcements in .NET 11",
+      "focus": "Compile-time error when domain model states are unhandled across business rule match expressions."
     }
   ],
   "angular": [
     {
       "day": 1,
-      "concept": "Signal Forms in Angular 22",
-      "focus": "Reactive forms directly backed by signals via @angular/forms/signals, eliminating FormGroup boilerplate and synchronizing with model signals."
+      "concept": "Signal Forms (@angular/forms/signals) in Angular 22",
+      "focus": "Reactive forms directly backed by signals, eliminating FormGroup class boilerplate and synchronizing with model signals."
     },
     {
       "day": 2,
@@ -1229,22 +1229,22 @@
     },
     {
       "day": 4,
-      "concept": "linkedSignal() in Angular 19+",
+      "concept": "linkedSignal() in Angular 20/21+",
       "focus": "Writable signal that resets automatically when source signals change while allowing manual state overrides without side-effect syncing."
     },
     {
       "day": 5,
-      "concept": "provideZonelessChangeDetection() in Angular 18/20+",
+      "concept": "provideZonelessChangeDetection() in Angular 20+",
       "focus": "Running Angular completely Zone.js-free for smaller bundles, faster initial load, and fine-grained signal-driven change detection."
     },
     {
       "day": 6,
-      "concept": "@let Template Declarations in Angular 18.1+",
-      "focus": "Defining local template variables cleanly with @let total = price * qty, eliminating clumsy *ngIf 'as' hacks and dummy micro-pipes."
+      "concept": "@let Template Variable Declarations in Angular 20+",
+      "focus": "Defining local template variables cleanly with @let total = price * qty, eliminating clumsy *ngIf as hacks and dummy micro-pipes."
     },
     {
       "day": 7,
-      "concept": "resource() & rxResource() in Angular 19+",
+      "concept": "resource() & rxResource() in Angular 20/21+",
       "focus": "Native async signal loading primitives bridging promises and RxJS observables into reactive signal states with built-in reload()."
     },
     {
@@ -1264,258 +1264,259 @@
     },
     {
       "day": 11,
-      "concept": "input() & input.required() with Transforms in Angular 17.1+",
-      "focus": "Signal-based component inputs replacing @Input() decorators with compile-time safety and built-in booleanAttribute/numberAttribute transforms."
-    },
-    {
-      "day": 12,
-      "concept": "model() Two-Way Signal Binding in Angular 17.2+",
-      "focus": "Two-way component state binding eliminating synchronized @Input and @Output pairs with a single reactive model() signal."
-    },
-    {
-      "day": 13,
-      "concept": "output() & outputFromObservable() in Angular 17.3+",
-      "focus": "Signal-era declarative component events replacing EventEmitter instances, with seamless interop for RxJS streams."
-    },
-    {
-      "day": 14,
-      "concept": "viewChild() & contentChild() Signal Queries in Angular 17.2+",
-      "focus": "Signal-based reactive DOM and component queries replacing static @ViewChild decorators with automatic reactivity and type safety."
-    },
-    {
-      "day": 15,
-      "concept": "@defer Control Flow & Viewport Triggers in Angular 17+",
-      "focus": "Declarative lazy-loading of heavy template chunks triggered by viewport intersection, user interaction, or idle prefetching."
-    },
-    {
-      "day": 16,
-      "concept": "Incremental Hydration with @defer in Angular 19+",
+      "concept": "Incremental SSR Hydration with @defer in Angular 20/21+",
       "focus": "Progressive SSR hydration breaking monolithic bundles by hydrating deferred components only upon viewport or interaction triggers."
     },
     {
-      "day": 17,
-      "concept": "Event Replay & Hydration in Angular 18+",
+      "day": 12,
+      "concept": "Event Replay & Interactive Hydration in Angular 20+",
       "focus": "Capturing and automatically replaying user clicks and keystrokes that occur during SSR page load before hydration completes."
     },
     {
-      "day": 18,
-      "concept": "Server Route Configuration (serverRoutes) in Angular 19+",
+      "day": 13,
+      "concept": "Server Route Configuration (server.routes.ts) in Angular 20/21+",
       "focus": "Hybrid rendering control defining per-route Prerender, SSR, and Client strategies cleanly inside server.routes.ts."
     },
     {
-      "day": 19,
-      "concept": "RedirectCommand in Router Guards in Angular 18+",
-      "focus": "Expressive router guard navigation returning new RedirectCommand() with NavigationBehaviorOptions like skipLocationChange."
-    },
-    {
-      "day": 20,
-      "concept": "Unified Control State Change Events in Angular 18+",
-      "focus": "Introspecting form control state lifecycle changes (status, touched, pristine) via unified control.events observable stream."
-    },
-    {
-      "day": 21,
-      "concept": "afterRender & afterNextRender in Angular 17+",
-      "focus": "Post-render DOM lifecycle hooks replacing ngAfterViewInit and manual Zone checks without crashing SSR hydration pipelines."
-    },
-    {
-      "day": 22,
-      "concept": "provideAppInitializer() in Angular 19+",
+      "day": 14,
+      "concept": "provideAppInitializer() Standalone Setup in Angular 20+",
       "focus": "Modern standalone application initialization replacing the multi-provider APP_INITIALIZER token boilerplate with a clean function."
     },
     {
-      "day": 23,
-      "concept": "hostDirectives Directive Composition in Angular 17+",
-      "focus": "Applying reusable behaviors and directives directly onto components via hostDirectives array without brittle class inheritance."
+      "day": 15,
+      "concept": "Native Vitest ESM Test Runner in Angular 21/22",
+      "focus": "Instant ESM unit testing replacing legacy Karma and Webpack test runners for 10x faster test execution."
     },
     {
-      "day": 24,
-      "concept": "withViewTransitions() in Angular 17+",
-      "focus": "Plugging the native browser View Transitions API directly into Angular Router for fluid mobile-like page navigation animations."
-    },
-    {
-      "day": 25,
-      "concept": "DestroyRef & takeUntilDestroyed in Angular 17+",
-      "focus": "Injectable lifecycle cleanup automatically terminating subscriptions and listeners anywhere in services without ngOnDestroy."
-    },
-    {
-      "day": 26,
-      "concept": "toSignal() & toObservable() RxJS Interop in Angular 17+",
-      "focus": "Clean bidirectional interop bridging RxJS streams and signals with custom initial values and rejectErrors error boundaries."
-    },
-    {
-      "day": 27,
-      "concept": "provideHttpClient() with withFetch() in Angular 17/21+",
-      "focus": "Configuring native Fetch API for HttpClient to enable streaming responses, HTTP/2 multiplexing, and server-side stability."
-    },
-    {
-      "day": 28,
-      "concept": "Functional Router Guards with canMatch in Angular 17+",
-      "focus": "Intercepting route requests before JavaScript bundle chunks are loaded to conditionally load alternative component implementations."
-    },
-    {
-      "day": 29,
-      "concept": "Signals-Based Lightweight Store with linkedSignal in Angular 19+",
+      "day": 16,
+      "concept": "Signals-Based Lightweight Store in Angular 20/21+",
       "focus": "Building focused 30-line reactive state stores with computed signals and linkedSignal without heavyweight state management libraries."
     },
     {
+      "day": 17,
+      "concept": "input() and model() Reactive Transforms in Angular 20+",
+      "focus": "Composable input transforms (transform: (v) => ...) operating synchronously on signal inputs with compile-time type safety."
+    },
+    {
+      "day": 18,
+      "concept": "outputFromObservable() Clean Stream Bridge in Angular 20+",
+      "focus": "Direct declarative emission from RxJS streams into Angular component outputs without manual subscription or ngOnDestroy boilerplate."
+    },
+    {
+      "day": 19,
+      "concept": "viewChild() Reactive Query Signals in Angular 20+",
+      "focus": "Dynamic element queries returning reactive signals that update automatically as conditional @if blocks render elements."
+    },
+    {
+      "day": 20,
+      "concept": "RedirectCommand with NavigationBehaviorOptions in Angular 20+",
+      "focus": "Expressive router guard navigation returning new RedirectCommand() with options like skipLocationChange and custom state."
+    },
+    {
+      "day": 21,
+      "concept": "Unified Form Control State Events in Angular 20+",
+      "focus": "Introspecting control state lifecycle changes (status, touched, pristine) via unified control.events observable stream."
+    },
+    {
+      "day": 22,
+      "concept": "afterRender Phase Scheduling in Angular 20+",
+      "focus": "Fine-grained DOM phase execution (earlyRead, write, read) preventing layout thrashing and forced browser reflows."
+    },
+    {
+      "day": 23,
+      "concept": "Angular View Transitions with Dynamic Scopes in Angular 21/22",
+      "focus": "Smooth view transition animations scoped to specific component sub-trees rather than the entire page viewport."
+    },
+    {
+      "day": 24,
+      "concept": "Zoneless Microtask Scheduling Architecture in Angular 22",
+      "focus": "Next-generation scheduler executing signal notifications synchronously within native browser microtasks for 60fps UI fluidity."
+    },
+    {
+      "day": 25,
+      "concept": "Standalone Component Scaffolding Without NgModules in Angular 20+",
+      "focus": "Pure standalone component architecture where modules are completely obsolete and bundle tree-shaking is 100% efficient."
+    },
+    {
+      "day": 26,
+      "concept": "Built-in Streaming SSR with Web Streams in Angular 21/22",
+      "focus": "Streaming HTML chunks directly from Node.js/Edge runtimes to browser as signals resolve, slashing Time-To-First-Byte (TTFB)."
+    },
+    {
+      "day": 27,
+      "concept": "Headless Combobox & Dialog Primitives in Angular 22",
+      "focus": "Fully accessible unstyled dialog and combobox primitives conforming to WAI-ARIA 1.2 authoring practices out of the box."
+    },
+    {
+      "day": 28,
+      "concept": "Automatic Signal Dependency Pruning in Angular 20+",
+      "focus": "Signal graph optimizer that automatically unregisters unused dependencies from inactive conditional template branches."
+    },
+    {
+      "day": 29,
+      "concept": "Template Type-Checking for Custom Control Flow in Angular 21/22",
+      "focus": "Strict compile-time template checking validating data types and narrowing types across @if, @switch, and custom block directives."
+    },
+    {
       "day": 30,
-      "concept": "Vitest Integration for Modern Unit Testing in Angular 21/22",
-      "focus": "High-speed native ESM unit testing with Vitest replacing legacy Karma and Webpack test runners for 10x faster test execution."
+      "concept": "Angular CLI Ultra-Fast Rolldown/Vite Build Pipeline in Angular 22",
+      "focus": "Sub-second incremental development builds and lightning-fast HMR powered by native Rust/ESM tooling."
     }
   ],
   "sql_server": [
     {
       "day": 1,
-      "concept": "OUTPUT Clause with INSERT & UPDATE in SQL 2019+",
-      "focus": "Returning generated identity IDs and audit rows in one atomic execution without secondary SELECT roundtrips."
-    },
-    {
-      "day": 2,
-      "concept": "Filtered Indexes (WHERE IsDeleted = 0) in SQL 2019+",
-      "focus": "Shrinking index size by 90% and maintaining high-speed cache hits by indexing only active domain rows."
-    },
-    {
-      "day": 3,
       "concept": "Parameter Sensitive Plan (PSP) Optimization in SQL 2022",
       "focus": "Automatic runtime plan splitting for parameterized queries with non-uniform data distributions without recompilation."
     },
     {
+      "day": 2,
+      "concept": "Query Store Hints for Zero-Code Tuning in SQL 2022",
+      "focus": "Applying execution plan hints (OPTIMIZE FOR, MAXDOP, RECOMPILE) directly via Query Store without changing T-SQL or application code."
+    },
+    {
+      "day": 3,
+      "concept": "Degree of Parallelism (DOP) Feedback in SQL 2022",
+      "focus": "Continuous background analysis adjusting parallel worker threads to eliminate CPU bottlenecks and thread synchronization waits."
+    },
+    {
       "day": 4,
-      "concept": "Keyset Pagination vs OFFSET/FETCH in SQL 2019+",
-      "focus": "Eliminating expensive clustered index page scans on multi-million row tables using seek-based WHERE Id > @LastId."
+      "concept": "Memory Grant Feedback (MGF) Persistence in SQL 2022",
+      "focus": "Persisting memory grant feedback in Query Store across server restarts and using percentile grants to eliminate disk spills."
     },
     {
       "day": 5,
-      "concept": "Query Store Hints in SQL 2022",
-      "focus": "Applying execution plan hints directly via Query Store without changing .NET application code or stored procedure definitions."
+      "concept": "Cardinality Estimation (CE) Feedback in SQL 2022",
+      "focus": "Machine-assisted runtime identification of plan regressions caused by CE assumptions, auto-correcting query hints."
     },
     {
       "day": 6,
-      "concept": "READ COMMITTED SNAPSHOT (RCSI) in SQL 2019+",
-      "focus": "Enabling row versioning in tempdb so read queries never block concurrent write transactions."
+      "concept": "Optimized Locking with Transaction IDs in SQL 2022",
+      "focus": "Revolutionary lock engine overhaul replacing row/page lock escalation with Transaction ID (TID) locking for lower lock contention."
     },
     {
       "day": 7,
-      "concept": "Native JSON Type & JSON Indexing in SQL 2025",
-      "focus": "Native binary JSON storage format with B-tree index support replacing slow NVARCHAR(MAX) string parsing."
+      "concept": "Accelerated Database Recovery (ADR) PVS in SQL 2022",
+      "focus": "Instant transaction rollback and sub-second crash recovery using Persistent Version Store (PVS) with cleaner multi-version concurrency."
     },
     {
       "day": 8,
-      "concept": "Ledger Tables for Tamper-Proof Auditing in SQL 2022",
-      "focus": "Cryptographically verifiable ledger tables using blockchain-like hash chains for non-repudiable audit trails."
+      "concept": "Ledger Tables for Tamper-Proof Cryptographic Auditing in SQL 2022",
+      "focus": "Cryptographically verifiable tamper-evident tables using blockchain-like hash chains for non-repudiable audit trails."
     },
     {
       "day": 9,
-      "concept": "CROSS APPLY for Top-N Per Group in SQL 2019+",
-      "focus": "Correlating table expressions to fetch the latest N child records per parent entity in a single indexed seek."
-    },
-    {
-      "day": 10,
-      "concept": "Memory-Optimized tempdb Metadata in SQL 2019/2022",
-      "focus": "Eliminating PAGELATCH contention on tempdb system catalog tables under high-concurrency microservice workloads."
-    },
-    {
-      "day": 11,
-      "concept": "Resumable Online Index Operations in SQL 2019/2022",
-      "focus": "Pausing heavy index rebuilds during high-traffic operational hours and resuming without restarting from scratch."
-    },
-    {
-      "day": 12,
-      "concept": "System-Versioned Temporal Tables with Retention in SQL 2019/2022",
-      "focus": "Zero-trigger automatic audit tracking with point-in-time querying and automated history retention policies."
-    },
-    {
-      "day": 13,
-      "concept": "Indexed Views with WITH (NOEXPAND) in SQL 2019+",
-      "focus": "Materializing complex analytical aggregations on disk and ensuring the SQL query optimizer actually utilizes the index."
-    },
-    {
-      "day": 14,
-      "concept": "STRING_AGG with WITHIN GROUP in SQL 2019+",
-      "focus": "High-performance string concatenation with explicit ordering replacing slow XML PATH('') workarounds."
-    },
-    {
-      "day": 15,
-      "concept": "Window Framing: ROWS vs RANGE in SQL 2019+",
-      "focus": "Avoiding disk-spilling on-disk worktables by replacing default RANGE with ROWS BETWEEN in rolling window aggregations."
-    },
-    {
-      "day": 16,
-      "concept": "SESSION_CONTEXT() for Multi-Tenant RLS in SQL 2019+",
-      "focus": "Passing secure tenant context from connection pools to enforce Row-Level Security filter predicates automatically."
-    },
-    {
-      "day": 17,
       "concept": "Approximate Percentiles (APPROX_PERCENTILE_DISC) in SQL 2022",
       "focus": "High-speed statistical aggregation with guaranteed error bounds on multi-billion row telemetry tables."
     },
     {
+      "day": 10,
+      "concept": "IS DISTINCT FROM / IS NOT DISTINCT FROM in SQL 2022",
+      "focus": "ANSI-compliant NULL-safe equality comparisons without clumsy (a = b OR (a IS NULL AND b IS NULL)) logic."
+    },
+    {
+      "day": 11,
+      "concept": "GREATEST and LEAST Comparison Functions in SQL 2022",
+      "focus": "Clean, high-speed multi-column scalar evaluations replacing nested CASE WHEN ladders."
+    },
+    {
+      "day": 12,
+      "concept": "STRING_SPLIT() with Enable_Ordinal in SQL 2022",
+      "focus": "Splitting comma-separated values while preserving exact 1-based element positions (enable_ordinal = 1)."
+    },
+    {
+      "day": 13,
+      "concept": "DATETRUNC() for Precision Timestamp Truncation in SQL 2022",
+      "focus": "Native timestamp truncation to day, hour, or minute replacing clumsy DATEADD/DATEDIFF formulas."
+    },
+    {
+      "day": 14,
+      "concept": "WINDOW Clause for Named Window Specification in SQL 2022",
+      "focus": "Defining reusable window specifications once with WINDOW w AS (PARTITION BY ... ORDER BY ...) across multiple analytical functions."
+    },
+    {
+      "day": 15,
+      "concept": "Bit Manipulation Functions (BIT_REVERSE, GET_BIT) in SQL 2022",
+      "focus": "Native hardware-accelerated bitwise operations for compact flag manipulation and high-density bitmap indexing."
+    },
+    {
+      "day": 16,
+      "concept": "Query Store on Secondary Replicas in SQL 2022",
+      "focus": "Collecting query performance insights and execution telemetry on read-only Always On availability group secondary replicas."
+    },
+    {
+      "day": 17,
+      "concept": "Contained Availability Groups in SQL 2022",
+      "focus": "Synchronizing master and msdb system metadata (logins, users, permissions, SQL Agent jobs) automatically inside the AG."
+    },
+    {
       "day": 18,
-      "concept": "Non-Clustered Indexes with INCLUDE Columns in SQL 2019+",
-      "focus": "Creating covering indexes that eliminate expensive Key Lookups and disk seeks on high-throughput query paths."
+      "concept": "Resumable Online Index Operations with Abort & Pause in SQL 2022",
+      "focus": "Pausing heavy multi-terabyte index rebuilds during production peak hours and resuming without restarting from scratch."
     },
     {
       "day": 19,
-      "concept": "The Hidden Cost of WITH (NOLOCK) in SQL 2019+",
-      "focus": "How dirty reads cause phantom duplicates, skipped pages, and corrupted financial reports under concurrent writes."
+      "concept": "Memory-Optimized tempdb Metadata in SQL 2022",
+      "focus": "Eliminating PAGELATCH contention on tempdb system catalog tables under high-concurrency microservice workloads."
     },
     {
       "day": 20,
-      "concept": "#Temp Tables vs Table Variables (@Table) in SQL 2019+",
-      "focus": "Cardinality estimates and statistics: why table variables assume single-row results and ruin nested loop join plans."
+      "concept": "Native S3-Compatible Object Storage Backup in SQL 2022",
+      "focus": "Executing direct T-SQL BACKUP TO URL targeting any S3-compliant object storage with client-side block chunking."
     },
     {
       "day": 21,
-      "concept": "OPENJSON with Strict Schema (WITH) in SQL 2019/2022",
-      "focus": "Shredding JSON payloads directly into relational columns with strict type safety and inline relational projections."
+      "concept": "Data Virtualization with PolyBase & Delta Lake in SQL 2022",
+      "focus": "Querying Parquet and Delta Lake files directly in cloud object storage using external tables and standard T-SQL."
     },
     {
       "day": 22,
-      "concept": "Partition Switching for Instant Archival in SQL 2019+",
-      "focus": "Moving tens of millions of historical rows into archive partition tables via sub-millisecond metadata pointer updates."
+      "concept": "Native JSON Type & Binary JSON Storage in SQL 2025",
+      "focus": "Native binary JSON storage format (BSON-like) replacing slow NVARCHAR(MAX) with 5x compression and instant parsing."
     },
     {
       "day": 23,
-      "concept": "MERGE Statement Concurrency & WITH (HOLDLOCK) in SQL 2019+",
-      "focus": "Preventing concurrency deadlocks and race conditions in upsert operations by pairing MERGE with HOLDLOCK."
+      "concept": "JSON B-Tree and Inverted Indexing in SQL 2025",
+      "focus": "Creating direct secondary indexes on JSON document attributes without declaring calculated computed columns."
     },
     {
       "day": 24,
-      "concept": "DATETIME2(3) vs Legacy DATETIME in SQL 2019+",
-      "focus": "Preventing 3-millisecond rounding discrepancies and saving 2 bytes per row across high-volume transaction logs."
+      "concept": "Native Vector Data Type & Embeddings Storage in SQL 2025",
+      "focus": "Native vector column storage for LLM embeddings enabling RAG architectures directly inside relational SQL tables."
     },
     {
       "day": 25,
-      "concept": "sys.dm_db_index_usage_stats for Dead Indexes in SQL 2019+",
-      "focus": "Auditing and pruning write-heavy indexes that consume write I/O on updates but have zero query seek usage."
+      "concept": "VECTOR_DISTANCE and Cosine Similarity in SQL 2025",
+      "focus": "Hardware-accelerated vector distance functions (VECTOR_DISTANCE, cosine, euclidean) for sub-millisecond AI similarity search."
     },
     {
       "day": 26,
-      "concept": "sp_executesql Parameterization vs Dynamic SQL in SQL 2019+",
-      "focus": "Maximizing plan cache reuse and eliminating plan cache bloat while guaranteeing SQL injection immunity."
+      "concept": "Native REST API Client in T-SQL in SQL 2025",
+      "focus": "Invoking external HTTPS endpoints directly from stored procedures without external scripts or CLR assemblies."
     },
     {
       "day": 27,
-      "concept": "NEWSEQUENTIALID() vs NEWID() B-Tree Page Splits in SQL 2019+",
-      "focus": "Eliminating clustered index page fragmentation and 50% fill factor waste caused by random GUID keys."
+      "concept": "Automatic Scalar Subquery Flattening in SQL 2025",
+      "focus": "Query optimizer transformation converting correlated scalar subqueries into high-speed semi-joins automatically."
     },
     {
       "day": 28,
-      "concept": "Extended Events (XEvents) over SQL Profiler in SQL 2019+",
-      "focus": "Capturing queries exceeding duration thresholds and deadlock graphs with sub-1% CPU overhead in production."
+      "concept": "Real-Time Operational Analytics with Hybrid Columnstore in SQL 2025",
+      "focus": "In-memory delta stores and compressed columnstore for real-time reporting on active OLTP tables with zero locking."
     },
     {
       "day": 29,
-      "concept": "Columnstore Indexes for Operational Analytics in SQL 2022",
-      "focus": "Delivering 10x-100x query acceleration and 5x compression for analytical reporting on active transactional tables."
+      "concept": "Dynamic Data Masking (DDM) with Granular Permissions in SQL 2022/2025",
+      "focus": "Scoping UNMASK permissions to specific columns rather than granting blanket database-wide visibility."
     },
     {
       "day": 30,
-      "concept": "In-Memory OLTP & Memory-Optimized Tables in SQL 2019/2022",
-      "focus": "Eliminating buffer pool latches and lock contention completely for high-throughput session state and queue tables."
+      "concept": "Always Encrypted with Secure Enclaves & Rich Computations in SQL 2022/2025",
+      "focus": "Enabling rich cryptographic pattern matching (LIKE '%term%') and range evaluations inside hardware-isolated secure CPU enclaves."
     }
   ]
 }
+
   </script>
 
   <script>
@@ -1530,29 +1531,29 @@
 
     const TRACK_CONFIG = {
       dotnet: {
-        label: ".NET & C#",
-        kickerPrefix: "30 Days of High-Performance .NET",
+        label: ".NET 10/11 & C# 14/15",
+        kickerPrefix: "30 Days of .NET 10/11 Architecture",
         lang: "csharp",
         defaultFilename: "Program.cs",
-        tag: "#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+        tag: "#DotNet #CSharp #DotNet10 #DotNet11 #Performance #SoftwareEngineering",
         glow1: "#141826",
         glow2: "#10131e"
       },
       angular: {
-        label: "Angular",
+        label: "Angular 20-22",
         kickerPrefix: "30 Days of Modern Angular",
         lang: "typescript",
         defaultFilename: "component.ts",
-        tag: "#Angular #TypeScript #Frontend #WebDevelopment #SoftwareEngineering",
+        tag: "#Angular #Angular22 #TypeScript #Frontend #Zoneless #SoftwareEngineering",
         glow1: "#1a1624",
         glow2: "#12141c"
       },
       sql_server: {
-        label: "SQL Server",
-        kickerPrefix: "30 Days of SQL Server Architecture",
+        label: "SQL Server 2022/2025",
+        kickerPrefix: "30 Days of SQL Server 2022/2025 Architecture",
         lang: "sql",
         defaultFilename: "query.sql",
-        tag: "#SQLServer #TSQL #DatabasePerformance #DataEngineering #SoftwareEngineering",
+        tag: "#SQLServer #SQL2025 #SQL2022 #TSQL #DatabasePerformance #DataEngineering",
         glow1: "#1a1612",
         glow2: "#121416"
       }
@@ -1648,25 +1649,39 @@
       if (track === 'dotnet') {
         if (day === 1) {
           return {
-            bad: 'bool HasBadChar(string s) =>\n    s.Contains("@") || s.Contains("#");',
-            good: 'private static readonly SearchValues<char> s_bad =\n    SearchValues.Create("@#");\n\nbool HasBadChar(ReadOnlySpan<char> s) =>\n    s.ContainsAny(s_bad);',
-            metric: '10x-100x Faster Lookups | Zero GC Allocation'
+            bad: 'private string _name;\npublic string Name {\n    get => _name;\n    set => _name = value?.Trim() ?? throw new ArgumentNull();\n}',
+            good: '// C# 14 / .NET 10 field keyword\npublic string Name {\n    get => field;\n    set => field = value?.Trim() ?? throw new ArgumentNull();\n}',
+            metric: 'Zero Manual Backing Fields | Clean Encapsulation'
           };
         }
-        if (day === 13) {
+        if (day === 3) {
           return {
             bad: 'public abstract record Shape;\npublic record Circle(double R) : Shape;\npublic record Square(double S) : Shape;\n// Open hierarchy, requires runtime casts',
             good: '// C# 15 / .NET 11 Discriminated Union\npublic enum class Shape {\n    Circle(double R),\n    Square(double S)\n}\n// Compiler enforces exhaustive pattern match',
             metric: 'Zero-Cost Exhaustive Pattern Matching | Zero Heap Allocation'
           };
         }
+        if (day === 5) {
+          return {
+            bad: '// Heavy GZipStream compression\nusing var gz = new GZipStream(stream, CompressionMode.Compress);',
+            good: '// .NET 11 Native ZstandardStream\nusing var zstd = new ZstandardStream(stream, CompressionLevel.Optimal);\n// 3x faster throughput, higher compression ratio!',
+            metric: '3x Faster Throughput | 25% Higher Compression'
+          };
+        }
         return {
-          bad: `// Legacy pattern before ${concept}\nvar result = ProcessLegacyPipeline();`,
-          good: `// High-performance .NET production implementation\nvar fast = ${concept.split(' ')[0]}.ExecuteOptimized();`,
+          bad: `// Legacy pattern before ${concept.split(' in ')[0]}\nvar result = ProcessLegacyPipeline();`,
+          good: `// Latest .NET 10/11 production implementation\nvar fast = ${concept.split(' ')[0]}.ExecuteOptimized();`,
           metric: 'Zero Allocation | Sub-Millisecond Latency'
         };
       } else if (track === 'angular') {
         if (day === 1) {
+          return {
+            bad: 'form = new FormGroup({\n  name: new FormControl("", [Validators.required])\n});\n// Verbose class boilerplate & manual sync',
+            good: '// Angular 22 Signal Forms\nname = signal("");\nform = form({\n  name: [this.name, [Validators.required]]\n});\n// Natively synchronized with signals!',
+            metric: 'Zero RxJS Boilerplate | Native Signal Reactivity'
+          };
+        }
+        if (day === 2) {
           return {
             bad: 'user$ = this.http.get<User>("/api/me");\n// In template: {{ (user$ | async)?.name }}',
             good: 'user = httpResource<User>(() => "/api/me");\n// In template: {{ user.value()?.name }}\n// Built-in loading/error signals & zero rxjs bloat',
@@ -1675,27 +1690,34 @@
         }
         return {
           bad: `// Legacy change-detection pattern\nthis.cdRef.markForCheck();`,
-          good: `// Modern Zoneless Signal Architecture\nconst state = ${concept.split(' ')[0]}();`,
+          good: `// Angular 20-22 Zoneless Signal Architecture\nconst state = ${concept.split(' ')[0]}();`,
           metric: 'Zoneless Performance | 100% Tree-Shakeable'
         };
       } else {
         if (day === 1) {
           return {
-            bad: 'INSERT INTO Orders (CustomerId, Total)\nVALUES (@CustId, @Total);\nSELECT SCOPE_IDENTITY(); -- extra roundtrip',
-            good: 'INSERT INTO Orders (CustomerId, Total)\nOUTPUT inserted.OrderId, inserted.CreatedAt\nVALUES (@CustId, @Total); -- 1 atomic execution',
-            metric: '1 Single Roundtrip | 50% Latency Reduction'
-          };
-        }
-        if (day === 3) {
-          return {
-            bad: '-- Parameter Sniffing ruins plans\nSELECT * FROM Orders WHERE StatusId = @Status;\n-- One huge scan cached for all executions',
-            good: '-- SQL Server 2022 PSP Optimization\n-- Engine automatically maintains multiple\n-- plan variants for non-uniform data skew!',
+            bad: '-- Parameter Sniffing query regression\nSELECT * FROM Orders WHERE StatusId = @Status;\n-- One sub-optimal plan cached for all data skews',
+            good: '-- SQL Server 2022 PSP Optimization\n-- Engine caches multiple dispatcher plan\n-- variants automatically for skewed parameters!',
             metric: 'Automatic Runtime Plan Splitting | Zero Recompiles'
           };
         }
+        if (day === 22) {
+          return {
+            bad: '-- Legacy NVARCHAR(MAX) string parsing\nSELECT JSON_VALUE(Payload, "$.id")\nFROM Events;\n-- Expensive string decompression & parsing',
+            good: '-- SQL Server 2025 Native JSON Type\nCREATE TABLE Events (\n    Payload JSON NOT NULL INDEX ix_payload\n);\n-- 5x compression & native B-Tree indexing!',
+            metric: '5x Compression | Sub-Millisecond Native B-Tree Search'
+          };
+        }
+        if (day === 24) {
+          return {
+            bad: '-- Slow external vector DB lookups\n-- Requires custom ETL sync to Pinecone/Qdrant',
+            good: '-- SQL Server 2025 Native Vector Type\nCREATE TABLE DocEmbeddings (\n    Embedding VECTOR(1536) NOT NULL\n);\nSELECT VECTOR_DISTANCE("cosine", e1, e2);',
+            metric: 'Native In-Database Vector Search | Zero External ETL'
+          };
+        }
         return {
-          bad: `-- Standard slow approach\nSELECT * FROM dbo.Transactions;`,
-          good: `-- Modern SQL Server 2022/2025 optimization\nSELECT * FROM dbo.Transactions WITH (${concept.split(' ')[0]});`,
+          bad: `-- Standard older approach\nSELECT * FROM dbo.Transactions;`,
+          good: `-- SQL Server 2022/2025 latest engine feature\nSELECT * FROM dbo.Transactions WITH (${concept.split(' ')[0]});`,
           metric: 'Zero Latch Contention | 10x Throughput Boost'
         };
       }
