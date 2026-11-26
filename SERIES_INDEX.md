@@ -5,7 +5,7 @@
 | Day | Topic | Article | Published |
 | :--- | :--- | :--- | :--- |
 | :--- | :--- | :--- | :--- |
-| Day 11 | Memory<T> and ReadOnlySpan<T> Slicing | [Read on Dev.to](https://dev.to/maayurdahake/memory-and-readonlyspan-slicing-569d) | 2026-11-25 |
+| Day 12 | HybridCache in .NET 9 | [Read on Dev.to](https://dev.to/maayurdahake/hybridcache-in-net-9-1o0i) | 2026-11-26 |
 
 ## Angular
 

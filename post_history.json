@@ -8,5 +8,6 @@
   "EF Core IDbCommandInterceptor",
   "AsSplitQuery() vs Cartesian Explosion",
   "IExceptionHandler in ASP.NET Core 8",
-  "Memory<T> and ReadOnlySpan<T> Slicing"
+  "Memory<T> and ReadOnlySpan<T> Slicing",
+  "HybridCache in .NET 9"
 ]
