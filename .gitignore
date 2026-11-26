@@ -27,6 +27,7 @@ env/
 draft_content.json
 post_card.png
 approved_text.txt
+previews/
 
 # Temporary & editor files
 *.tmp
