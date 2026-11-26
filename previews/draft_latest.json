@@ -1,31 +1,31 @@
 {
-  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 12",
-  "title": "HybridCache in .NET 9",
-  "headline_line1": "Stop writing custom",
-  "headline_accent": "two-tier memory caching logic.",
-  "subtitle": "Combining fast in-memory RAM with distributed Redis seamlessly.",
-  "pill_tag": "HybridCache",
-  "pill_badge": "NET 9+",
-  "code_filename": "OrderService.cs",
+  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 13",
+  "title": "Custom Compound Assignment Operators in C# 14 / .NET 10",
+  "headline_line1": "Stop allocating temporary structs",
+  "headline_accent": "with custom compound operators in C# 14",
+  "subtitle": "Overload assignment operators directly on domain types to bypass defensive copies.",
+  "pill_tag": "operator +=",
+  "pill_badge": "C# 14",
+  "code_filename": "VectorStruct.cs",
   "card_highlights": [
     {
-      "stat": "Stampede",
-      "label": "Protected by design locks"
+      "stat": "0 B",
+      "label": "Intermediate struct allocations"
     },
     {
-      "stat": "L1 + L2",
-      "label": "RAM and Redis combined"
+      "stat": "In-place",
+      "label": "Mutation without defensive copying"
     },
     {
-      "stat": "Zero",
-      "label": "Custom mutex wiring needed"
+      "stat": "Gen0",
+      "label": "Reduced garbage collector pressure"
     }
   ],
-  "bad_code": "var cached = await _redis.GetAsync(key);\nif (cached is null) {\n  await _lock.WaitAsync();\n  cached = await _db.FetchAsync();\n  await _redis.SetAsync(key, cached);\n}",
-  "good_code": "var item = await _cache.GetOrCreateAsync(\n  key,\n  async cancel => await _db.FetchAsync(),\n  tags: [\"orders\"],\n  cancellationToken: token);\nreturn item;",
-  "post_text": "Day 12/30 \u2014 HybridCache (.NET & C#)\n\nManual two-tier caching between memory and Redis usually breeds race conditions and stampedes during cache expiry.\n\n\u2022 **Cache Stampede:** Built-in coordination locks prevent concurrent database hits for the same missing key.\n\u2022 **Serialization:** Offloads expensive JSON serialization directly to L2 while keeping L1 binary or object-based.\n\u2022 **Tag Eviction:** Clears related L1/L2 cache entries instantly via invalidation tags without manual key tracking.\n\nWatch out: L1 memory pressure can spike if you cache large graphs without size limits.\n\nAre you still rolling your own memory plus Redis wrappers?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
-  "devto_markdown": "### The Problem with Traditional Caching\n\nImplementing a robust two-tier caching architecture in .NET traditionally meant hand-coding a complex dance between `IMemoryCache` and `IDistributedCache` (usually Redis). Engineers had to manually manage serialization overhead, implement double-checked locking to prevent cache stampedes, and write verbose invalidation logic across boundaries. This boilerplate frequently introduces race conditions under high concurrent load.\n\n### Enter HybridCache in .NET 9\n\n.NET 9 introduces `HybridCache`, a unified abstraction designed to replace both `IMemoryCache` and `IDistributedCache`. It transparently handles L1 in-process RAM cache alongside L2 distributed Redis caching out of the box, while baking in robust protection against cache stampedes natively.\n\n### Before: Custom Two-Tier Boilerplate\n\n```csharp\nvar cached = await _redis.GetAsync(key);\nif (cached is null) {\n  await _lock.WaitAsync();\n  cached = await _db.FetchAsync();\n  await _redis.SetAsync(key, cached);\n}\n```\n\n### After: Clean HybridCache API\n\n```csharp\nvar item = await _cache.GetOrCreateAsync(\n  key,\n  async cancel => await _db.FetchAsync(),\n  tags: [\"orders\"],\n  cancellationToken: token);\nreturn item;\n```\n\n### Why It Matters\n\n\u2022 **Cache Stampede Protection:** Built-in coordination locks guarantee that only one concurrent request hits your database when a key expires, saving CPU and IOPS.\n\u2022 **Unified Invalidation:** Tag-based eviction lets you invalidate groups of related entries across both L1 and L2 simultaneously with minimal code.\n\u2022 **Optimized Serialization:** Offloads heavy payload serialization to the distributed L2 tier while keeping fast allocations lean.\n\n### Watch Out\n\nBe mindful of L1 memory consumption. Because `HybridCache` holds references in process RAM, caching excessively large object graphs without configuring proper size limits can trigger Gen 2 GC spikes.\n\nHow is your team handling distributed cache invalidation today?",
+  "bad_code": "public static Vector operator +(Vector a, Vector b) {\n    return new Vector(a.X + b.X, a.Y + b.Y);\n}\nVector v = new Vector(1, 2);\nv = v + new Vector(3, 4);",
+  "good_code": "public static void operator +=(ref Vector a, Vector b) {\n    a.X += b.X;\n    a.Y += b.Y;\n}\nVector v = new Vector(1, 2);\nv += new Vector(3, 4);",
+  "post_text": "Day 13/30 \u2014 Custom Compound Assignment Operators (.NET 10 & C# 14)\n\nC# 14 introduces native support for custom compound assignment operators, letting us mutate readonly and value types in-place without generating intermediate heap allocations or defensive struct copies.\n\n\u2022 **Memory Overhead:** Traditional binary operators instantiate new objects on every arithmetic step, triggering unnecessary Gen0 GC allocations.\n\u2022 **In-Place Mutation:** Passing the left operand by reference allows direct register or stack mutation.\n\u2022 **JIT Optimization:** The Roslyn compiler lowers compound assignments directly into optimized IL without hidden temporaries.\n\nWatch out: Mutating readonly structs via ref requires careful handling to avoid unintended side effects across shared references.\n\nHave you profiled struct allocation hot paths in your domain models lately?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+  "devto_markdown": "### Production Context\n\nWhen writing high-throughput domain logic in C#, heavy use of immutable value types or custom mathematical structs can quickly pollute the Gen0 heap if not handled carefully. Historically, writing `vector = vector + delta;` meant the runtime allocated a temporary instance of the struct, even when working entirely on the stack.\n\nC# 14 and .NET 10 introduce direct support for overloading custom compound assignment operators (`+=`, `-=`) using ref parameters. This lets us update large value types in-place without triggering defensive copying or hidden temporary allocations.\n\n### Before\n\n```csharp\npublic readonly struct Vector(double x, double y)\n{\n    public double X { get; } = x;\n    public double Y { get; } = y;\n\n    public static Vector operator +(Vector a, Vector b)\n        => new(a.X + b.X, a.Y + b.Y);\n}\n\n// Usage triggers an intermediate struct instantiation\nVector v = new(1.0, 2.0);\nv = v + new(3.0, 4.0);\n```\n\n### After\n\n```csharp\npublic struct Vector(double x, double y)\n{\n    public double X = x;\n    public double Y = y;\n\n    public static void operator +=(ref Vector a, Vector b)\n    {\n        a.X += b.X;\n        a.Y += b.Y;\n    }\n}\n\n// Usage mutates the stack frame directly with zero overhead\nVector v = new(1.0, 2.0);\nv += new(3.0, 4.0);\n```\n\n### Why it matters\n\n- **Zero Allocations:** Eliminates intermediate struct instantiation during tight mathematical or spatial calculations.\n- **Direct Stack Mutation:** Operates on references directly, keeping CPU cache lines hot.\n- **Cleaner Syntax:** Maintains readable arithmetic syntax while delivering low-level span-like performance.\n\n### Watch out\n\nBe mindful when applying `ref` to struct operators if your types are shared across multiple threads or expected to behave immutably. Always verify your hot paths using BenchmarkDotNet to confirm the allocation drop.\n\nHave you profiled struct allocation hot paths in your domain models lately?",
   "track": "dotnet",
-  "day": 12,
+  "day": 13,
   "dynamic": false
 }
