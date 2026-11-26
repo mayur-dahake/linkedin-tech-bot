@@ -56,31 +56,34 @@ TRACK_HASHTAGS = {
     "sql_server": "#SQLServer #TSQL #DatabasePerformance #DataEngineering #SoftwareEngineering",
 }
 
-# Per-track editorial gradient palettes (base, glow1, glow2, accent_text, pill_bg)
+# Per-track editorial gradient palettes (base, glow1, glow2, accent_text, kicker, pill_bg)
 _TRACK_PALETTES = {
+    # .NET: Modern high-performance runtime palette (midnight graphite with iris/violet accent)
     "dotnet": {
-        "base": (13, 12, 29),
-        "glow1": (67, 56, 202),
-        "glow2": (49, 27, 92),
-        "accent": (196, 181, 253),   # Lavender
-        "kicker": (165, 180, 252),
-        "pill_bg": (99, 102, 241),
+        "base": (12, 14, 22),
+        "glow1": (20, 24, 38),
+        "glow2": (16, 19, 30),
+        "accent": (165, 180, 252),   # Modern .NET Iris / Indigo 300
+        "kicker": (148, 163, 184),   # Slate 400
+        "pill_bg": (99, 102, 241),   # Modern .NET Indigo 500
     },
+    # Angular: Modern frontend engineering palette (graphite neutral with iconic crimson accent)
     "angular": {
-        "base": (18, 11, 30),
-        "glow1": (157, 23, 77),
-        "glow2": (55, 48, 163),
-        "accent": (253, 164, 175),   # Soft Rose
-        "kicker": (244, 114, 182),
-        "pill_bg": (219, 39, 119),
+        "base": (13, 15, 20),
+        "glow1": (22, 26, 36),
+        "glow2": (18, 20, 28),
+        "accent": (251, 113, 133),   # Crisp Angular Coral / Rose 400
+        "kicker": (148, 163, 184),   # Slate 400
+        "pill_bg": (225, 29, 72),    # Modern Angular Crimson 600
     },
+    # SQL Server: Database engine palette (deep carbon neutral with warm amber/gold accent)
     "sql_server": {
-        "base": (9, 17, 30),
-        "glow1": (14, 116, 144),
-        "glow2": (49, 46, 129),
-        "accent": (125, 211, 252),   # Sky Blue
-        "kicker": (56, 189, 248),
-        "pill_bg": (2, 132, 199),
+        "base": (13, 14, 18),
+        "glow1": (26, 22, 18),
+        "glow2": (18, 17, 22),
+        "accent": (251, 191, 36),    # Golden Amber 400 (#fbbf24) - brilliant database accent
+        "kicker": (148, 163, 184),   # Slate 400
+        "pill_bg": (217, 119, 6),    # Rich Amber 600 (#d97706)
     },
 }
 
@@ -354,9 +357,10 @@ Voice & Tone Rules (CRITICAL - sound like a real practitioner, NOT an AI):
 - Include one concise, honest `Watch out:` line naming a real production edge case or caveat.
 - Code accuracy: Verify exact C#/Angular/T-SQL API signatures (e.g. `SearchValues<T>` requires `input.AsSpan().ContainsAny(...)`, not `string.ContainsAny(...)`), and avoid `\r`, `\n`, `\t` escape literals inside sample strings—use visible chars like `','`, `';'`, `'/'`, `'?'` instead.
 - Framework Release & Version Tagging (CRITICAL):
-  - When the topic mentions a framework release (especially Angular 22, Angular 21, Angular 19+, .NET 8/9, SQL 2022): State the version explicitly in `pill_badge` (e.g. "ANGULAR 22", "ANGULAR 21", "ANGULAR 19+", "NET 9", "SQL 2022").
+  - When the topic mentions a framework release (especially .NET 11, .NET 10, C# 14/15, Angular 22, SQL 2022): State the version explicitly in `pill_badge` (e.g. "NET 11", "C# 15", "NET 10", "C# 14", "ANGULAR 22", "SQL 2022").
+  - For .NET & C# topics: Frame the post around modern performance engineering (Native AOT, Discriminated Unions, Runtime Async, Span/Memory, zero-alloc patterns). In `bad_code`, show the legacy allocation/overhead pattern. In `good_code`, show the modern .NET 10/11 or C# 14/15 API.
   - For Angular in particular: Frame the post as a breakthrough modern update (Signals-first, Zoneless, Control Flow, Signal Forms, Error Boundaries). In `bad_code`, show the legacy pattern it obsoletes (e.g., bulky FormGroup/FormControl, manual RxJS subscribe/takeUntil, clumsy *ngIf 'as' hacks, Zone.js monkey patching). In `good_code`, showcase the modern idiomatic API (e.g., form() with [formField], httpResource(), @boundary, @let, linkedSignal()).
-  - In `post_text`, mention the release version in the opening hook (e.g., "Angular 22 stabilizes Signal Forms, eliminating...", "With Angular 18.1, the new @let syntax replaces...").
+  - In `post_text`, mention the release version in the opening hook (e.g., "C# 15 introduces native Discriminated Unions...", "Angular 22 stabilizes Signal Forms, eliminating...").
 
 Visual Card Data Rules (for our 4:5 editorial Gradient-Glass image template showing BOTH Before and After):
 - headline_line1: Short bold white hook (3-5 words, e.g. "Stop allocating arrays")
@@ -605,11 +609,22 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
     margin = 80
     day_num = int(data.get("day", 1))
 
-    # 1. Top Eyebrow Kicker
-    kicker = _strip_unsupported_emojis(data.get("series_badge", f"30 DAYS OF HIDDEN GEMS  •  DAY {day_num:02d}"))
+    # 1. Top Eyebrow Kicker (Clean sentence case with restrained tracking)
+    track_labels = {
+        "dotnet": "High-Performance .NET",
+        "angular": "Modern Angular",
+        "sql_server": "SQL Server Architecture",
+    }
+    track_label = track_labels.get(track, ".NET & C#")
+    kicker_raw = data.get("series_badge", f"30 Days of {track_label}  •  Day {day_num:02d}")
+    if "30 DAYS OF" in str(kicker_raw).upper():
+        kicker = f"30 Days of {track_label}  •  Day {day_num:02d}"
+    else:
+        kicker = str(kicker_raw)
+    kicker = _strip_unsupported_emojis(kicker)
     draw.text((margin, 64), kicker, fill=pal["kicker"], font=font_kicker)
 
-    # 2. Pill Tag + Version Badge
+    # 2. Pill Tag + Version Badge (Quiet dark surface with 1px hairline and nested radius)
     pill_tag = _strip_unsupported_emojis(data.get("pill_tag") or data.get("title", "Hidden Concept"))
     pill_badge = _strip_unsupported_emojis(data.get("pill_badge") or "")
     tag_w = draw.textlength(pill_tag, font=font_pill) if hasattr(draw, "textlength") else len(pill_tag) * 13
@@ -619,16 +634,16 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
     img = _draw_glass_rect(
         img,
         [margin, 108, margin + pill_total_w, 156],
-        fill_rgba=(*pal["pill_bg"], 75),
-        outline_rgba=(*pal["kicker"], 150),
-        radius=14,
+        fill_rgba=(20, 24, 33, 235),
+        outline_rgba=(255, 255, 255, 25),
+        radius=12,
     )
     draw = ImageDraw.Draw(img)
     draw.text((margin + 22, 119), pill_tag, fill=(248, 250, 252), font=font_pill)
     if pill_badge:
         bx0 = int(margin + 22 + tag_w + 16)
         bx1 = min(int(bx0 + badge_w), margin + pill_total_w - 14)
-        draw.rounded_rectangle([bx0, 117, bx1, 147], radius=10, fill=pal["pill_bg"])
+        draw.rounded_rectangle([bx0, 117, bx1, 147], radius=8, fill=pal["pill_bg"])
         draw.text((bx0 + 13, 123), pill_badge, fill=(255, 255, 255), font=font_badge)
 
     # 3. Two-Tone Editorial Headline
@@ -651,7 +666,7 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
             draw.text((margin, y_sub), ln, fill=(203, 213, 225), font=font_sub)
             y_sub += 34
 
-    # 5. Three Glassmorphic Stat / Takeaway Cards
+    # 5. Three Focused Metric / Takeaway Cards (Quiet surface step with accent figure)
     highlights = data.get("card_highlights") or [
         {"stat": "Zero Alloc", "label": "No heap pressure in hot paths"},
         {"stat": "Cleaner", "label": "Idiomatic modern syntax"},
@@ -668,20 +683,20 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
         img = _draw_glass_rect(
             img,
             [cx0, y_cards, cx0 + card_w, y_cards + card_h],
-            fill_rgba=(255, 255, 255, 18),
-            outline_rgba=(255, 255, 255, 48),
-            radius=16,
+            fill_rgba=(19, 23, 32, 235),
+            outline_rgba=(255, 255, 255, 20),
+            radius=12,
         )
         draw = ImageDraw.Draw(img)
         stat_txt = _strip_unsupported_emojis(str(item.get("stat", "")))[:14]
         lbl_txt = _strip_unsupported_emojis(str(item.get("label", "")))
-        draw.text((cx0 + 20, y_cards + 18), stat_txt, fill=(248, 250, 252), font=font_stat)
+        draw.text((cx0 + 20, y_cards + 18), stat_txt, fill=pal["accent"], font=font_stat)
         ly = y_cards + 62
         for ln in textwrap.wrap(lbl_txt, width=22)[:2]:
-            draw.text((cx0 + 20, ly), ln, fill=(203, 213, 225), font=font_stat_lbl)
+            draw.text((cx0 + 20, ly), ln, fill=(148, 163, 184), font=font_stat_lbl)
             ly += 22
 
-    # 6. Stacked BEFORE & AFTER Frosted Code Windows (with Overflow & Width Guardrail)
+    # 6. Stacked BEFORE & AFTER IDE Code Windows (Clean 1px semantic borders)
     default_fnames = {"dotnet": "Program.cs", "angular": "component.ts", "sql_server": "query.sql"}
     code_fname = _strip_unsupported_emojis(data.get("code_filename") or default_fnames.get(track, "snippet.cs"))
     bad_clean = _strip_unsupported_emojis(data.get("bad_code", "// legacy approach"), preserve_newlines=True)
@@ -712,15 +727,15 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
     y_after_top = y_before_end + box_gap
 
     for panel_y0, panel_y1, badge_lbl, dot_col, border_col, lines, show_fname in (
-        (y_code_top, y_before_end, "BEFORE", (239, 68, 68), (239, 68, 68, 95), bad_lines, False),
-        (y_after_top, y_code_bottom, "AFTER", (16, 185, 129), (16, 185, 129, 110), good_lines, True),
+        (y_code_top, y_before_end, "BEFORE", (239, 68, 68), (239, 68, 68, 65), bad_lines, False),
+        (y_after_top, y_code_bottom, "AFTER", (16, 185, 129), (16, 185, 129, 75), good_lines, True),
     ):
         img = _draw_glass_rect(
             img,
             [margin, panel_y0, width - margin, panel_y1],
-            fill_rgba=(10, 12, 26, 205),
+            fill_rgba=(14, 17, 24, 240),
             outline_rgba=border_col,
-            radius=18,
+            radius=14,
         )
         draw = ImageDraw.Draw(img)
         draw.ellipse([margin + 22, panel_y0 + 18, margin + 34, panel_y0 + 30], fill=dot_col)
@@ -728,7 +743,7 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
         if show_fname:
             fn_w = draw.textlength(code_fname, font=font_fname) if hasattr(draw, "textlength") else len(code_fname) * 9
             draw.text((width - margin - 22 - fn_w, panel_y0 + 15), code_fname, fill=(148, 163, 184), font=font_fname)
-        draw.line([(margin + 1, panel_y0 + 44), (width - margin - 1, panel_y0 + 44)], fill=(255, 255, 255, 25), width=1)
+        draw.line([(margin + 1, panel_y0 + 44), (width - margin - 1, panel_y0 + 44)], fill=(255, 255, 255, 18), width=1)
         avail_h = (panel_y1 - 12) - (panel_y0 + 56)
         line_h = min(33, max(22, avail_h // max(len(lines), 1)))
         _draw_syntax_highlighted_lines(
@@ -752,7 +767,7 @@ def create_visual_card(data: dict, output_path: str = "post_card.png") -> str:
 
     right_lbl = f"Day {day_num:02d} / 30  \u2192"
     rw = draw.textlength(right_lbl, font=font_right) if hasattr(draw, "textlength") else len(right_lbl) * 12
-    draw.text((width - margin - rw, fy + 1), right_lbl, fill=(226, 232, 240), font=font_right)
+    draw.text((width - margin - rw, fy + 1), right_lbl, fill=(148, 163, 184), font=font_right)
 
     img.save(output_path, "PNG")
     print(f"Generated 4:5 editorial card: {output_path}")
@@ -807,11 +822,22 @@ def create_carousel_pdf(data: dict, output_path: str = "post_carousel.pdf") -> s
     # Slide 1: Hook + 3 Metric Cards
     s1 = _make_mesh_bg(width, height, pal["base"], pal["glow1"], pal["glow2"])
     d1 = ImageDraw.Draw(s1)
-    kicker = _strip_unsupported_emojis(data.get("series_badge", f"30 DAYS OF HIDDEN GEMS  •  DAY {day_num:02d}"))
+    track_labels = {
+        "dotnet": "High-Performance .NET",
+        "angular": "Modern Angular",
+        "sql_server": "SQL Server Architecture",
+    }
+    track_label = track_labels.get(track, ".NET & C#")
+    kicker_raw = data.get("series_badge", f"30 Days of {track_label}  •  Day {day_num:02d}")
+    if "30 DAYS OF" in str(kicker_raw).upper():
+        kicker = f"30 Days of {track_label}  •  Day {day_num:02d}"
+    else:
+        kicker = str(kicker_raw)
+    kicker = _strip_unsupported_emojis(kicker)
     d1.text((margin, 90), kicker, fill=pal["kicker"], font=font_kicker)
     pill_tag = _strip_unsupported_emojis(data.get("pill_tag") or data.get("title", "Hidden Concept"))
     pill_w = int(min((d1.textlength(pill_tag, font=font_pill) if hasattr(d1, "textlength") else len(pill_tag) * 14) + 48, width - 2 * margin))
-    s1 = _draw_glass_rect(s1, [margin, 148, margin + pill_w, 204], (*pal["pill_bg"], 75), (*pal["kicker"], 150), radius=14)
+    s1 = _draw_glass_rect(s1, [margin, 148, margin + pill_w, 204], (20, 24, 33, 235), (255, 255, 255, 25), radius=12)
     d1 = ImageDraw.Draw(s1)
     d1.text((margin + 24, 162), pill_tag, fill=(248, 250, 252), font=font_pill)
 
@@ -830,10 +856,10 @@ def create_carousel_pdf(data: dict, output_path: str = "post_carousel.pdf") -> s
     y_card = max(ysub + 50, 740)
     for idx, item in enumerate((data.get("card_highlights") or [])[:3]):
         cy = y_card + idx * 142
-        s1 = _draw_glass_rect(s1, [margin, cy, width - margin, cy + 118], (255, 255, 255, 18), (255, 255, 255, 48), radius=18)
+        s1 = _draw_glass_rect(s1, [margin, cy, width - margin, cy + 118], (19, 23, 32, 235), (255, 255, 255, 20), radius=12)
         d1 = ImageDraw.Draw(s1)
         d1.text((margin + 28, cy + 20), _strip_unsupported_emojis(str(item.get("stat", "")))[:16], fill=pal["accent"], font=font_stat)
-        d1.text((margin + 28, cy + 68), _strip_unsupported_emojis(str(item.get("label", "")))[:55], fill=(226, 232, 240), font=font_stat_lbl)
+        d1.text((margin + 28, cy + 68), _strip_unsupported_emojis(str(item.get("label", "")))[:55], fill=(148, 163, 184), font=font_stat_lbl)
     _draw_carousel_footer(s1, pal, margin, 1, 4, font_brand, font_right)
     slides.append(s1)
 
@@ -841,21 +867,21 @@ def create_carousel_pdf(data: dict, output_path: str = "post_carousel.pdf") -> s
     default_fnames = {"dotnet": "Program.cs", "angular": "component.ts", "sql_server": "query.sql"}
     code_fname = _strip_unsupported_emojis(data.get("code_filename") or default_fnames.get(track, "snippet.cs"))
     for idx, (label, dot_col, border_col, code_key, heading) in enumerate((
-        ("BEFORE", (239, 68, 68), (239, 68, 68, 110), "bad_code", "The common bottleneck"),
-        ("AFTER", (16, 185, 129), (16, 185, 129, 120), "good_code", "The production fix"),
+        ("BEFORE", (239, 68, 68), (239, 68, 68, 65), "bad_code", "The common bottleneck"),
+        ("AFTER", (16, 185, 129), (16, 185, 129, 75), "good_code", "The production fix"),
     ), start=2):
         sc = _make_mesh_bg(width, height, pal["base"], pal["glow1"], pal["glow2"])
         dc = ImageDraw.Draw(sc)
-        dc.text((margin, 90), f"{label}  •  DAY {day_num:02d}", fill=dot_col, font=font_kicker)
+        dc.text((margin, 90), f"{label}  •  Day {day_num:02d}", fill=dot_col, font=font_kicker)
         dc.text((margin, 136), heading, fill=(248, 250, 252), font=_load_font(48, bold=True))
-        sc = _draw_glass_rect(sc, [margin, 236, width - margin, height - 150], (10, 12, 26, 210), border_col, radius=22)
+        sc = _draw_glass_rect(sc, [margin, 236, width - margin, height - 150], (14, 17, 24, 240), border_col, radius=14)
         dc = ImageDraw.Draw(sc)
         dc.ellipse([margin + 26, 260, margin + 40, 274], fill=dot_col)
         dc.text((margin + 52, 256), label, fill=dot_col, font=font_badge)
         if label == "AFTER":
             fn_w = dc.textlength(code_fname, font=font_fname) if hasattr(dc, "textlength") else len(code_fname) * 10
             dc.text((width - margin - 26 - fn_w, 256), code_fname, fill=(148, 163, 184), font=font_fname)
-        dc.line([(margin + 1, 294), (width - margin - 1, 294)], fill=(255, 255, 255, 25), width=1)
+        dc.line([(margin + 1, 294), (width - margin - 1, 294)], fill=(255, 255, 255, 18), width=1)
         code_clean = _strip_unsupported_emojis(data.get(code_key, ""), preserve_newlines=True)
         lines = _wrap_code_lines(code_clean, max_chars=46, max_lines=16)
         _draw_syntax_highlighted_lines(dc, lines, margin + 26, margin + 74, 326, 48, font_code)
@@ -865,7 +891,7 @@ def create_carousel_pdf(data: dict, output_path: str = "post_carousel.pdf") -> s
     # Slide 4: Key Takeaways & Watch Out
     s4 = _make_mesh_bg(width, height, pal["base"], pal["glow1"], pal["glow2"])
     d4 = ImageDraw.Draw(s4)
-    d4.text((margin, 90), f"KEY TAKEAWAYS  •  DAY {day_num:02d} / 30", fill=pal["kicker"], font=font_kicker)
+    d4.text((margin, 90), f"Key Takeaways  •  Day {day_num:02d} / 30", fill=pal["kicker"], font=font_kicker)
     d4.text((margin, 136), _strip_unsupported_emojis(data.get("title", "Production Notes"))[:32], fill=(248, 250, 252), font=_load_font(46, bold=True))
 
     post_lines = [ln.strip() for ln in str(data.get("post_text", "")).splitlines() if ln.strip()]
@@ -874,7 +900,7 @@ def create_carousel_pdf(data: dict, output_path: str = "post_carousel.pdf") -> s
 
     yb = 250
     for b in bullets:
-        s4 = _draw_glass_rect(s4, [margin, yb, width - margin, yb + 190], (255, 255, 255, 18), (255, 255, 255, 48), radius=18)
+        s4 = _draw_glass_rect(s4, [margin, yb, width - margin, yb + 190], (19, 23, 32, 235), (255, 255, 255, 20), radius=12)
         d4 = ImageDraw.Draw(s4)
         ly = yb + 28
         for ln in textwrap.wrap(_strip_unsupported_emojis(b), width=46)[:4]:
@@ -883,7 +909,7 @@ def create_carousel_pdf(data: dict, output_path: str = "post_carousel.pdf") -> s
         yb += 215
 
     if watch_out:
-        s4 = _draw_glass_rect(s4, [margin, yb + 10, width - margin, yb + 210], (239, 68, 68, 28), (239, 68, 68, 110), radius=18)
+        s4 = _draw_glass_rect(s4, [margin, yb + 10, width - margin, yb + 210], (239, 68, 68, 20), (239, 68, 68, 65), radius=12)
         d4 = ImageDraw.Draw(s4)
         ly = yb + 36
         for ln in textwrap.wrap(_strip_unsupported_emojis(watch_out), width=46)[:4]:
@@ -927,13 +953,39 @@ def upload_image_to_linkedin(access_token: str, author_urn: str, image_path: str
     return image_urn
 
 
+def upload_document_to_linkedin(
+    access_token: str,
+    author_urn: str,
+    pdf_path: str,
+    title: str = "30 Days 30 Hidden Concepts",
+) -> str:
+    """Uploads PDF document carousel binary to LinkedIn and returns urn:li:document:..."""
+    init_url = "https://api.linkedin.com/rest/documents?action=initializeUpload"
+    payload = {"initializeUploadRequest": {"owner": author_urn}}
+
+    resp = requests.post(init_url, headers=_linkedin_headers(access_token), json=payload, timeout=30)
+    _raise_for_status_with_body(resp, "LinkedIn document initializeUpload", secret=access_token)
+    data = resp.json()["value"]
+    upload_url = data["uploadUrl"]
+    doc_urn = data["document"]
+
+    with open(pdf_path, "rb") as f:
+        upload_resp = requests.put(upload_url, headers={"Content-Type": "application/pdf"}, data=f, timeout=120)
+        _raise_for_status_with_body(upload_resp, "LinkedIn document PUT")
+
+    print(f"Uploaded carousel document to LinkedIn. Document URN: {doc_urn}")
+    return doc_urn
+
+
 def post_to_linkedin(
     access_token: str,
     author_urn: str,
     post_text: str,
     image_urn: str | None = None,
+    document_urn: str | None = None,
+    media_title: str = "30 Days 30 Hidden Concepts",
 ) -> str:
-    """Publishes commentary with optional image to LinkedIn."""
+    """Publishes commentary with optional image or document carousel to LinkedIn."""
     cleaned_text = _clean_post_for_linkedin(post_text)
     escaped_commentary = escape_linkedin_little_text(cleaned_text)
     if len(escaped_commentary) > MAX_LINKEDIN_POST_CHARS:
@@ -956,11 +1008,18 @@ def post_to_linkedin(
         "isReshareDisabledByAuthor": False,
     }
 
-    if image_urn:
+    if document_urn:
+        payload["content"] = {
+            "media": {
+                "id": document_urn,
+                "title": media_title,
+            }
+        }
+    elif image_urn:
         payload["content"] = {
             "media": {
                 "id": image_urn,
-                "title": "30 Days 30 Hidden Concepts",
+                "title": media_title,
             }
         }
 
@@ -1148,6 +1207,8 @@ def handle_publish(
     text_override: str | None = None,
     text_file: str | None = None,
     image_override: str | None = None,
+    document_override: str | None = None,
+    carousel: bool = False,
 ) -> None:
     linkedin_token = os.environ.get("LINKEDIN_ACCESS_TOKEN", "").strip()
     linkedin_urn = os.environ.get("LINKEDIN_AUTHOR_URN", "").strip()
@@ -1170,20 +1231,43 @@ def handle_publish(
         print("Error: No post text provided and draft_content.json not found.", file=sys.stderr)
         sys.exit(1)
 
+    state = load_state()
+    active_track = current_data.get("track", state.get("track", "dotnet"))
+    title, _ = _extract_title_and_tags(post_text, active_track)
+    resolved_title = current_data.get("title") or title
+
+    document_urn = None
+    doc_path = None
+    if document_override:
+        doc_path = document_override
+    elif carousel and os.path.exists("post_carousel.pdf"):
+        doc_path = "post_carousel.pdf"
+
+    if doc_path and os.path.exists(doc_path):
+        try:
+            document_urn = upload_document_to_linkedin(
+                linkedin_token, linkedin_urn, doc_path, title=resolved_title
+            )
+        except Exception as e:
+            print(f"Warning: Carousel document upload failed ({e}). Falling back to image upload.", file=sys.stderr)
+
     image_urn = None
-    if os.path.exists(image_path):
+    if not document_urn and os.path.exists(image_path):
         try:
             image_urn = upload_image_to_linkedin(linkedin_token, linkedin_urn, image_path)
         except Exception as e:
             print(f"Warning: Image upload failed ({e}). Posting text only.", file=sys.stderr)
 
-    post_to_linkedin(linkedin_token, linkedin_urn, post_text, image_urn)
+    post_to_linkedin(
+        linkedin_token,
+        linkedin_urn,
+        post_text,
+        image_urn=image_urn,
+        document_urn=document_urn,
+        media_title=resolved_title,
+    )
 
     # Optional cross-posting (skips cleanly if secrets are not configured)
-    state = load_state()
-    active_track = current_data.get("track", state.get("track", "dotnet"))
-    title, _ = _extract_title_and_tags(post_text, active_track)
-    resolved_title = current_data.get("title") or title
     image_url = os.environ.get("PUBLIC_IMAGE_URL", "").strip() or None
     devto_url = None
 
@@ -1245,13 +1329,21 @@ def main() -> None:
     pub_parser.add_argument("--text", help="Custom text or override to publish")
     pub_parser.add_argument("--text-file", help="Path to UTF-8 text file to publish")
     pub_parser.add_argument("--image", help="Custom image path to upload")
+    pub_parser.add_argument("--document", "--pdf", dest="document", help="Path to PDF document carousel to upload")
+    pub_parser.add_argument("--carousel", action="store_true", help="Publish post_carousel.pdf as a LinkedIn document carousel")
 
     args = parser.parse_args()
 
     if args.command == "generate":
         handle_generate(args.track, args.day, dynamic=args.dynamic, carousel=args.carousel)
     elif args.command == "publish":
-        handle_publish(args.text, args.text_file, args.image)
+        handle_publish(
+            args.text,
+            args.text_file,
+            args.image,
+            document_override=args.document,
+            carousel=args.carousel,
+        )
 
 
 if __name__ == "__main__":

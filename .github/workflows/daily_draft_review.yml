@@ -29,10 +29,10 @@ on:
         type: boolean
         default: false
       carousel:
-        description: 'Also generate a 4-slide PDF carousel artifact'
+        description: 'Generate 4-slide PDF carousel artifact (default: true)'
         required: false
         type: boolean
-        default: false
+        default: true
 
 concurrency:
   group: daily-draft-review
@@ -108,7 +108,8 @@ jobs:
           cmd = ["python", "linkedin_daily_bot.py", "generate"]
           track = os.environ.get("INPUT_TRACK", "").strip()
           day = os.environ.get("INPUT_DAY", "").strip()
-          carousel = os.environ.get("INPUT_CAROUSEL", "false").lower() == "true"
+          carousel_env = os.environ.get("INPUT_CAROUSEL", "").strip()
+          carousel = carousel_env.lower() != "false" if carousel_env else True
 
           if track and track != "auto":
               cmd.extend(["--track", track])
@@ -156,6 +157,9 @@ jobs:
           out.mkdir(parents=True, exist_ok=True)
           shutil.copy2("post_card.png", out / f"day_{track}_{day}.png")
           shutil.copy2("post_card.png", out / "latest.png")
+          if Path("post_carousel.pdf").exists():
+              shutil.copy2("post_carousel.pdf", out / f"carousel_{track}_{day}.pdf")
+              shutil.copy2("post_carousel.pdf", out / "latest_carousel.pdf")
           shutil.copy2("draft_content.json", out / f"draft_{track}_{day}.json")
           shutil.copy2("draft_content.json", out / "draft_latest.json")
           PY
@@ -242,17 +246,26 @@ jobs:
           alt_title = re.sub(r"[\[\]]", "", title)
           safe_post_text = re.sub(r"(?m)^---+$", "───", post_text)
 
+          carousel_section = ""
+          carousel_url = f"https://github.com/{repo}/blob/previews/previews/carousel_{track}_{day}.pdf?raw=true"
+          carousel_section = (
+              "### 📄 4-Slide PDF Carousel\n"
+              f"View or download the 4-slide PDF carousel document: [carousel_{track}_{day}.pdf]({carousel_url})\n\n"
+          )
+
           issue_body = (
               f"{token_banner}"
               "### 🖼️ Visual Card Preview\n"
               f"![{alt_title}]({image_url})\n\n"
+              f"{carousel_section}"
               "### 📝 Post Commentary\n"
               "Review the text below. You can edit this issue body directly to tweak wording before publishing.\n\n"
               "---\n\n"
               f"{safe_post_text}\n\n"
               "---\n\n"
               "### 👉 Commands:\n"
-              "- Comment **`/publish`** to post this image and text to LinkedIn & Dev.to.\n"
+              "- Comment **`/publish`** to post the single visual card and text to LinkedIn & Dev.to.\n"
+              "- Comment **`/publish carousel`** to post the interactive 4-slide PDF carousel document to LinkedIn & Dev.to!\n"
               "- Comment **`/regenerate`** to generate a fresh draft and card.\n"
               "- Close this issue to skip today.\n"
           )

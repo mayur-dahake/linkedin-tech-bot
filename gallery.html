@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn Tech Bot — 90-Day Curriculum & Visual Card Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090a0f;
+      --surface: #11141c;
+      --surface-elevated: #161b26;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --track-accent: #6366f1;
+      --track-accent-glow: rgba(99, 102, 241, 0.25);
+      --track-pill: #6366f1;
+      --track-tag: #a5b4fc;
+    }
+
+    [data-track="dotnet"] {
+      --track-accent: #6366f1;
+      --track-accent-glow: rgba(99, 102, 241, 0.22);
+      --track-pill: #6366f1;
+      --track-tag: #a5b4fc;
+      --track-label: ".NET & C#";
+      --track-sub: "Modern Runtime & High-Performance Architecture";
+    }
+
+    [data-track="angular"] {
+      --track-accent: #e11d48;
+      --track-accent-glow: rgba(225, 29, 72, 0.22);
+      --track-pill: #e11d48;
+      --track-tag: #fb7185;
+      --track-label: "Angular";
+      --track-sub: "Modern Frontend Signals & Zoneless Architecture";
+    }
+
+    [data-track="sql_server"] {
+      --track-accent: #d97706;
+      --track-accent-glow: rgba(217, 119, 6, 0.22);
+      --track-pill: #d97706;
+      --track-tag: #fbbf24;
+      --track-label: "SQL Server";
+      --track-sub: "Enterprise Database Optimization & Internal Architecture";
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Top Navigation */
+    header {
+      background: rgba(17, 20, 28, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-dots {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      width: 18px;
+      height: 18px;
+    }
+
+    .brand-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+
+    .brand-dots span:nth-child(1) { background: #6366f1; }
+    .brand-dots span:nth-child(2) { background: #38bdf8; }
+    .brand-dots span:nth-child(3) { background: #c084fc; }
+    .brand-dots span:nth-child(4) { background: #34d399; }
+
+    .brand-text h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* Track Tabs */
+    .track-tabs {
+      display: flex;
+      gap: 8px;
+      background: rgba(9, 10, 15, 0.6);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .track-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .track-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .track-tab.active {
+      color: #fff;
+      background: var(--surface-elevated);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-strong);
+    }
+
+    .track-tab .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .track-tab[data-t="dotnet"] .dot { background: #6366f1; }
+    .track-tab[data-t="angular"] .dot { background: #e11d48; }
+    .track-tab[data-t="sql_server"] .dot { background: #d97706; }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-input {
+      background: rgba(9, 10, 15, 0.8);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      padding: 7px 12px 7px 32px;
+      border-radius: 8px;
+      width: 220px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--track-accent);
+      width: 280px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      max-width: 1720px;
+      margin: 0 auto;
+      width: 100%;
+      gap: 28px;
+      padding: 24px 28px;
+    }
+
+    /* Left Sidebar: 30-Day Matrix */
+    aside {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: calc(100vh - 120px);
+      position: sticky;
+      top: 88px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .sidebar-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--track-tag);
+      background: var(--track-accent-glow);
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--track-accent);
+    }
+
+    .day-slider-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .day-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .day-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--track-accent);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--track-accent);
+      border: 2px solid #fff;
+    }
+
+    /* Day List Grid */
+    .day-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-right: 4px;
+    }
+
+    .day-list::-webkit-scrollbar {
+      width: 5px;
+    }
+    .day-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .day-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+    }
+
+    .day-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      transition: all 0.15s;
+    }
+
+    .day-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--border);
+    }
+
+    .day-item.active {
+      background: var(--surface-elevated);
+      border-color: var(--track-accent);
+      box-shadow: 0 2px 10px var(--track-accent-glow);
+    }
+
+    .day-num-tag {
+      font-size: 11px;
+      font-family: 'Fira Code', monospace;
+      font-weight: 600;
+      color: var(--text-dim);
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .day-item.active .day-num-tag {
+      color: var(--track-tag);
+      background: var(--track-accent-glow);
+    }
+
+    .day-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .day-concept {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .day-item.active .day-concept {
+      color: #fff;
+    }
+
+    .day-focus {
+      font-size: 11px;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    /* Right Preview Section */
+    .preview-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Control Toolbar */
+    .view-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 20px;
+    }
+
+    .view-modes {
+      display: flex;
+      gap: 6px;
+      background: rgba(9, 10, 15, 0.6);
+      padding: 3px;
+      border-radius: 8px;
+    }
+
+    .view-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .view-btn:hover {
+      color: #fff;
+    }
+
+    .view-btn.active {
+      background: var(--surface-elevated);
+      color: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .utility-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      background: var(--surface-elevated);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #fff;
+    }
+
+    .btn-primary {
+      background: var(--track-accent);
+      border-color: var(--track-accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.15);
+      border-color: #fff;
+    }
+
+    /* Card Preview Workspace */
+    .preview-workspace {
+      display: grid;
+      grid-template-columns: 500px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* 4:5 Unslopped Visual Card Mockup */
+    .card-frame {
+      width: 500px;
+      height: 625px; /* 4:5 ratio */
+      border-radius: 18px;
+      position: relative;
+      background: radial-gradient(circle at 85% 85%, var(--track-glow1, #141826) 0%, var(--bg) 60%),
+                  radial-gradient(circle at 15% 15%, var(--track-glow2, #10131e) 0%, var(--bg) 60%),
+                  #0c0e16;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 40px var(--track-accent-glow);
+      padding: 34px 34px 28px 34px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .card-top {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-kicker {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+    }
+
+    .card-pill {
+      align-self: flex-start;
+      background: rgba(20, 24, 33, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f8fafc;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 8px;
+      letter-spacing: -0.01em;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-heading {
+      margin-top: 4px;
+    }
+
+    .card-headline-1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #f8fafc;
+      line-height: 1.18;
+      letter-spacing: -0.02em;
+    }
+
+    .card-headline-accent {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--track-tag);
+      line-height: 1.18;
+      letter-spacing: -0.02em;
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-top: 6px;
+      line-height: 1.4;
+      font-weight: 400;
+    }
+
+    /* Card Code Panels (Before / After) */
+    .card-code-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .code-panel {
+      background: rgba(14, 17, 24, 0.92);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px 14px;
+      font-family: 'Fira Code', monospace;
+      font-size: 11px;
+      position: relative;
+    }
+
+    .code-panel.panel-before {
+      border-left: 3px solid #ef4444;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    .code-panel.panel-after {
+      border-left: 3px solid #10b981;
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+
+    .code-panel-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    .panel-before .code-panel-badge { color: #f87171; }
+    .panel-after .code-panel-badge { color: #34d399; }
+
+    .code-panel-badge::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .panel-before .code-panel-badge::before { background: #ef4444; }
+    .panel-after .code-panel-badge::before { background: #10b981; }
+
+    .code-line {
+      display: flex;
+      gap: 10px;
+      line-height: 1.5;
+    }
+
+    .code-gutter {
+      color: #64748b;
+      user-select: none;
+      width: 14px;
+      text-align: right;
+    }
+
+    .code-content {
+      color: #e2e8f0;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    /* Key Metric Bar */
+    .card-metric-bar {
+      background: rgba(19, 23, 32, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .metric-icon {
+      font-size: 14px;
+      color: var(--track-tag);
+    }
+
+    .metric-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.01em;
+    }
+
+    /* Card Footer */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .card-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .card-brand-quad {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      width: 12px;
+      height: 12px;
+    }
+
+    .card-brand-quad span {
+      border-radius: 1px;
+    }
+
+    .card-day-indicator {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    /* Carousel Slides Preview (Slide 1-4) */
+    .carousel-view {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .carousel-view.active-view {
+      display: flex;
+    }
+
+    .carousel-pager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 16px;
+    }
+
+    .carousel-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .carousel-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .carousel-dot.active {
+      background: var(--track-accent);
+      width: 22px;
+      border-radius: 4px;
+    }
+
+    /* Right Details Inspector Panel */
+    .details-inspector {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .inspector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+
+    .inspector-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .inspector-sub {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .commentary-box {
+      background: rgba(9, 10, 15, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .cli-box {
+      background: rgba(9, 10, 15, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      color: var(--track-tag);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .cli-box code {
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    /* Syntax Highlighting Colors */
+    .c-kw { color: #c084fc; font-weight: 600; }
+    .c-type { color: #38bdf8; }
+    .c-str { color: #a3e635; }
+    .c-num { color: #fbbf24; }
+    .c-comment { color: #94a3b8; font-style: italic; }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      border: 1px solid var(--track-accent);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 1200px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+      aside {
+        height: auto;
+        position: relative;
+        top: 0;
+      }
+      .preview-workspace {
+        grid-template-columns: 1fr;
+      }
+      .card-frame {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body data-track="dotnet">
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-dots">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div class="brand-text">
+        <h1>LinkedIn Tech Bot Gallery</h1>
+        <p>90-Day Curriculum & Visual Card Previewer</p>
+      </div>
+    </div>
+
+    <!-- Track Selector Tabs -->
+    <div class="track-tabs">
+      <button class="track-tab active" data-t="dotnet" onclick="setTrack('dotnet')">
+        <span class="dot"></span>
+        <span>.NET & C# (30)</span>
+      </button>
+      <button class="track-tab" data-t="angular" onclick="setTrack('angular')">
+        <span class="dot"></span>
+        <span>Angular (30)</span>
+      </button>
+      <button class="track-tab" data-t="sql_server" onclick="setTrack('sql_server')">
+        <span class="dot"></span>
+        <span>SQL Server (30)</span>
+      </button>
+    </div>
+
+    <div class="header-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="search-input" placeholder="Search 90 topics (e.g. PSP, signal, index)..." oninput="filterTopics()">
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Body -->
+  <main>
+    <!-- Left Sidebar: Days List -->
+    <aside>
+      <div class="sidebar-header">
+        <span class="sidebar-title" id="sidebar-track-title">.NET & C# TRACK</span>
+        <span class="sidebar-badge" id="sidebar-day-badge">DAY 1 OF 30</span>
+      </div>
+
+      <!-- Quick Slider -->
+      <div class="day-slider-container">
+        <div class="slider-labels">
+          <span>Day 1</span>
+          <span id="slider-val" style="font-weight: 700; color: #fff;">Day 1</span>
+          <span>Day 30</span>
+        </div>
+        <input type="range" min="1" max="30" value="1" class="day-slider" id="day-range" oninput="onSliderChange(this.value)">
+      </div>
+
+      <!-- Scrollable Day Items List -->
+      <div class="day-list" id="day-list-container">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </aside>
+
+    <!-- Right Content Area -->
+    <section class="preview-section">
+      <!-- Toolbar -->
+      <div class="view-toolbar">
+        <div class="view-modes">
+          <button class="view-btn active" id="btn-view-card" onclick="setViewMode('card')">
+            <span>🖼️</span> Visual Card (4:5)
+          </button>
+          <button class="view-btn" id="btn-view-carousel" onclick="setViewMode('carousel')">
+            <span>📄</span> Carousel Slides (4)
+          </button>
+        </div>
+
+        <div class="utility-btns">
+          <button class="btn" onclick="copyLinkedInText()">
+            <span>📋</span> Copy Post Text
+          </button>
+          <button class="btn btn-primary" onclick="copyCliCommand()">
+            <span>⚡</span> Copy CLI Command
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Workspace (Card + Inspector) -->
+      <div class="preview-workspace">
+        
+        <!-- Single Card Mode -->
+        <div id="card-mode-container">
+          <div class="card-frame" id="visual-card">
+            <div class="card-top">
+              <div class="card-kicker" id="card-kicker">30 Days of High-Performance .NET • Day 01</div>
+              <div class="card-pill" id="card-pill">SearchValues&lt;T&gt; in .NET 9+</div>
+              <div class="card-heading">
+                <div class="card-headline-1" id="card-headline-1">SearchValues&lt;T&gt;</div>
+                <div class="card-headline-accent" id="card-headline-accent">SIMD-Accelerated Lookups</div>
+              </div>
+              <div class="card-subtitle" id="card-subtitle">
+                Linear scans allocate heap memory and miss vectorized CPU instructions.
+              </div>
+            </div>
+
+            <div class="card-code-section">
+              <!-- Before Panel -->
+              <div class="code-panel panel-before">
+                <div class="code-panel-badge">Before: Naive Scan</div>
+                <div id="card-before-code">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+
+              <!-- After Panel -->
+              <div class="code-panel panel-after">
+                <div class="code-panel-badge">After: Zero-Allocation Fix</div>
+                <div id="card-after-code">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Metric Callout -->
+            <div class="card-metric-bar">
+              <span class="metric-icon">⚡</span>
+              <span class="metric-text" id="card-metric-text">10x-100x Faster Lookups | Zero GC Allocation</span>
+            </div>
+
+            <!-- Card Minimal Footer -->
+            <div class="card-footer">
+              <div class="card-brand">
+                <div class="card-brand-quad">
+                  <span style="background: var(--track-pill);"></span>
+                  <span style="background: #38bdf8;"></span>
+                  <span style="background: #c084fc;"></span>
+                  <span style="background: #34d399;"></span>
+                </div>
+                <span>@maayurdahake</span>
+              </div>
+              <div class="card-day-indicator" id="card-day-indicator">Day 01 / 30 →</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carousel Mode -->
+        <div class="carousel-view" id="carousel-mode-container">
+          <div class="carousel-pager">
+            <button class="btn" style="padding: 6px 12px;" onclick="prevSlide()">← Prev</button>
+            <div class="carousel-dots" id="carousel-dots">
+              <span class="carousel-dot active" onclick="setSlide(1)"></span>
+              <span class="carousel-dot" onclick="setSlide(2)"></span>
+              <span class="carousel-dot" onclick="setSlide(3)"></span>
+              <span class="carousel-dot" onclick="setSlide(4)"></span>
+            </div>
+            <span id="slide-indicator" style="font-size: 12px; font-weight: 700; color: #fff;">Slide 1 / 4</span>
+            <button class="btn" style="padding: 6px 12px;" onclick="nextSlide()">Next →</button>
+          </div>
+
+          <!-- Dynamic Slide Container -->
+          <div class="card-frame" id="carousel-slide-frame" style="width: 500px; height: 560px;">
+            <!-- Rendered by renderSlide() -->
+          </div>
+        </div>
+
+        <!-- Inspector & Text Output -->
+        <div class="details-inspector">
+          <div class="inspector-header">
+            <div>
+              <div class="inspector-title" id="inspector-title">SearchValues&lt;T&gt;</div>
+              <div class="inspector-sub" id="inspector-sub">Day 1 • High-Performance .NET</div>
+            </div>
+            <span class="sidebar-badge" id="inspector-version">.NET 9+</span>
+          </div>
+
+          <!-- Post Commentary Preview -->
+          <div>
+            <div class="section-title">LinkedIn Post Commentary</div>
+            <div class="commentary-box" id="inspector-commentary">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Terminal CLI Command -->
+          <div>
+            <div class="section-title">Generate via Terminal CLI</div>
+            <div class="cli-box">
+              <code id="cli-cmd-display">python linkedin_daily_bot.py generate --track dotnet --day 1 --carousel</code>
+              <button class="btn" style="padding: 4px 10px; font-size: 11px;" onclick="copyCliCommand()">Copy</button>
+            </div>
+          </div>
+
+          <!-- Publish Command Snippet -->
+          <div>
+            <div class="section-title">Publish Command (GitHub Review Issue or Terminal)</div>
+            <div class="cli-box">
+              <code id="publish-cmd-display">/publish carousel</code>
+              <button class="btn" style="padding: 4px 10px; font-size: 11px;" onclick="copyText('/publish carousel')">Copy</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast">
+    <span>✓</span> <span id="toast-msg">Copied to clipboard!</span>
+  </div>
+
+  <!-- Embedded Curriculum Data -->
+  <script id="curriculum-raw" type="application/json">
+{
+  "dotnet": [
+    {
+      "day": 1,
+      "concept": "SearchValues<T> in .NET 8/9",
+      "focus": "SIMD-accelerated string searching that is 10x faster than string.Contains() or IndexOfAny()."
+    },
+    {
+      "day": 2,
+      "concept": "ValueTask vs Task Allocation Traps",
+      "focus": "Why returning Task allocates on heap for sync cached results, and how ValueTask<T> eliminates it."
+    },
+    {
+      "day": 3,
+      "concept": "ArrayPool<T>.Shared for High-Throughput APIs",
+      "focus": "Renting byte and object buffers to completely eliminate GC Gen0/Gen1 allocation spikes."
+    },
+    {
+      "day": 4,
+      "concept": "IAsyncEnumerable<T> Streaming",
+      "focus": "Streaming records directly from EF Core to HTTP response stream without buffering 50,000 items in RAM."
+    },
+    {
+      "day": 5,
+      "concept": "FrozenDictionary<K, V> in .NET 8+",
+      "focus": "Immutable read-only lookups compiled for zero-allocation, beating regular Dictionary by 40%."
+    },
+    {
+      "day": 6,
+      "concept": "System.Threading.Channels",
+      "focus": "High-performance in-memory lock-free producer/consumer queue replacing heavy BlockingCollection."
+    },
+    {
+      "day": 7,
+      "concept": "PeriodicTimer vs System.Threading.Timer",
+      "focus": "Clean, async-safe background looping with while (await timer.WaitForNextTickAsync())."
+    },
+    {
+      "day": 8,
+      "concept": "EF Core IDbCommandInterceptor",
+      "focus": "Intercepting SQL queries dynamically for automatic multi-tenancy, soft delete, or query auditing."
+    },
+    {
+      "day": 9,
+      "concept": "AsSplitQuery() vs Cartesian Explosion",
+      "focus": "How multiple .Include() calls generate exponential duplicate rows and when AsSplitQuery fixes it."
+    },
+    {
+      "day": 10,
+      "concept": "IExceptionHandler in ASP.NET Core 8",
+      "focus": "Replacing custom middleware with the standardized IExceptionHandler pipeline."
+    },
+    {
+      "day": 11,
+      "concept": "Memory<T> and ReadOnlySpan<T> Slicing",
+      "focus": "Parsing strings, substrings, and binary payloads with zero heap memory allocation."
+    },
+    {
+      "day": 12,
+      "concept": "HybridCache in .NET 9",
+      "focus": "Two-tier caching combining ultra-fast L1 in-process RAM with L2 distributed Redis seamlessly."
+    },
+    {
+      "day": 13,
+      "concept": "Discriminated Unions in C# 15 / .NET 11",
+      "focus": "Type-safe closed algebraic data types with compiler-enforced exhaustive pattern matching, replacing polymorphic visitor boilerplate and loose inheritance."
+    },
+    {
+      "day": 14,
+      "concept": "Runtime Async Execution in .NET 11",
+      "focus": "Native runtime async execution replacing compiler-generated IAsyncStateMachine class boilerplate, reducing per-await heap allocations and cleaning stack traces."
+    },
+    {
+      "day": 15,
+      "concept": "Field-Backed Properties (field keyword) in C# 14 / .NET 10",
+      "focus": "Accessing the compiler-generated backing field directly inside property accessors (set => field = value) without writing repetitive private fields."
+    },
+    {
+      "day": 16,
+      "concept": "Extension Members & Properties in C# 14 / .NET 10",
+      "focus": "Extending existing types with extension properties, static members, and custom operators using modern extension(Type) block syntax."
+    },
+    {
+      "day": 17,
+      "concept": "System.Threading.Lock Object in .NET 9/10",
+      "focus": "Replacing monitor-based lock(new object()) with the dedicated System.Threading.Lock primitive for lower memory overhead and cleaner semantics."
+    },
+    {
+      "day": 18,
+      "concept": "params ReadOnlySpan<T> in C# 13 / .NET 9",
+      "focus": "Passing variable-length argument lists to methods with zero heap allocation by eliminating compiler-generated temporary array instantiations."
+    },
+    {
+      "day": 19,
+      "concept": "ZstandardStream Compression in .NET 11",
+      "focus": "Built-in ultra-fast Zstandard compression delivering 3x faster compression speeds and higher ratios than GZip in high-throughput API responses."
+    },
+    {
+      "day": 20,
+      "concept": "LINQ Enumerable.FullJoin in .NET 11",
+      "focus": "Native full outer joins directly in LINQ without complex GroupJoin and SelectManyDefaultIfEmpty query workarounds."
+    },
+    {
+      "day": 21,
+      "concept": "Task.WhenEach Async Streaming in .NET 9",
+      "focus": "Processing asynchronous tasks concurrently as each one finishes without waiting for the entire batch or writing custom Channel bridges."
+    },
+    {
+      "day": 22,
+      "concept": "Implicit Span Conversions in C# 14 / .NET 10",
+      "focus": "First-class compiler conversions allowing spans to be passed directly into generic and collection expressions without explicit AsSpan() calls."
+    },
+    {
+      "day": 23,
+      "concept": "OrderedDictionary<TKey, TValue> in .NET 9",
+      "focus": "Standard library generic collection maintaining exact insertion order while providing O(1) keyed lookups without third-party dependencies."
+    },
+    {
+      "day": 24,
+      "concept": "File-Based Apps (Single-File C#) in .NET 10",
+      "focus": "Running standalone single-file C# scripts with inline #sdk and #package directives without project files or separate solution scaffolding."
+    },
+    {
+      "day": 25,
+      "concept": "SearchValues Multi-String Matching in .NET 9",
+      "focus": "Extending hardware-accelerated SIMD substring search across arrays of strings (SearchValues.Create(string[])) for high-throughput text routing."
+    },
+    {
+      "day": 26,
+      "concept": "Partial Constructors and Events in C# 14 / .NET 10",
+      "focus": "Defining partial constructors and event declarations across partial files to cleanly compose source-generated dependency injection code."
+    },
+    {
+      "day": 27,
+      "concept": "TimeProvider & FakeTimeProvider in .NET 8/9",
+      "focus": "Replacing mockable IDateTime interfaces with Microsoft's official abstract TimeProvider for deterministic timer and clock unit tests."
+    },
+    {
+      "day": 28,
+      "concept": "Native AOT Publishing & Trimming in .NET 10/11",
+      "focus": "Compiling .NET applications ahead-of-time directly into native machine code for sub-10ms startup times and 80% lower RAM footprint."
+    },
+    {
+      "day": 29,
+      "concept": "Polly v8 Resilience Pipelines in .NET 8/9",
+      "focus": "Zero-allocation composable resilience pipelines unifying retries, rate limiters, and circuit breakers via Microsoft.Extensions.Resilience."
+    },
+    {
+      "day": 30,
+      "concept": "Closed Class Hierarchies in C# 15 / .NET 11",
+      "focus": "Restricting inheritance trees at the compiler level to guarantee closed domain hierarchies with exhaustive pattern match verification."
+    }
+  ],
+  "angular": [
+    {
+      "day": 1,
+      "concept": "Signal Forms in Angular 22",
+      "focus": "Reactive forms directly backed by signals via @angular/forms/signals, eliminating FormGroup boilerplate and synchronizing with model signals."
+    },
+    {
+      "day": 2,
+      "concept": "httpResource() in Angular 22",
+      "focus": "Declarative HTTP fetching natively wired to signals, auto-refetching when dependencies change with built-in .isLoading() and .error()."
+    },
+    {
+      "day": 3,
+      "concept": "@boundary Template Error Boundaries in Angular 22",
+      "focus": "Isolating runtime template rendering errors with @boundary and @error (retry = $reset) to prevent fatal app-wide crashes."
+    },
+    {
+      "day": 4,
+      "concept": "linkedSignal() in Angular 19+",
+      "focus": "Writable signal that resets automatically when source signals change while allowing manual state overrides without side-effect syncing."
+    },
+    {
+      "day": 5,
+      "concept": "provideZonelessChangeDetection() in Angular 18/20+",
+      "focus": "Running Angular completely Zone.js-free for smaller bundles, faster initial load, and fine-grained signal-driven change detection."
+    },
+    {
+      "day": 6,
+      "concept": "@let Template Declarations in Angular 18.1+",
+      "focus": "Defining local template variables cleanly with @let total = price * qty, eliminating clumsy *ngIf 'as' hacks and dummy micro-pipes."
+    },
+    {
+      "day": 7,
+      "concept": "resource() & rxResource() in Angular 19+",
+      "focus": "Native async signal loading primitives bridging promises and RxJS observables into reactive signal states with built-in reload()."
+    },
+    {
+      "day": 8,
+      "concept": "OnPush by Default & Zoneless Blueprint in Angular 22",
+      "focus": "Automated performance by default where components default to OnPush and standard templates run with zero Zone.js monkey patching."
+    },
+    {
+      "day": 9,
+      "concept": "Angular Aria Headless UI Primitives in Angular 22",
+      "focus": "Building accessible design system components using Angular Aria headless primitives without reinventing keyboard navigation and ARIA roles."
+    },
+    {
+      "day": 10,
+      "concept": "Advanced Template Expressions in Angular 22",
+      "focus": "Writing array/object spreads (...items) and arrow functions directly inside template bindings without cluttering component classes."
+    },
+    {
+      "day": 11,
+      "concept": "input() & input.required() with Transforms in Angular 17.1+",
+      "focus": "Signal-based component inputs replacing @Input() decorators with compile-time safety and built-in booleanAttribute/numberAttribute transforms."
+    },
+    {
+      "day": 12,
+      "concept": "model() Two-Way Signal Binding in Angular 17.2+",
+      "focus": "Two-way component state binding eliminating synchronized @Input and @Output pairs with a single reactive model() signal."
+    },
+    {
+      "day": 13,
+      "concept": "output() & outputFromObservable() in Angular 17.3+",
+      "focus": "Signal-era declarative component events replacing EventEmitter instances, with seamless interop for RxJS streams."
+    },
+    {
+      "day": 14,
+      "concept": "viewChild() & contentChild() Signal Queries in Angular 17.2+",
+      "focus": "Signal-based reactive DOM and component queries replacing static @ViewChild decorators with automatic reactivity and type safety."
+    },
+    {
+      "day": 15,
+      "concept": "@defer Control Flow & Viewport Triggers in Angular 17+",
+      "focus": "Declarative lazy-loading of heavy template chunks triggered by viewport intersection, user interaction, or idle prefetching."
+    },
+    {
+      "day": 16,
+      "concept": "Incremental Hydration with @defer in Angular 19+",
+      "focus": "Progressive SSR hydration breaking monolithic bundles by hydrating deferred components only upon viewport or interaction triggers."
+    },
+    {
+      "day": 17,
+      "concept": "Event Replay & Hydration in Angular 18+",
+      "focus": "Capturing and automatically replaying user clicks and keystrokes that occur during SSR page load before hydration completes."
+    },
+    {
+      "day": 18,
+      "concept": "Server Route Configuration (serverRoutes) in Angular 19+",
+      "focus": "Hybrid rendering control defining per-route Prerender, SSR, and Client strategies cleanly inside server.routes.ts."
+    },
+    {
+      "day": 19,
+      "concept": "RedirectCommand in Router Guards in Angular 18+",
+      "focus": "Expressive router guard navigation returning new RedirectCommand() with NavigationBehaviorOptions like skipLocationChange."
+    },
+    {
+      "day": 20,
+      "concept": "Unified Control State Change Events in Angular 18+",
+      "focus": "Introspecting form control state lifecycle changes (status, touched, pristine) via unified control.events observable stream."
+    },
+    {
+      "day": 21,
+      "concept": "afterRender & afterNextRender in Angular 17+",
+      "focus": "Post-render DOM lifecycle hooks replacing ngAfterViewInit and manual Zone checks without crashing SSR hydration pipelines."
+    },
+    {
+      "day": 22,
+      "concept": "provideAppInitializer() in Angular 19+",
+      "focus": "Modern standalone application initialization replacing the multi-provider APP_INITIALIZER token boilerplate with a clean function."
+    },
+    {
+      "day": 23,
+      "concept": "hostDirectives Directive Composition in Angular 17+",
+      "focus": "Applying reusable behaviors and directives directly onto components via hostDirectives array without brittle class inheritance."
+    },
+    {
+      "day": 24,
+      "concept": "withViewTransitions() in Angular 17+",
+      "focus": "Plugging the native browser View Transitions API directly into Angular Router for fluid mobile-like page navigation animations."
+    },
+    {
+      "day": 25,
+      "concept": "DestroyRef & takeUntilDestroyed in Angular 17+",
+      "focus": "Injectable lifecycle cleanup automatically terminating subscriptions and listeners anywhere in services without ngOnDestroy."
+    },
+    {
+      "day": 26,
+      "concept": "toSignal() & toObservable() RxJS Interop in Angular 17+",
+      "focus": "Clean bidirectional interop bridging RxJS streams and signals with custom initial values and rejectErrors error boundaries."
+    },
+    {
+      "day": 27,
+      "concept": "provideHttpClient() with withFetch() in Angular 17/21+",
+      "focus": "Configuring native Fetch API for HttpClient to enable streaming responses, HTTP/2 multiplexing, and server-side stability."
+    },
+    {
+      "day": 28,
+      "concept": "Functional Router Guards with canMatch in Angular 17+",
+      "focus": "Intercepting route requests before JavaScript bundle chunks are loaded to conditionally load alternative component implementations."
+    },
+    {
+      "day": 29,
+      "concept": "Signals-Based Lightweight Store with linkedSignal in Angular 19+",
+      "focus": "Building focused 30-line reactive state stores with computed signals and linkedSignal without heavyweight state management libraries."
+    },
+    {
+      "day": 30,
+      "concept": "Vitest Integration for Modern Unit Testing in Angular 21/22",
+      "focus": "High-speed native ESM unit testing with Vitest replacing legacy Karma and Webpack test runners for 10x faster test execution."
+    }
+  ],
+  "sql_server": [
+    {
+      "day": 1,
+      "concept": "OUTPUT Clause with INSERT & UPDATE in SQL 2019+",
+      "focus": "Returning generated identity IDs and audit rows in one atomic execution without secondary SELECT roundtrips."
+    },
+    {
+      "day": 2,
+      "concept": "Filtered Indexes (WHERE IsDeleted = 0) in SQL 2019+",
+      "focus": "Shrinking index size by 90% and maintaining high-speed cache hits by indexing only active domain rows."
+    },
+    {
+      "day": 3,
+      "concept": "Parameter Sensitive Plan (PSP) Optimization in SQL 2022",
+      "focus": "Automatic runtime plan splitting for parameterized queries with non-uniform data distributions without recompilation."
+    },
+    {
+      "day": 4,
+      "concept": "Keyset Pagination vs OFFSET/FETCH in SQL 2019+",
+      "focus": "Eliminating expensive clustered index page scans on multi-million row tables using seek-based WHERE Id > @LastId."
+    },
+    {
+      "day": 5,
+      "concept": "Query Store Hints in SQL 2022",
+      "focus": "Applying execution plan hints directly via Query Store without changing .NET application code or stored procedure definitions."
+    },
+    {
+      "day": 6,
+      "concept": "READ COMMITTED SNAPSHOT (RCSI) in SQL 2019+",
+      "focus": "Enabling row versioning in tempdb so read queries never block concurrent write transactions."
+    },
+    {
+      "day": 7,
+      "concept": "Native JSON Type & JSON Indexing in SQL 2025",
+      "focus": "Native binary JSON storage format with B-tree index support replacing slow NVARCHAR(MAX) string parsing."
+    },
+    {
+      "day": 8,
+      "concept": "Ledger Tables for Tamper-Proof Auditing in SQL 2022",
+      "focus": "Cryptographically verifiable ledger tables using blockchain-like hash chains for non-repudiable audit trails."
+    },
+    {
+      "day": 9,
+      "concept": "CROSS APPLY for Top-N Per Group in SQL 2019+",
+      "focus": "Correlating table expressions to fetch the latest N child records per parent entity in a single indexed seek."
+    },
+    {
+      "day": 10,
+      "concept": "Memory-Optimized tempdb Metadata in SQL 2019/2022",
+      "focus": "Eliminating PAGELATCH contention on tempdb system catalog tables under high-concurrency microservice workloads."
+    },
+    {
+      "day": 11,
+      "concept": "Resumable Online Index Operations in SQL 2019/2022",
+      "focus": "Pausing heavy index rebuilds during high-traffic operational hours and resuming without restarting from scratch."
+    },
+    {
+      "day": 12,
+      "concept": "System-Versioned Temporal Tables with Retention in SQL 2019/2022",
+      "focus": "Zero-trigger automatic audit tracking with point-in-time querying and automated history retention policies."
+    },
+    {
+      "day": 13,
+      "concept": "Indexed Views with WITH (NOEXPAND) in SQL 2019+",
+      "focus": "Materializing complex analytical aggregations on disk and ensuring the SQL query optimizer actually utilizes the index."
+    },
+    {
+      "day": 14,
+      "concept": "STRING_AGG with WITHIN GROUP in SQL 2019+",
+      "focus": "High-performance string concatenation with explicit ordering replacing slow XML PATH('') workarounds."
+    },
+    {
+      "day": 15,
+      "concept": "Window Framing: ROWS vs RANGE in SQL 2019+",
+      "focus": "Avoiding disk-spilling on-disk worktables by replacing default RANGE with ROWS BETWEEN in rolling window aggregations."
+    },
+    {
+      "day": 16,
+      "concept": "SESSION_CONTEXT() for Multi-Tenant RLS in SQL 2019+",
+      "focus": "Passing secure tenant context from connection pools to enforce Row-Level Security filter predicates automatically."
+    },
+    {
+      "day": 17,
+      "concept": "Approximate Percentiles (APPROX_PERCENTILE_DISC) in SQL 2022",
+      "focus": "High-speed statistical aggregation with guaranteed error bounds on multi-billion row telemetry tables."
+    },
+    {
+      "day": 18,
+      "concept": "Non-Clustered Indexes with INCLUDE Columns in SQL 2019+",
+      "focus": "Creating covering indexes that eliminate expensive Key Lookups and disk seeks on high-throughput query paths."
+    },
+    {
+      "day": 19,
+      "concept": "The Hidden Cost of WITH (NOLOCK) in SQL 2019+",
+      "focus": "How dirty reads cause phantom duplicates, skipped pages, and corrupted financial reports under concurrent writes."
+    },
+    {
+      "day": 20,
+      "concept": "#Temp Tables vs Table Variables (@Table) in SQL 2019+",
+      "focus": "Cardinality estimates and statistics: why table variables assume single-row results and ruin nested loop join plans."
+    },
+    {
+      "day": 21,
+      "concept": "OPENJSON with Strict Schema (WITH) in SQL 2019/2022",
+      "focus": "Shredding JSON payloads directly into relational columns with strict type safety and inline relational projections."
+    },
+    {
+      "day": 22,
+      "concept": "Partition Switching for Instant Archival in SQL 2019+",
+      "focus": "Moving tens of millions of historical rows into archive partition tables via sub-millisecond metadata pointer updates."
+    },
+    {
+      "day": 23,
+      "concept": "MERGE Statement Concurrency & WITH (HOLDLOCK) in SQL 2019+",
+      "focus": "Preventing concurrency deadlocks and race conditions in upsert operations by pairing MERGE with HOLDLOCK."
+    },
+    {
+      "day": 24,
+      "concept": "DATETIME2(3) vs Legacy DATETIME in SQL 2019+",
+      "focus": "Preventing 3-millisecond rounding discrepancies and saving 2 bytes per row across high-volume transaction logs."
+    },
+    {
+      "day": 25,
+      "concept": "sys.dm_db_index_usage_stats for Dead Indexes in SQL 2019+",
+      "focus": "Auditing and pruning write-heavy indexes that consume write I/O on updates but have zero query seek usage."
+    },
+    {
+      "day": 26,
+      "concept": "sp_executesql Parameterization vs Dynamic SQL in SQL 2019+",
+      "focus": "Maximizing plan cache reuse and eliminating plan cache bloat while guaranteeing SQL injection immunity."
+    },
+    {
+      "day": 27,
+      "concept": "NEWSEQUENTIALID() vs NEWID() B-Tree Page Splits in SQL 2019+",
+      "focus": "Eliminating clustered index page fragmentation and 50% fill factor waste caused by random GUID keys."
+    },
+    {
+      "day": 28,
+      "concept": "Extended Events (XEvents) over SQL Profiler in SQL 2019+",
+      "focus": "Capturing queries exceeding duration thresholds and deadlock graphs with sub-1% CPU overhead in production."
+    },
+    {
+      "day": 29,
+      "concept": "Columnstore Indexes for Operational Analytics in SQL 2022",
+      "focus": "Delivering 10x-100x query acceleration and 5x compression for analytical reporting on active transactional tables."
+    },
+    {
+      "day": 30,
+      "concept": "In-Memory OLTP & Memory-Optimized Tables in SQL 2019/2022",
+      "focus": "Eliminating buffer pool latches and lock contention completely for high-throughput session state and queue tables."
+    }
+  ]
+}
+  </script>
+
+  <script>
+    // Load embedded curriculum
+    const CURRICULUM = JSON.parse(document.getElementById('curriculum-raw').textContent);
+
+    let currentTrack = 'dotnet';
+    let currentDay = 1;
+    let currentSlide = 1;
+    let viewMode = 'card';
+    let searchQuery = '';
+
+    const TRACK_CONFIG = {
+      dotnet: {
+        label: ".NET & C#",
+        kickerPrefix: "30 Days of High-Performance .NET",
+        lang: "csharp",
+        defaultFilename: "Program.cs",
+        tag: "#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+        glow1: "#141826",
+        glow2: "#10131e"
+      },
+      angular: {
+        label: "Angular",
+        kickerPrefix: "30 Days of Modern Angular",
+        lang: "typescript",
+        defaultFilename: "component.ts",
+        tag: "#Angular #TypeScript #Frontend #WebDevelopment #SoftwareEngineering",
+        glow1: "#1a1624",
+        glow2: "#12141c"
+      },
+      sql_server: {
+        label: "SQL Server",
+        kickerPrefix: "30 Days of SQL Server Architecture",
+        lang: "sql",
+        defaultFilename: "query.sql",
+        tag: "#SQLServer #TSQL #DatabasePerformance #DataEngineering #SoftwareEngineering",
+        glow1: "#1a1612",
+        glow2: "#121416"
+      }
+    };
+
+    function setTrack(track) {
+      currentTrack = track;
+      document.body.setAttribute('data-track', track);
+      document.querySelectorAll('.track-tab').forEach(t => {
+        t.classList.toggle('active', t.getAttribute('data-t') === track);
+      });
+      document.getElementById('sidebar-track-title').textContent = TRACK_CONFIG[track].label + " TRACK";
+      
+      currentDay = 1;
+      document.getElementById('day-range').value = 1;
+      renderDayList();
+      selectDay(1);
+    }
+
+    function renderDayList() {
+      const listContainer = document.getElementById('day-list-container');
+      listContainer.innerHTML = '';
+      const days = CURRICULUM[currentTrack] || [];
+
+      days.forEach(item => {
+        const matches = !searchQuery || 
+          item.concept.toLowerCase().includes(searchQuery) || 
+          item.focus.toLowerCase().includes(searchQuery) ||
+          ("day " + item.day).includes(searchQuery);
+
+        if (!matches) return;
+
+        const div = document.createElement('div');
+        div.className = 'day-item' + (item.day === currentDay ? ' active' : '');
+        div.onclick = () => selectDay(item.day);
+        div.innerHTML = `
+          <span class="day-num-tag">D${String(item.day).padStart(2, '0')}</span>
+          <div class="day-info">
+            <div class="day-concept">${escapeHtml(item.concept)}</div>
+            <div class="day-focus">${escapeHtml(item.focus)}</div>
+          </div>
+        `;
+        listContainer.appendChild(div);
+      });
+    }
+
+    function selectDay(day) {
+      currentDay = parseInt(day, 10);
+      document.getElementById('slider-val').textContent = 'Day ' + currentDay;
+      document.getElementById('day-range').value = currentDay;
+      document.getElementById('sidebar-day-badge').textContent = `DAY ${currentDay} OF 30`;
+
+      document.querySelectorAll('.day-item').forEach(el => {
+        const numText = el.querySelector('.day-num-tag')?.textContent || '';
+        el.classList.toggle('active', numText === `D${String(currentDay).padStart(2, '0')}`);
+      });
+
+      renderCurrentTopic();
+      if (viewMode === 'carousel') {
+        renderSlide(currentSlide);
+      }
+    }
+
+    function onSliderChange(val) {
+      selectDay(val);
+      const activeEl = document.querySelector('.day-item.active');
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+
+    function filterTopics() {
+      searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+      renderDayList();
+    }
+
+    function setViewMode(mode) {
+      viewMode = mode;
+      document.getElementById('btn-view-card').classList.toggle('active', mode === 'card');
+      document.getElementById('btn-view-carousel').classList.toggle('active', mode === 'carousel');
+      document.getElementById('card-mode-container').style.display = mode === 'card' ? 'block' : 'none';
+      document.getElementById('carousel-mode-container').classList.toggle('active-view', mode === 'carousel');
+      if (mode === 'carousel') {
+        renderSlide(currentSlide);
+      }
+    }
+
+    // Code generators for preview mockups
+    function getSnippetForDay(track, dayItem) {
+      const day = dayItem.day;
+      const concept = dayItem.concept;
+
+      if (track === 'dotnet') {
+        if (day === 1) {
+          return {
+            bad: 'bool HasBadChar(string s) =>\n    s.Contains("@") || s.Contains("#");',
+            good: 'private static readonly SearchValues<char> s_bad =\n    SearchValues.Create("@#");\n\nbool HasBadChar(ReadOnlySpan<char> s) =>\n    s.ContainsAny(s_bad);',
+            metric: '10x-100x Faster Lookups | Zero GC Allocation'
+          };
+        }
+        if (day === 13) {
+          return {
+            bad: 'public abstract record Shape;\npublic record Circle(double R) : Shape;\npublic record Square(double S) : Shape;\n// Open hierarchy, requires runtime casts',
+            good: '// C# 15 / .NET 11 Discriminated Union\npublic enum class Shape {\n    Circle(double R),\n    Square(double S)\n}\n// Compiler enforces exhaustive pattern match',
+            metric: 'Zero-Cost Exhaustive Pattern Matching | Zero Heap Allocation'
+          };
+        }
+        return {
+          bad: `// Legacy pattern before ${concept}\nvar result = ProcessLegacyPipeline();`,
+          good: `// High-performance .NET production implementation\nvar fast = ${concept.split(' ')[0]}.ExecuteOptimized();`,
+          metric: 'Zero Allocation | Sub-Millisecond Latency'
+        };
+      } else if (track === 'angular') {
+        if (day === 1) {
+          return {
+            bad: 'user$ = this.http.get<User>("/api/me");\n// In template: {{ (user$ | async)?.name }}',
+            good: 'user = httpResource<User>(() => "/api/me");\n// In template: {{ user.value()?.name }}\n// Built-in loading/error signals & zero rxjs bloat',
+            metric: 'Zero RxJS Boilerplate | Native Signal Reactivity'
+          };
+        }
+        return {
+          bad: `// Legacy change-detection pattern\nthis.cdRef.markForCheck();`,
+          good: `// Modern Zoneless Signal Architecture\nconst state = ${concept.split(' ')[0]}();`,
+          metric: 'Zoneless Performance | 100% Tree-Shakeable'
+        };
+      } else {
+        if (day === 1) {
+          return {
+            bad: 'INSERT INTO Orders (CustomerId, Total)\nVALUES (@CustId, @Total);\nSELECT SCOPE_IDENTITY(); -- extra roundtrip',
+            good: 'INSERT INTO Orders (CustomerId, Total)\nOUTPUT inserted.OrderId, inserted.CreatedAt\nVALUES (@CustId, @Total); -- 1 atomic execution',
+            metric: '1 Single Roundtrip | 50% Latency Reduction'
+          };
+        }
+        if (day === 3) {
+          return {
+            bad: '-- Parameter Sniffing ruins plans\nSELECT * FROM Orders WHERE StatusId = @Status;\n-- One huge scan cached for all executions',
+            good: '-- SQL Server 2022 PSP Optimization\n-- Engine automatically maintains multiple\n-- plan variants for non-uniform data skew!',
+            metric: 'Automatic Runtime Plan Splitting | Zero Recompiles'
+          };
+        }
+        return {
+          bad: `-- Standard slow approach\nSELECT * FROM dbo.Transactions;`,
+          good: `-- Modern SQL Server 2022/2025 optimization\nSELECT * FROM dbo.Transactions WITH (${concept.split(' ')[0]});`,
+          metric: 'Zero Latch Contention | 10x Throughput Boost'
+        };
+      }
+    }
+
+    function renderCurrentTopic() {
+      const trackCfg = TRACK_CONFIG[currentTrack];
+      const days = CURRICULUM[currentTrack] || [];
+      const item = days.find(d => d.day === currentDay) || days[0];
+      if (!item) return;
+
+      const snippet = getSnippetForDay(currentTrack, item);
+
+      // Kicker
+      const kickerText = `${trackCfg.kickerPrefix}  •  Day ${String(item.day).padStart(2, '0')}`;
+      document.getElementById('card-kicker').textContent = kickerText;
+
+      // Pill
+      document.getElementById('card-pill').textContent = item.concept;
+
+      // Headings
+      const words = item.concept.split(' ');
+      const head1 = words.slice(0, 3).join(' ');
+      const headAccent = words.slice(3).join(' ') || trackCfg.label + ' Gem';
+      document.getElementById('card-headline-1').textContent = head1;
+      document.getElementById('card-headline-accent').textContent = headAccent;
+
+      // Subtitle
+      document.getElementById('card-subtitle').textContent = item.focus;
+
+      // Before & After Code
+      document.getElementById('card-before-code').innerHTML = highlightCode(snippet.bad, trackCfg.lang);
+      document.getElementById('card-after-code').innerHTML = highlightCode(snippet.good, trackCfg.lang);
+
+      // Metric
+      document.getElementById('card-metric-text').textContent = snippet.metric;
+
+      // Day Indicator
+      document.getElementById('card-day-indicator').textContent = `Day ${String(item.day).padStart(2, '0')} / 30 →`;
+
+      // Inspector Details
+      document.getElementById('inspector-title').textContent = item.concept;
+      document.getElementById('inspector-sub').textContent = `Day ${item.day} • ${trackCfg.label}`;
+      const versionMatch = item.concept.match(/\b(SQL \d{4}|\.NET \d+|Angular \d+|C# \d+)/i);
+      document.getElementById('inspector-version').textContent = versionMatch ? versionMatch[0] : trackCfg.label;
+
+      // Commentary
+      const postText = `Day ${item.day}/30: ${item.concept}
+
+Most engineers face production bottlenecks due to traditional patterns:
+${item.focus}
+
+• Architectural Impact: ${snippet.metric}
+• Production Benefit: Immediate throughput gain and zero unnecessary CPU/memory churn.
+
+${snippet.good.replace(/\\n/g, '\n')}
+
+What has your experience been with this in high-scale environments?
+
+${trackCfg.tag}`;
+
+      document.getElementById('inspector-commentary').textContent = postText;
+
+      // CLI
+      const cliCmd = `python linkedin_daily_bot.py generate --track ${currentTrack} --day ${item.day} --carousel`;
+      document.getElementById('cli-cmd-display').textContent = cliCmd;
+    }
+
+    // Carousel Slide Renderer (Slide 1 to 4)
+    function renderSlide(slideIdx) {
+      currentSlide = slideIdx;
+      document.querySelectorAll('.carousel-dot').forEach((d, i) => {
+        d.classList.toggle('active', i + 1 === slideIdx);
+      });
+      document.getElementById('slide-indicator').textContent = `Slide ${slideIdx} / 4`;
+
+      const frame = document.getElementById('carousel-slide-frame');
+      const trackCfg = TRACK_CONFIG[currentTrack];
+      const days = CURRICULUM[currentTrack] || [];
+      const item = days.find(d => d.day === currentDay) || days[0];
+      const snippet = getSnippetForDay(currentTrack, item);
+
+      let slideHtml = '';
+
+      if (slideIdx === 1) {
+        // Slide 1: Hook & 3 Metric Cards
+        slideHtml = `
+          <div class="card-top">
+            <div class="card-kicker">${trackCfg.kickerPrefix} • Slide 1</div>
+            <div class="card-pill">${escapeHtml(item.concept)}</div>
+            <div class="card-heading" style="margin-top: 14px;">
+              <div class="card-headline-1">${escapeHtml(item.concept)}</div>
+              <div class="card-headline-accent">${trackCfg.label} Production Deep-Dive</div>
+            </div>
+            <div class="card-subtitle" style="font-size: 14px; margin-top: 10px;">
+              ${escapeHtml(item.focus)}
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+            <div class="card-metric-bar" style="padding: 12px 16px;">
+              <span class="metric-icon">⚡</span>
+              <div>
+                <div style="font-weight: 700; color: #fff; font-size: 13px;">${escapeHtml(snippet.metric)}</div>
+                <div style="font-size: 11px; color: #94a3b8;">Primary Performance Benchmark</div>
+              </div>
+            </div>
+            <div class="card-metric-bar" style="padding: 12px 16px;">
+              <span class="metric-icon">🛡️</span>
+              <div>
+                <div style="font-weight: 700; color: #fff; font-size: 13px;">Zero Memory Waste</div>
+                <div style="font-size: 11px; color: #94a3b8;">Eliminates GC pressure & unindexed table scans</div>
+              </div>
+            </div>
+            <div class="card-metric-bar" style="padding: 12px 16px;">
+              <span class="metric-icon">🚀</span>
+              <div>
+                <div style="font-weight: 700; color: #fff; font-size: 13px;">Enterprise Ready</div>
+                <div style="font-size: 11px; color: #94a3b8;">Engineered for high-concurrency microservices</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer" style="margin-top: auto;">
+            <div class="card-brand">@maayurdahake</div>
+            <div class="card-day-indicator">1 / 4 →</div>
+          </div>
+        `;
+      } else if (slideIdx === 2) {
+        // Slide 2: BEFORE Bottleneck
+        slideHtml = `
+          <div class="card-top">
+            <div class="card-kicker" style="color: #ef4444;">BEFORE • THE BOTTLENECK</div>
+            <div class="card-headline-1" style="font-size: 22px;">Common Implementation Pitfall</div>
+            <div class="card-subtitle">How standard code leads to latency spikes and excessive resource consumption.</div>
+          </div>
+          <div class="code-panel panel-before" style="margin-top: 20px; font-size: 12px; padding: 16px;">
+            <div class="code-panel-badge">Common Bottleneck Pattern</div>
+            <div>${highlightCode(snippet.bad, trackCfg.lang)}</div>
+          </div>
+          <div class="card-metric-bar" style="border-color: rgba(239, 68, 68, 0.4); margin-top: 14px;">
+            <span class="metric-icon">⚠️</span>
+            <span class="metric-text" style="color: #fca5a5;">Causes thread pool starvation & buffer pool churn</span>
+          </div>
+          <div class="card-footer" style="margin-top: auto;">
+            <div class="card-brand">@maayurdahake</div>
+            <div class="card-day-indicator">2 / 4 →</div>
+          </div>
+        `;
+      } else if (slideIdx === 3) {
+        // Slide 3: AFTER Production Fix
+        slideHtml = `
+          <div class="card-top">
+            <div class="card-kicker" style="color: #10b981;">AFTER • THE PRODUCTION FIX</div>
+            <div class="card-headline-1" style="font-size: 22px;">Optimized Architecture Fix</div>
+            <div class="card-subtitle">Applying modern platform capabilities for maximum performance.</div>
+          </div>
+          <div class="code-panel panel-after" style="margin-top: 20px; font-size: 12px; padding: 16px;">
+            <div class="code-panel-badge">High-Performance Implementation</div>
+            <div>${highlightCode(snippet.good, trackCfg.lang)}</div>
+          </div>
+          <div class="card-metric-bar" style="border-color: rgba(16, 185, 129, 0.4); margin-top: 14px;">
+            <span class="metric-icon">✅</span>
+            <span class="metric-text" style="color: #6ee7b7;">${escapeHtml(snippet.metric)}</span>
+          </div>
+          <div class="card-footer" style="margin-top: auto;">
+            <div class="card-brand">@maayurdahake</div>
+            <div class="card-day-indicator">3 / 4 →</div>
+          </div>
+        `;
+      } else {
+        // Slide 4: Key Takeaways & Caveats
+        slideHtml = `
+          <div class="card-top">
+            <div class="card-kicker">TAKEAWAYS & BEST PRACTICES</div>
+            <div class="card-headline-1" style="font-size: 22px;">Production Checklist</div>
+            <div class="card-subtitle">What every senior engineer should verify before deploying.</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+            <div class="card-metric-bar">
+              <span class="metric-icon">1.</span>
+              <span class="metric-text">Profile under realistic production load before merging.</span>
+            </div>
+            <div class="card-metric-bar">
+              <span class="metric-icon">2.</span>
+              <span class="metric-text">Ensure underlying database/runtime runtime version matches requirements.</span>
+            </div>
+            <div class="card-metric-bar" style="border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1);">
+              <span class="metric-icon" style="color: #f87171;">⚠️</span>
+              <span class="metric-text" style="color: #fca5a5;">Watch out for unbounded allocations and lock escalation under multi-threaded spikes.</span>
+            </div>
+          </div>
+          <div class="card-footer" style="margin-top: auto;">
+            <div class="card-brand">@maayurdahake</div>
+            <div class="card-day-indicator">4 / 4 →</div>
+          </div>
+        `;
+      }
+
+      frame.innerHTML = slideHtml;
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) renderSlide(currentSlide - 1);
+    }
+
+    function nextSlide() {
+      if (currentSlide < 4) renderSlide(currentSlide + 1);
+    }
+
+    function setSlide(idx) {
+      renderSlide(idx);
+    }
+
+    // Simple syntax highlighter for CSS mockup
+    function highlightCode(code, lang) {
+      const lines = code.split('\\n');
+      return lines.map((line, idx) => {
+        let highlighted = escapeHtml(line);
+        // Keywords
+        highlighted = highlighted.replace(/\b(public|private|static|readonly|bool|record|class|enum|var|const|new|return|async|await|SELECT|INSERT|UPDATE|OUTPUT|FROM|WHERE|VALUES|WITH|OUTPUT|AS)\b/g, '<span class="c-kw">$1</span>');
+        // Comments
+        highlighted = highlighted.replace(/(\/\/.*|--.*)/g, '<span class="c-comment">$1</span>');
+        // Strings
+        highlighted = highlighted.replace(/("[^"]*")/g, '<span class="c-str">$1</span>');
+
+        return `
+          <div class="code-line">
+            <span class="code-gutter">${idx + 1}</span>
+            <span class="code-content">${highlighted}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return (str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    function copyLinkedInText() {
+      const text = document.getElementById('inspector-commentary').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('LinkedIn post commentary copied!');
+      });
+    }
+
+    function copyCliCommand() {
+      const cmd = document.getElementById('cli-cmd-display').textContent;
+      navigator.clipboard.writeText(cmd).then(() => {
+        showToast('Terminal CLI command copied!');
+      });
+    }
+
+    function copyText(str) {
+      navigator.clipboard.writeText(str).then(() => {
+        showToast('Copied: ' + str);
+      });
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.key === 'ArrowRight' || e.key === 'j') {
+        if (currentDay < 30) selectDay(currentDay + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'k') {
+        if (currentDay > 1) selectDay(currentDay - 1);
+      } else if (e.key === '1') {
+        setTrack('dotnet');
+      } else if (e.key === '2') {
+        setTrack('angular');
+      } else if (e.key === '3') {
+        setTrack('sql_server');
+      }
+    });
+
+    // Initialize
+    setTrack('dotnet');
+  </script>
+</body>
+</html>

@@ -62,93 +62,93 @@
     },
     {
       "day": 13,
-      "concept": "TimeProvider for Unit Testing",
-      "focus": "Replacing mockable IDateTime interfaces with Microsoft's official abstract TimeProvider."
+      "concept": "Discriminated Unions in C# 15 / .NET 11",
+      "focus": "Type-safe closed algebraic data types with compiler-enforced exhaustive pattern matching, replacing polymorphic visitor boilerplate and loose inheritance."
     },
     {
       "day": 14,
-      "concept": "Positional Pattern Matching with Discards",
-      "focus": "Replacing nested if-else statements with expressive, compiler-checked switch pattern expressions."
+      "concept": "Runtime Async Execution in .NET 11",
+      "focus": "Native runtime async execution replacing compiler-generated IAsyncStateMachine class boilerplate, reducing per-await heap allocations and cleaning stack traces."
     },
     {
       "day": 15,
-      "concept": "GeneratedRegex Source Generators",
-      "focus": "Compiling regex patterns at compile-time with [GeneratedRegex] for zero startup overhead."
+      "concept": "Field-Backed Properties (field keyword) in C# 14 / .NET 10",
+      "focus": "Accessing the compiler-generated backing field directly inside property accessors (set => field = value) without writing repetitive private fields."
     },
     {
       "day": 16,
-      "concept": "C# 12/13 Primary Constructors Pitfalls",
-      "focus": "Accidental double-capture of constructor parameters in class fields and how to avoid it."
+      "concept": "Extension Members & Properties in C# 14 / .NET 10",
+      "focus": "Extending existing types with extension properties, static members, and custom operators using modern extension(Type) block syntax."
     },
     {
       "day": 17,
-      "concept": "Built-in RateLimiter Middleware",
-      "focus": "Configuring FixedWindow and SlidingWindow token-bucket rate limiting without third-party NuGet packages."
+      "concept": "System.Threading.Lock Object in .NET 9/10",
+      "focus": "Replacing monitor-based lock(new object()) with the dedicated System.Threading.Lock primitive for lower memory overhead and cleaner semantics."
     },
     {
       "day": 18,
-      "concept": "Interlocked.CompareExchange for Lock-Free State",
-      "focus": "Thread-safe atomic updates in Singleton services without lock() contention."
+      "concept": "params ReadOnlySpan<T> in C# 13 / .NET 9",
+      "focus": "Passing variable-length argument lists to methods with zero heap allocation by eliminating compiler-generated temporary array instantiations."
     },
     {
       "day": 19,
-      "concept": "Polly v8 Resilience Pipelines in .NET 8",
-      "focus": "New Microsoft.Extensions.Resilience API integrating retry, fallback, and circuit breakers."
+      "concept": "ZstandardStream Compression in .NET 11",
+      "focus": "Built-in ultra-fast Zstandard compression delivering 3x faster compression speeds and higher ratios than GZip in high-throughput API responses."
     },
     {
       "day": 20,
-      "concept": "EF Core Value Converters with ValueComparers",
-      "focus": "Storing JSON or complex types in SQL columns while ensuring EF Core change tracker detects mutations."
+      "concept": "LINQ Enumerable.FullJoin in .NET 11",
+      "focus": "Native full outer joins directly in LINQ without complex GroupJoin and SelectManyDefaultIfEmpty query workarounds."
     },
     {
       "day": 21,
-      "concept": "AsyncLocal<T> Context Bleeding Traps",
-      "focus": "How ambient context flows down async call chains and why thread pools can leak state."
+      "concept": "Task.WhenEach Async Streaming in .NET 9",
+      "focus": "Processing asynchronous tasks concurrently as each one finishes without waiting for the entire batch or writing custom Channel bridges."
     },
     {
       "day": 22,
-      "concept": "IAsyncDisposable on Scoped Services",
-      "focus": "Safely cleaning up asynchronous network sockets and database connections on DI container disposal."
+      "concept": "Implicit Span Conversions in C# 14 / .NET 10",
+      "focus": "First-class compiler conversions allowing spans to be passed directly into generic and collection expressions without explicit AsSpan() calls."
     },
     {
       "day": 23,
-      "concept": "Unsafe.As<T> and MemoryMarshal",
-      "focus": "Zero-cost type reinterpretation for performance-critical hot paths without casting overhead."
+      "concept": "OrderedDictionary<TKey, TValue> in .NET 9",
+      "focus": "Standard library generic collection maintaining exact insertion order while providing O(1) keyed lookups without third-party dependencies."
     },
     {
       "day": 24,
-      "concept": "StringPool from CommunityToolkit",
-      "focus": "String deduplication cache preventing 10,000 identical parsed strings from bloating memory."
+      "concept": "File-Based Apps (Single-File C#) in .NET 10",
+      "focus": "Running standalone single-file C# scripts with inline #sdk and #package directives without project files or separate solution scaffolding."
     },
     {
       "day": 25,
-      "concept": "EF Core TagWith() for Production Query Tracing",
-      "focus": "Injecting SQL comments (.TagWith(\"GetActiveUsers\")) so slow queries stand out in SQL Profiler."
+      "concept": "SearchValues Multi-String Matching in .NET 9",
+      "focus": "Extending hardware-accelerated SIMD substring search across arrays of strings (SearchValues.Create(string[])) for high-throughput text routing."
     },
     {
       "day": 26,
-      "concept": "Nullable Annotations ([NotNullWhen(true)])",
-      "focus": "Helping the C# compiler understand TryParse patterns and eliminating false null warnings."
+      "concept": "Partial Constructors and Events in C# 14 / .NET 10",
+      "focus": "Defining partial constructors and event declarations across partial files to cleanly compose source-generated dependency injection code."
     },
     {
       "day": 27,
-      "concept": "ActivatorUtilities for Dynamic DI Instantiation",
-      "focus": "Creating instances dynamically while resolving dependencies directly from IServiceProvider."
+      "concept": "TimeProvider & FakeTimeProvider in .NET 8/9",
+      "focus": "Replacing mockable IDateTime interfaces with Microsoft's official abstract TimeProvider for deterministic timer and clock unit tests."
     },
     {
       "day": 28,
-      "concept": "LoggerMessage Source Generators",
-      "focus": "High-performance structured logging with [LoggerMessage] eliminating boxing and string allocations."
+      "concept": "Native AOT Publishing & Trimming in .NET 10/11",
+      "focus": "Compiling .NET applications ahead-of-time directly into native machine code for sub-10ms startup times and 80% lower RAM footprint."
     },
     {
       "day": 29,
-      "concept": "EF Core Compiled Queries (EF.CompileAsyncQuery)",
-      "focus": "Pre-compiling expression trees into delegate queries for 2x faster execution in hot paths."
+      "concept": "Polly v8 Resilience Pipelines in .NET 8/9",
+      "focus": "Zero-allocation composable resilience pipelines unifying retries, rate limiters, and circuit breakers via Microsoft.Extensions.Resilience."
     },
     {
       "day": 30,
-      "concept": "GC.AllocateArray with Pinned Memory",
-      "focus": "Allocating pinned non-moving buffers directly to avoid GC compaction pauses in I/O servers."
+      "concept": "Closed Class Hierarchies in C# 15 / .NET 11",
+      "focus": "Restricting inheritance trees at the compiler level to guarantee closed domain hierarchies with exhaustive pattern match verification."
     }
   ],
   "angular": [
@@ -306,153 +306,153 @@
   "sql_server": [
     {
       "day": 1,
-      "concept": "OUTPUT Clause with INSERT / UPDATE",
-      "focus": "Returning generated IDs or previous column values directly in one atomic trip without secondary SELECT."
+      "concept": "OUTPUT Clause with INSERT & UPDATE in SQL 2019+",
+      "focus": "Returning generated identity IDs and audit rows in one atomic execution without secondary SELECT roundtrips."
     },
     {
       "day": 2,
-      "concept": "Filtered Indexes (WHERE IsDeleted = 0)",
-      "focus": "Indexing only active rows to shrink index size by 90% and keep query execution cached."
+      "concept": "Filtered Indexes (WHERE IsDeleted = 0) in SQL 2019+",
+      "focus": "Shrinking index size by 90% and maintaining high-speed cache hits by indexing only active domain rows."
     },
     {
       "day": 3,
-      "concept": "Keyset Pagination vs OFFSET / FETCH",
-      "focus": "Using WHERE Id > @LastId to eliminate massive page scans on multi-million row tables."
+      "concept": "Parameter Sensitive Plan (PSP) Optimization in SQL 2022",
+      "focus": "Automatic runtime plan splitting for parameterized queries with non-uniform data distributions without recompilation."
     },
     {
       "day": 4,
-      "concept": "CROSS APPLY for Top-N Per Group",
-      "focus": "Correlating subqueries to retrieve the latest 3 orders for every customer in a single efficient scan."
+      "concept": "Keyset Pagination vs OFFSET/FETCH in SQL 2019+",
+      "focus": "Eliminating expensive clustered index page scans on multi-million row tables using seek-based WHERE Id > @LastId."
     },
     {
       "day": 5,
-      "concept": "OPTIMIZE FOR UNKNOWN Query Hint",
-      "focus": "Fixing parameter sniffing plan cache issues without disabling parameterization or recompiling."
+      "concept": "Query Store Hints in SQL 2022",
+      "focus": "Applying execution plan hints directly via Query Store without changing .NET application code or stored procedure definitions."
     },
     {
       "day": 6,
-      "concept": "READ COMMITTED SNAPSHOT (RCSI)",
-      "focus": "Enabling row versioning so readers never block writers and writers never block readers."
+      "concept": "READ COMMITTED SNAPSHOT (RCSI) in SQL 2019+",
+      "focus": "Enabling row versioning in tempdb so read queries never block concurrent write transactions."
     },
     {
       "day": 7,
-      "concept": "STRING_AGG with WITHIN GROUP",
-      "focus": "Native string concatenation with sorting, replacing awkward XML PATH('') hacks."
+      "concept": "Native JSON Type & JSON Indexing in SQL 2025",
+      "focus": "Native binary JSON storage format with B-tree index support replacing slow NVARCHAR(MAX) string parsing."
     },
     {
       "day": 8,
-      "concept": "Non-Clustered Indexes with INCLUDE Columns",
-      "focus": "Creating covering indexes that eliminate expensive Key Lookups in high-frequency queries."
+      "concept": "Ledger Tables for Tamper-Proof Auditing in SQL 2022",
+      "focus": "Cryptographically verifiable ledger tables using blockchain-like hash chains for non-repudiable audit trails."
     },
     {
       "day": 9,
-      "concept": "Window Framing: ROWS vs RANGE",
-      "focus": "Why default RANGE BETWEEN UNBOUNDED PRECEDING runs 10x slower on disk than ROWS BETWEEN."
+      "concept": "CROSS APPLY for Top-N Per Group in SQL 2019+",
+      "focus": "Correlating table expressions to fetch the latest N child records per parent entity in a single indexed seek."
     },
     {
       "day": 10,
-      "concept": "System-Versioned Temporal Tables",
-      "focus": "Automated audit history and point-in-time querying (FOR SYSTEM_TIME AS OF) with zero triggers."
+      "concept": "Memory-Optimized tempdb Metadata in SQL 2019/2022",
+      "focus": "Eliminating PAGELATCH contention on tempdb system catalog tables under high-concurrency microservice workloads."
     },
     {
       "day": 11,
-      "concept": "Indexed Views with WITH (NOEXPAND)",
-      "focus": "Materializing complex aggregations on disk and ensuring the SQL engine uses the materialized view."
+      "concept": "Resumable Online Index Operations in SQL 2019/2022",
+      "focus": "Pausing heavy index rebuilds during high-traffic operational hours and resuming without restarting from scratch."
     },
     {
       "day": 12,
-      "concept": "TRY_CONVERT vs CONVERT",
-      "focus": "Preventing runtime query failure on dirty strings by returning NULL instead of terminating the batch."
+      "concept": "System-Versioned Temporal Tables with Retention in SQL 2019/2022",
+      "focus": "Zero-trigger automatic audit tracking with point-in-time querying and automated history retention policies."
     },
     {
       "day": 13,
-      "concept": "The Hidden Cost of WITH (NOLOCK)",
-      "focus": "How dirty reads can read skipped pages, duplicate records, and corrupt calculated reports."
+      "concept": "Indexed Views with WITH (NOEXPAND) in SQL 2019+",
+      "focus": "Materializing complex analytical aggregations on disk and ensuring the SQL query optimizer actually utilizes the index."
     },
     {
       "day": 14,
-      "concept": "#Temp Tables vs Table Variables (@Table)",
-      "focus": "Statistics and cardinality estimates: why table variables assume 1 row and ruin execution plans."
+      "concept": "STRING_AGG with WITHIN GROUP in SQL 2019+",
+      "focus": "High-performance string concatenation with explicit ordering replacing slow XML PATH('') workarounds."
     },
     {
       "day": 15,
-      "concept": "SESSION_CONTEXT() for Multi-Tenancy",
-      "focus": "Setting session-level tenant IDs from .NET to enforce Row-Level Security (RLS) automatically."
+      "concept": "Window Framing: ROWS vs RANGE in SQL 2019+",
+      "focus": "Avoiding disk-spilling on-disk worktables by replacing default RANGE with ROWS BETWEEN in rolling window aggregations."
     },
     {
       "day": 16,
-      "concept": "OPENJSON with CROSS APPLY",
-      "focus": "Shredding JSON arrays stored in columns directly into relational tabular rows inside SQL Server."
+      "concept": "SESSION_CONTEXT() for Multi-Tenant RLS in SQL 2019+",
+      "focus": "Passing secure tenant context from connection pools to enforce Row-Level Security filter predicates automatically."
     },
     {
       "day": 17,
-      "concept": "Sequence Objects vs IDENTITY",
-      "focus": "Pre-allocating batch IDs in memory (NEXT VALUE FOR) across multiple tables without locking tables."
+      "concept": "Approximate Percentiles (APPROX_PERCENTILE_DISC) in SQL 2022",
+      "focus": "High-speed statistical aggregation with guaranteed error bounds on multi-billion row telemetry tables."
     },
     {
       "day": 18,
-      "concept": "DATETIME2(3) vs DATETIME",
-      "focus": "Saving 2 bytes per row and avoiding the notorious 3-millisecond rounding bug in legacy DATETIME."
+      "concept": "Non-Clustered Indexes with INCLUDE Columns in SQL 2019+",
+      "focus": "Creating covering indexes that eliminate expensive Key Lookups and disk seeks on high-throughput query paths."
     },
     {
       "day": 19,
-      "concept": "COMPRESS and DECOMPRESS Functions",
-      "focus": "Compressing large JSON documents or XML logs using gzip natively inside SQL Server."
+      "concept": "The Hidden Cost of WITH (NOLOCK) in SQL 2019+",
+      "focus": "How dirty reads cause phantom duplicates, skipped pages, and corrupted financial reports under concurrent writes."
     },
     {
       "day": 20,
-      "concept": "NEWSEQUENTIALID() vs NEWID()",
-      "focus": "Preventing B-Tree index page splits and 50% fragmentation caused by random GUID clustering."
+      "concept": "#Temp Tables vs Table Variables (@Table) in SQL 2019+",
+      "focus": "Cardinality estimates and statistics: why table variables assume single-row results and ruin nested loop join plans."
     },
     {
       "day": 21,
-      "concept": "SET NOCOUNT ON in Stored Procedures",
-      "focus": "Eliminating 'X rows affected' network round-trip overhead for high-frequency microservices."
+      "concept": "OPENJSON with Strict Schema (WITH) in SQL 2019/2022",
+      "focus": "Shredding JSON payloads directly into relational columns with strict type safety and inline relational projections."
     },
     {
       "day": 22,
-      "concept": "Partition Switching for Instant Archival",
-      "focus": "Moving 10 million rows to an archive table in metadata-only milliseconds with zero I/O."
+      "concept": "Partition Switching for Instant Archival in SQL 2019+",
+      "focus": "Moving tens of millions of historical rows into archive partition tables via sub-millisecond metadata pointer updates."
     },
     {
       "day": 23,
-      "concept": "MERGE Statement Concurrency Pitfalls",
-      "focus": "Why MERGE causes deadlocks under load unless explicit WITH (HOLDLOCK) hints are used."
+      "concept": "MERGE Statement Concurrency & WITH (HOLDLOCK) in SQL 2019+",
+      "focus": "Preventing concurrency deadlocks and race conditions in upsert operations by pairing MERGE with HOLDLOCK."
     },
     {
       "day": 24,
-      "concept": "sp_executesql Parameterization vs Dynamic SQL",
-      "focus": "Preventing plan cache bloat and SQL injection while maintaining plan reuse."
+      "concept": "DATETIME2(3) vs Legacy DATETIME in SQL 2019+",
+      "focus": "Preventing 3-millisecond rounding discrepancies and saving 2 bytes per row across high-volume transaction logs."
     },
     {
       "day": 25,
-      "concept": "sys.dm_db_index_usage_stats for Unused Indexes",
-      "focus": "Finding bloated indexes that cost write I/O on every INSERT/UPDATE but are never used by queries."
+      "concept": "sys.dm_db_index_usage_stats for Dead Indexes in SQL 2019+",
+      "focus": "Auditing and pruning write-heavy indexes that consume write I/O on updates but have zero query seek usage."
     },
     {
       "day": 26,
-      "concept": "Sparse Columns for Semi-Structured Data",
-      "focus": "Optimizing storage for wide tables where columns are NULL 90% of the time with zero byte overhead."
+      "concept": "sp_executesql Parameterization vs Dynamic SQL in SQL 2019+",
+      "focus": "Maximizing plan cache reuse and eliminating plan cache bloat while guaranteeing SQL injection immunity."
     },
     {
       "day": 27,
-      "concept": "Row-Level Security (RLS) Filter Predicates",
-      "focus": "Enforcing data isolation at the database layer so users can never see other tenants' rows."
+      "concept": "NEWSEQUENTIALID() vs NEWID() B-Tree Page Splits in SQL 2019+",
+      "focus": "Eliminating clustered index page fragmentation and 50% fill factor waste caused by random GUID keys."
     },
     {
       "day": 28,
-      "concept": "Extended Events (XEvents) over SQL Profiler",
-      "focus": "Capturing deadlocks and queries running >1s with under 1% CPU overhead in production."
+      "concept": "Extended Events (XEvents) over SQL Profiler in SQL 2019+",
+      "focus": "Capturing queries exceeding duration thresholds and deadlock graphs with sub-1% CPU overhead in production."
     },
     {
       "day": 29,
-      "concept": "Columnstore Indexes for Operational Analytics",
-      "focus": "10x-100x query speedups on analytical aggregation queries on top of transactional tables."
+      "concept": "Columnstore Indexes for Operational Analytics in SQL 2022",
+      "focus": "Delivering 10x-100x query acceleration and 5x compression for analytical reporting on active transactional tables."
     },
     {
       "day": 30,
-      "concept": "In-Memory OLTP & Natively Compiled Stored Procs",
-      "focus": "Eliminating latch/lock contention entirely for high-throughput session state or telemetry tables."
+      "concept": "In-Memory OLTP & Memory-Optimized Tables in SQL 2019/2022",
+      "focus": "Eliminating buffer pool latches and lock contention completely for high-throughput session state and queue tables."
     }
   ]
 }
