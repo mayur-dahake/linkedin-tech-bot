@@ -1,0 +1,31 @@
+{
+  "series_badge": "30 DAYS OF HIDDEN .NET & C# GEMS  \u2022  DAY 14",
+  "title": "Pattern Matching on Spans and UTF-8 Literals in C# 15 / .NET 11",
+  "headline_line1": "Stop transcoding raw bytes",
+  "headline_accent": "match UTF-8 spans directly.",
+  "subtitle": "Match ReadOnlySpan byte buffers against UTF-8 string literals with zero allocations.",
+  "pill_tag": "Pattern Matching on Spans",
+  "pill_badge": "C# 15 / NET 11",
+  "code_filename": "ProtocolParser.cs",
+  "card_highlights": [
+    {
+      "stat": "0 B",
+      "label": "Gen0 heap allocation overhead"
+    },
+    {
+      "stat": "O(1)",
+      "label": "Direct switch table jump"
+    },
+    {
+      "stat": "No GC",
+      "label": "Eliminates transcoding pressure"
+    }
+  ],
+  "bad_code": "// Transcodes bytes to string per request\nvar text = Encoding.UTF8.GetString(headerSpan);\nreturn text switch {\n    \"GET\" => Verb.Get,\n    _ => Verb.Unknown\n};",
+  "good_code": "// Direct constant span match in C# 15\nreturn headerSpan switch {\n    \"GET\"u8 => Verb.Get,\n    \"POST\"u8 => Verb.Post,\n    _ => Verb.Unknown\n};",
+  "post_text": "Day 14/30 \u2014 Pattern Matching on Spans (.NET & C#)\n\nC# 15 and .NET 11 finally allow constant pattern matching directly on ReadOnlySpan<byte> against UTF-8 literals.\n\n\u2022 **Zero Transcoding:** Avoids converting network byte slices into temporary strings just to switch on protocol headers.\n\u2022 **Zero Gen0 Garbage:** Completely bypasses string allocations on high-throughput socket read paths.\n\u2022 **Compiler Jump Tables:** Emits vectorized comparisons and jump tables directly across constant byte spans.\n\nWatch out: Case-insensitive comparisons still require custom slicing or normalizer spans before switching.\n\nWhere are you still transcoding UTF-8 bytes to strings in your hot path?\n\n#DotNet #CSharp #Performance #BackendDevelopment #SoftwareEngineering",
+  "devto_markdown": "High-throughput network parsers (Kestrel, custom TCP, Kafka consumers) read wire data as `ReadOnlySpan<byte>`. Historically, running a clean `switch` statement on headers or commands required either string transcoding with `Encoding.UTF8.GetString` or chaining verbose `SequenceEqual(\"...u8)` checks.\n\n### Before\n```csharp\n// Allocates a string on Gen0 for every wire message\nvar method = Encoding.UTF8.GetString(buffer);\nreturn method switch {\n    \"GET\" => HttpMethod.Get,\n    \"POST\" => HttpMethod.Post,\n    _ => HttpMethod.Custom\n};\n```\n\n### After\n```csharp\n// C# 15 / .NET 11: Direct switch pattern on byte spans\nreturn buffer switch {\n    \"GET\"u8 => HttpMethod.Get,\n    \"POST\"u8 => HttpMethod.Post,\n    _ => HttpMethod.Custom\n};\n```\n\n### Why it matters\n\u2022 **Zero Allocations:** Completely removes Gen0 garbage collection pressure inside hot loop parser paths.\n\u2022 **Jump Table Optimization:** The JIT compiler turns these literal comparisons into tight branch tables and SIMD sequence checks without intermediate pointer overhead.\n\u2022 **Readability:** Replaces verbose `if (buffer.SequenceEqual(\"GET\"u8))` chains with idiomatic pattern matching syntax.\n\nWatch out: Span pattern matching evaluates ordinal byte equivalence. If your wire protocol is case-insensitive, you must canonicalize the slice into a scratch span first.\n\nHave you eliminated all string transcoding from your ingest pipelines?",
+  "track": "dotnet",
+  "day": 14,
+  "dynamic": false
+}
