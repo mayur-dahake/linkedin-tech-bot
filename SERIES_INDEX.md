@@ -5,7 +5,7 @@
 | Day | Topic | Article | Published |
 | :--- | :--- | :--- | :--- |
 | :--- | :--- | :--- | :--- |
-| Day 12 | HybridCache in .NET 9 | [Read on Dev.to](https://dev.to/maayurdahake/hybridcache-in-net-9-1o0i) | 2026-11-26 |
+| Day 13 | Custom Compound Assignment Operators in C# 14 / .NET 10 | [Read on Dev.to](https://dev.to/maayurdahake/custom-compound-assignment-operators-in-c-14-net-10-55ap) | 2026-11-28 |
 
 ## Angular
 

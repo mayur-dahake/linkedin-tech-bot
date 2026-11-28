@@ -9,5 +9,6 @@
   "AsSplitQuery() vs Cartesian Explosion",
   "IExceptionHandler in ASP.NET Core 8",
   "Memory<T> and ReadOnlySpan<T> Slicing",
-  "HybridCache in .NET 9"
+  "HybridCache in .NET 9",
+  "Custom Compound Assignment Operators in C# 14 / .NET 10"
 ]
